@@ -1,11 +1,20 @@
-import React from 'react'
+import React from "react";
+import Login from "./Components/Login";
+import { Route, Routes } from "react-router-dom";
+import LoginPage from "./Components/Login";
+import MainPage from "./Components/MainPage";
+import MainPageTable from "./Components/MainPageTable";
 
 const App = () => {
   return (
     <div>
-      <h1 class="text-3xl font-bold underline">Hello world!</h1>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/main" element={<MainPage />} />
+        <Route path="/mainTable" element={<MainPageTable />} />
+      </Routes>
     </div>
   );
-}
+};
 
-export default App
+export default App;
