@@ -80,7 +80,7 @@ const MainPageTable = () => {
         "FEP632Y0P10015D0E1B5G1B70Y0--A---------CSCL5---------JHKGM1MS0CR0SMANC1NFS---SC2TSY",
       date: "2025-04-05",
       addedBy: "Michael Brown",
-      status: "Pending",
+      status: "In-active",
     },
   ];
 
@@ -396,7 +396,13 @@ const MainPageTable = () => {
                       sx={{ cursor: "pointer" }}
                       onClick={() => handleSort("addedBy")}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "5rem",
+                        }}
+                      >
                         Added By {getSortDirection("addedBy")}
                       </Box>
                     </TableCell>
@@ -406,7 +412,13 @@ const MainPageTable = () => {
                       sx={{ cursor: "pointer" }}
                       onClick={() => handleSort("status")}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "5rem",
+                        }}
+                      >
                         Status {getSortDirection("status")}
                       </Box>
                     </TableCell>
@@ -492,7 +504,7 @@ const MainPageTable = () => {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          Copyright © 2022 ATPL :: Label Printing. All rights reserved.
+          Copyright © 2025 ABB :: Label Printing. All rights reserved.
         </Typography>
       </Box>
     </Box>
