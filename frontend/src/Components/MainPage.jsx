@@ -91,7 +91,7 @@ function MainPage() {
           <Box sx={{ flexGrow: 0, ml: 2 }}>
             <Tooltip title="User settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="User" src="/static/images/avatar/2.jpg" />
+                <Avatar>A</Avatar>
               </IconButton>
             </Tooltip>
             <Menu
@@ -127,7 +127,7 @@ function MainPage() {
             </Menu>
           </Box>
         </Toolbar>
-        <MainPageTable/>
+        <MainPageTable />
       </Container>
     </AppBar>
   );
