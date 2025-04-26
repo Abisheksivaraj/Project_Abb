@@ -11,34 +11,6 @@ app.use(login);
 const data = require("./Route/GetCollection");
 app.use(data);
 
-
-
-const login = require("./Route/LoginRoute");
-app.use(login);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.get("/", (req, res) => {
   return res.status(200).send({
     message: "ABB Project backend running successfully",

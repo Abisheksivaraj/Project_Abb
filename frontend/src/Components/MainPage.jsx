@@ -91,11 +91,7 @@ function MainPage() {
           <Box sx={{ flexGrow: 0, ml: 2 }}>
             <Tooltip title="User settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-<<<<<<< HEAD
-                <Avatar>A</Avatar>
-=======
                 <Avatar alt="User" src="/static/images/avatar/2.jpg" />
->>>>>>> 32713a809094e7d5cbcaa8942e4b72364fea3a09
               </IconButton>
             </Tooltip>
             <Menu
@@ -131,11 +127,7 @@ function MainPage() {
             </Menu>
           </Box>
         </Toolbar>
-<<<<<<< HEAD
-        <MainPageTable />
-=======
         <MainPageTable/>
->>>>>>> 32713a809094e7d5cbcaa8942e4b72364fea3a09
       </Container>
     </AppBar>
   );
