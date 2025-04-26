@@ -14,7 +14,6 @@ const App = () => {
         <Route path="/main" element={<MainPage />} />
         <Route path="/mainTable" element={<MainPageTable />} />
         <Route path="/Labelprint" element={<Labelprint />} />
-
       </Routes>
     </div>
   );
