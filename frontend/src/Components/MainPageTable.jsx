@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -35,6 +36,7 @@ const MainPageTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [columnMenuAnchor, setColumnMenuAnchor] = useState(null);
+  const navigate = useNavigate();
   const [visibleColumns, setVisibleColumns] = useState({
     sNo: true,
     action: true,
@@ -190,6 +192,7 @@ const MainPageTable = () => {
       <Box sx={{ p: 3, flexGrow: 1 }}>
         {/* Add Button */}
         <Button
+          onClick={() => navigate("/Labelprint")}
           variant="contained"
           color="error"
           sx={{ mb: 2, bgcolor: "#b71c1c", "&:hover": { bgcolor: "#7f0000" } }}
