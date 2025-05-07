@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -22,6 +22,12 @@ import {
   Link,
   AppBar,
   Toolbar,
+  CircularProgress,
+  Tooltip,
+  Card,
+  TablePagination,
+  Chip,
+  Divider,
 } from "@mui/material";
 
 import {
@@ -30,13 +36,25 @@ import {
   ArrowDownward as ArrowDownwardIcon,
   Visibility as VisibilityIcon,
   Print as PrintIcon,
+  FilterList as FilterListIcon,
+  RemoveRedEye as RemoveRedEyeIcon,
 } from "@mui/icons-material";
+
+import { api } from "../apiConfig";
 
 const MainPageTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [columnMenuAnchor, setColumnMenuAnchor] = useState(null);
   const navigate = useNavigate();
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Pagination states
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [visibleColumns, setVisibleColumns] = useState({
     sNo: true,
     action: true,
@@ -49,42 +67,22 @@ const MainPageTable = () => {
     status: true,
   });
 
-  // Sample data
-  const tableData = [
-    {
-      id: 1,
-      labelType: "FEP631-Integral type 4-General Purpose",
-      serialNumber: "TEU",
-      tagNumber: "DGJH",
-      labelDetails:
-        "FEP631Y0S20015D0E1B5G2C70D0M1ADRNDSAC2CSCL5CMDCRAJHK0M5MS0CR0SMANC1NFBR",
-      date: "2025-04-12",
-      addedBy: "John Smith",
-      status: "Active",
-    },
-    {
-      id: 2,
-      labelType: "Integral/Remote type 3-Exproof",
-      serialNumber: "3K822200236287",
-      tagNumber: "FT-0001",
-      labelDetails:
-        "FEP631A1D10040A1T1B1S2A70A2G0ADRMDSOC0-----CMACRAJ6K0M5MS0CR0SMANC1NFSRCI",
-      date: "2025-04-10",
-      addedBy: "Emma Johnson",
-      status: "Active",
-    },
-    {
-      id: 3,
-      labelType: "FEP632-Remote Sensor",
-      serialNumber: "22",
-      tagNumber: "33",
-      labelDetails:
-        "FEP632Y0P10015D0E1B5G1B70Y0--A---------CSCL5---------JHKGM1MS0CR0SMANC1NFS---SC2TSY",
-      date: "2025-04-05",
-      addedBy: "Michael Brown",
-      status: "In-active",
-    },
-  ];
+  // Fetch data from API
+  useEffect(() => {
+    const fetchTableData = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/tableData");
+        setTableData(response.data.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message || "Failed to fetch data");
+        setLoading(false);
+      }
+    };
+
+    fetchTableData();
+  }, []);
 
   // Sorting logic
   const handleSort = (key) => {
@@ -128,6 +126,22 @@ const MainPageTable = () => {
     )
   );
 
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Get current page data
+  const currentPageData = filteredData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   const columnVisibilityOptions = [
     { id: "sNo", label: "S No" },
     { id: "action", label: "Action" },
@@ -161,164 +175,84 @@ const MainPageTable = () => {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        bgcolor: "#f5f5f5",
+        bgcolor: "#f8fafc",
       }}
     >
-      {/* Header */}
-      <AppBar
-        position="static"
-        color="default"
-        elevation={0}
-        sx={{ bgcolor: "white", borderBottom: "1px solid #e0e0e0" }}
-      >
-        <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, fontWeight: 600, color: "#333" }}
-          >
-            Label Print
-          </Typography>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link underline="hover" color="error" href="/">
-              Home
-            </Link>
-            <Typography color="text.secondary">Label Print</Typography>
-          </Breadcrumbs>
-        </Toolbar>
-      </AppBar>
+      <Toolbar>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            flexGrow: 1,
+            fontWeight: 600,
+            fontSize: "2rem",
+            color: "black",
+          }}
+        >
+          Label Print
+        </Typography>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ color: "black" }}>
+          <Link underline="hover" color="inherit" href="/">
+            Home
+          </Link>
+          <Typography color="black">Label Print</Typography>
+        </Breadcrumbs>
+      </Toolbar>
 
       {/* Main content */}
-      <Box sx={{ p: 3, flexGrow: 1 }}>
-        {/* Add Button */}
-        <Button
-          onClick={() => navigate("/Labelprint")}
-          variant="contained"
-          color="error"
-          sx={{ mb: 2, bgcolor: "#b71c1c", "&:hover": { bgcolor: "#7f0000" } }}
+      <Box sx={{ p: { xs: 2, md: 4 }, flexGrow: 1 }}>
+        <Card
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow:
+              "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          }}
         >
-          Add Label Print
-        </Button>
-
-        {/* Table Container */}
-        <Paper sx={{ width: "100%", overflow: "hidden" }}>
-          {/* Table Header */}
-          <Box sx={{ bgcolor: "#b71c1c", color: "white", p: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-              Table Data
-            </Typography>
-          </Box>
-
-          {/* Table Controls */}
+          {/* Card Header */}
           <Box
             sx={{
-              p: 1.5,
+              background: (theme) =>
+                `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+              p: 2,
               display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
               justifyContent: "space-between",
-              borderBottom: "1px solid #e0e0e0",
+              alignItems: "center",
+              borderBottom: "1px solid #e2e8f0",
             }}
           >
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-              >
-                Copy
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-              >
-                CSV
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-              >
-                Excel
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-              >
-                PDF
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-              >
-                Print
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                color="inherit"
-                sx={{
-                  bgcolor: "#666",
-                  color: "white",
-                  "&:hover": { bgcolor: "#444" },
-                }}
-                onClick={handleColumnMenuOpen}
-                endIcon={<VisibilityIcon fontSize="small" />}
-              >
-                Column visibility
-              </Button>
-              <Menu
-                anchorEl={columnMenuAnchor}
-                open={Boolean(columnMenuAnchor)}
-                onClose={handleColumnMenuClose}
-              >
-                {columnVisibilityOptions.map((column) => (
-                  <MenuItem
-                    key={column.id}
-                    onClick={() => handleColumnVisibilityChange(column.id)}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={visibleColumns[column.id]}
-                          size="small"
-                        />
-                      }
-                      label={column.label}
-                    />
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "white" }}>
+              Label Print Data
+            </Typography>
+            <Button
+              onClick={() => navigate("/Labelprint")}
+              variant="contained"
+              sx={{
+                background: (theme) =>
+                  `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+                color: "white",
+                "&:hover": { bgcolor: "#1e3a8a" },
+                textTransform: "none",
+                fontWeight: 500,
+                boxShadow: 1,
+              }}
+              startIcon={<PrintIcon />}
+            >
+              Add New Label
+            </Button>
+          </Box>
 
+          {/* Search and Filters */}
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              flexWrap: { xs: "wrap", md: "nowrap" },
+              justifyContent: "space-between",
+              gap: 2,
+              borderBottom: "1px solid #e2e8f0",
+            }}
+          >
             <TextField
               placeholder="Search..."
               size="small"
@@ -327,188 +261,367 @@ const MainPageTable = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
+                    <SearchIcon fontSize="small" color="action" />
                   </InputAdornment>
                 ),
               }}
-              sx={{ width: "240px" }}
+              sx={{ width: { xs: "100%", md: "300px" }, bgcolor: "white" }}
             />
+
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ color: "#475569", borderColor: "#cbd5e1" }}
+                onClick={handleColumnMenuOpen}
+                startIcon={<VisibilityIcon fontSize="small" />}
+              >
+                Columns
+              </Button>
+              <Menu
+                anchorEl={columnMenuAnchor}
+                open={Boolean(columnMenuAnchor)}
+                onClose={handleColumnMenuClose}
+                PaperProps={{
+                  sx: { maxHeight: 300, width: 200 },
+                }}
+              >
+                {columnVisibilityOptions.map((column) => (
+                  <MenuItem
+                    key={column.id}
+                    onClick={() => handleColumnVisibilityChange(column.id)}
+                    dense
+                  >
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={visibleColumns[column.id]}
+                          size="small"
+                          color="primary"
+                        />
+                      }
+                      label={column.label}
+                      sx={{ width: "100%" }}
+                    />
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          </Box>
+
+          {/* Export Options */}
+          <Box
+            sx={{
+              p: 1.5,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 1,
+              bgcolor: "#f8fafc",
+              borderBottom: "1px solid #e2e8f0",
+            }}
+          >
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "#475569",
+                borderColor: "#cbd5e1",
+                textTransform: "none",
+              }}
+            >
+              Copy
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "#475569",
+                borderColor: "#cbd5e1",
+                textTransform: "none",
+              }}
+            >
+              CSV
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "#475569",
+                borderColor: "#cbd5e1",
+                textTransform: "none",
+              }}
+            >
+              Excel
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "#475569",
+                borderColor: "#cbd5e1",
+                textTransform: "none",
+              }}
+            >
+              PDF
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "#475569",
+                borderColor: "#cbd5e1",
+                textTransform: "none",
+              }}
+              startIcon={<PrintIcon fontSize="small" />}
+            >
+              Print
+            </Button>
           </Box>
 
           {/* Table */}
-          <TableContainer sx={{ maxHeight: 440 }}>
-            <Table stickyHeader aria-label="label print table">
-              <TableHead>
-                <TableRow>
-                  {visibleColumns.sNo && (
-                    <TableCell
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleSort("id")}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        S No {getSortDirection("id")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.action && <TableCell>Action</TableCell>}
-                  {visibleColumns.labelType && (
-                    <TableCell
-                      sx={{ cursor: "pointer", minWidth: 200 }}
-                      onClick={() => handleSort("labelType")}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        Label Type {getSortDirection("labelType")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.serialNumber && (
-                    <TableCell
-                      sx={{ cursor: "pointer", minWidth: 150 }}
-                      onClick={() => handleSort("serialNumber")}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        Serial Number {getSortDirection("serialNumber")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.tagNumber && (
-                    <TableCell
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleSort("tagNumber")}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        Tag Number {getSortDirection("tagNumber")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.labelDetails && (
-                    <TableCell sx={{ minWidth: 300 }}>Label Details</TableCell>
-                  )}
-                  {visibleColumns.date && (
-                    <TableCell
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleSort("date")}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        Date {getSortDirection("date")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.addedBy && (
-                    <TableCell
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleSort("addedBy")}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "5rem",
-                        }}
+          <TableContainer
+            sx={{ maxHeight: "calc(100vh - 350px)", minHeight: "300px" }}
+          >
+            {loading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "300px",
+                }}
+              >
+                <CircularProgress color="primary" />
+              </Box>
+            ) : error ? (
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography color="error">{error}</Typography>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
+              </Box>
+            ) : (
+              <Table stickyHeader aria-label="label print table">
+                <TableHead>
+                  <TableRow
+                    sx={{
+                      "& th": {
+                        bgcolor: "#f1f5f9",
+                        fontWeight: "600",
+                        color: "#334155",
+                      },
+                    }}
+                  >
+                    {visibleColumns.sNo && (
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleSort("_id")}
                       >
-                        Added By {getSortDirection("addedBy")}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {visibleColumns.status && (
-                    <TableCell
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => handleSort("status")}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "5rem",
-                        }}
-                      >
-                        Status {getSortDirection("status")}
-                      </Box>
-                    </TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredData.map((row) => (
-                  <TableRow key={row.id} hover>
-                    {visibleColumns.sNo && <TableCell>{row.id}</TableCell>}
-                    {visibleColumns.action && (
-                      <TableCell>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="success"
-                          sx={{ textTransform: "none" }}
-                        >
-                          Preview
-                        </Button>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          S No {getSortDirection("_id")}
+                        </Box>
                       </TableCell>
                     )}
+                    {visibleColumns.action && <TableCell>Action</TableCell>}
                     {visibleColumns.labelType && (
-                      <TableCell>{row.labelType}</TableCell>
+                      <TableCell
+                        sx={{ cursor: "pointer", minWidth: 150 }}
+                        onClick={() => handleSort("LabelType")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Label Type {getSortDirection("LabelType")}
+                        </Box>
+                      </TableCell>
                     )}
                     {visibleColumns.serialNumber && (
-                      <TableCell>{row.serialNumber}</TableCell>
-                    )}
-                    {visibleColumns.tagNumber && (
-                      <TableCell>{row.tagNumber}</TableCell>
-                    )}
-                    {visibleColumns.labelDetails && (
                       <TableCell
-                        sx={{
-                          maxWidth: 300,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
+                        sx={{ cursor: "pointer", minWidth: 150 }}
+                        onClick={() => handleSort("SerialNumber")}
                       >
-                        {row.labelDetails}
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Serial Number {getSortDirection("SerialNumber")}
+                        </Box>
                       </TableCell>
                     )}
-                    {visibleColumns.date && <TableCell>{row.date}</TableCell>}
+                    {visibleColumns.tagNumber && (
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleSort("TagNumber")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Tag Number {getSortDirection("TagNumber")}
+                        </Box>
+                      </TableCell>
+                    )}
+                    {visibleColumns.labelDetails && (
+                      <TableCell sx={{ minWidth: 250 }}>
+                        Label Details
+                      </TableCell>
+                    )}
+                    {visibleColumns.date && (
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleSort("Date")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Date {getSortDirection("Date")}
+                        </Box>
+                      </TableCell>
+                    )}
                     {visibleColumns.addedBy && (
-                      <TableCell>{row.addedBy}</TableCell>
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleSort("AddedBy")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Added By {getSortDirection("AddedBy")}
+                        </Box>
+                      </TableCell>
                     )}
                     {visibleColumns.status && (
-                      <TableCell>
-                        <Typography
-                          component="span"
-                          sx={{
-                            bgcolor:
-                              row.status === "Active" ? "#e8f5e9" : "#fff3e0",
-                            color:
-                              row.status === "Active" ? "#2e7d32" : "#e65100",
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: 1,
-                            fontSize: "0.875rem",
-                          }}
-                        >
-                          {row.status}
-                        </Typography>
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleSort("Status")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Status {getSortDirection("Status")}
+                        </Box>
                       </TableCell>
                     )}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {currentPageData.length > 0 ? (
+                    currentPageData.map((row, index) => (
+                      <TableRow
+                        key={row._id || index}
+                        hover
+                        sx={{
+                          "&:nth-of-type(odd)": { bgcolor: "#fafafa" },
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
+                      >
+                        {visibleColumns.sNo && (
+                          <TableCell>
+                            {page * rowsPerPage + index + 1}
+                          </TableCell>
+                        )}
+                        {visibleColumns.action && (
+                          <TableCell>
+                            <Button variant="contained" color="success">
+                              Preview
+                            </Button>
+                          </TableCell>
+                        )}
+                        {visibleColumns.labelType && (
+                          <TableCell>{row.LabelType}</TableCell>
+                        )}
+                        {visibleColumns.serialNumber && (
+                          <TableCell>{row.SerialNumber}</TableCell>
+                        )}
+                        {visibleColumns.tagNumber && (
+                          <TableCell>{row.TagNumber}</TableCell>
+                        )}
+                        {visibleColumns.labelDetails && (
+                          <TableCell
+                            sx={{
+                              maxWidth: 250,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <Tooltip
+                              title={row.LabelDetails}
+                              placement="top-start"
+                              arrow
+                              enterDelay={500}
+                              leaveDelay={200}
+                            >
+                              <Typography
+                                variant="body2"
+                                component="span"
+                                sx={{
+                                  display: "block",
+                                  width: "100%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {row.LabelDetails}
+                              </Typography>
+                            </Tooltip>
+                          </TableCell>
+                        )}
+                        {visibleColumns.date && (
+                          <TableCell>{row.Date}</TableCell>
+                        )}
+                        {visibleColumns.addedBy && (
+                          <TableCell>{row.AddedBy}</TableCell>
+                        )}
+                        {visibleColumns.status && (
+                          <TableCell>
+                            <Chip
+                              label={row.Status}
+                              size="small"
+                              sx={{
+                                bgcolor:
+                                  row.Status === "Active"
+                                    ? "#dcfce7"
+                                    : "#fff7ed",
+                                color:
+                                  row.Status === "Active"
+                                    ? "#166534"
+                                    : "#9a3412",
+                                fontWeight: 500,
+                                fontSize: "0.75rem",
+                              }}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={
+                          Object.values(visibleColumns).filter(Boolean).length
+                        }
+                        align="center"
+                        sx={{ py: 5 }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          No data found
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </TableContainer>
-        </Paper>
-      </Box>
 
-      {/* Footer */}
-      <Box
-        sx={{
-          py: 2,
-          px: 3,
-          mt: "auto",
-          bgcolor: "white",
-          borderTop: "1px solid #e0e0e0",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Copyright © 2025 ABB :: Label Printing. All rights reserved.
-        </Typography>
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredData.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: "1px solid #e2e8f0",
+              bgcolor: "#f8fafc",
+            }}
+          />
+        </Card>
       </Box>
     </Box>
   );

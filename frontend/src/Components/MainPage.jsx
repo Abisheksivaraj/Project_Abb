@@ -15,6 +15,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../abb.svg";
 import MainPageTable from "./MainPageTable";
 
+
 const settings = [
   {
     label: "Logout",
@@ -127,8 +128,9 @@ function MainPage() {
             </Menu>
           </Box>
         </Toolbar>
-        <MainPageTable/>
+        
       </Container>
+      
     </AppBar>
   );
 }

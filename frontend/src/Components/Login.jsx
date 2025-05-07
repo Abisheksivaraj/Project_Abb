@@ -148,7 +148,7 @@ const LoginPage = () => {
     let timer;
     if (loginSuccess && userData) {
       timer = setTimeout(() => {
-        navigate("/main");
+        navigate("/mainTable");
       }, 2000);
     }
     return () => clearTimeout(timer);
