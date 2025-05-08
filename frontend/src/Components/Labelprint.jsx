@@ -18,6 +18,8 @@ import {
   Paper,
   Divider,
   Chip,
+  Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -47,6 +49,9 @@ const LabelPrint = () => {
   const [sz, setSZ] = useState("");
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
   const [allSelectionsDone, setAllSelectionsDone] = useState(false);
+  const [selectedDatabase, setSelectedDatabase] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Form fields that match the schema
   const [LabelType, setLabelType] = useState("");
@@ -56,54 +61,115 @@ const LabelPrint = () => {
   const [Date, setDate] = useState("");
   const [Status, setStatus] = useState("active");
 
-  // Fetch collections and codes on component mount
-  useEffect(() => {
-    const fetchCollectionsAndCodes = async () => {
-      try {
-        const response = await api.get("/all-collections-codes");
-        if (response.data.success) {
-          const allCollections = response.data.collectionsWithCodes;
+  // Fetch collections and codes from specific database based on basic code
+  const fetchCollectionsFromDatabase = async (dbName) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log(`Fetching collections from database: ${dbName}`);
+      const response = await api.get(`/collections-by-database/${dbName}`);
 
-          // Filter out excluded collections
-          const filteredCollections = {};
-          Object.keys(allCollections).forEach((collectionName) => {
-            if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
-              filteredCollections[collectionName] =
-                allCollections[collectionName];
-            }
-          });
+      if (response.data.success) {
+        const dbCollections = response.data.collectionsWithData;
+        console.log("API Response:", response.data);
 
-          setCollectionsWithCodes(filteredCollections);
-          setCollectionNames(Object.keys(filteredCollections));
+        // Filter out excluded collections
+        const filteredCollections = {};
+        Object.keys(dbCollections).forEach((collectionName) => {
+          if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
+            filteredCollections[collectionName] = dbCollections[collectionName];
+          }
+        });
 
-          // Initially set filtered collection names to be the same as all collection names
-          setFilteredCollectionNames(Object.keys(filteredCollections));
-        }
-      } catch (error) {
-        console.error("Error fetching collections and codes:", error);
+        // Log all collections and their item counts
+        Object.keys(filteredCollections).forEach((collName) => {
+          console.log(
+            `${collName}: ${filteredCollections[collName].length} items`
+          );
+        });
+
+        setCollectionsWithCodes(filteredCollections);
+        setCollectionNames(Object.keys(filteredCollections));
+        setFilteredCollectionNames(Object.keys(filteredCollections));
+      } else {
+        setError("Failed to fetch collections: " + response.data.message);
       }
-    };
+    } catch (error) {
+      console.error(`Error fetching collections from ${dbName}:`, error);
+      setError(`Error fetching collections: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchCollectionsAndCodes();
-  }, []);
+  // CORRECTED function to determine which database to use based on basic code
+  const getDatabaseForBasicCode = (code) => {
+    switch (code) {
+      case "FEP631":
+        return "Fep631"; // Maps to the Fep631 database
+      case "FEP632":
+        return "Fep632"; // Maps to the Fep632 database
+      case "FET632":
+        return "Transmitter"; // Maps to the Transmitter database
+      default:
+        return "";
+    }
+  };
+
+  // Handle basic code selection with database selection
+  const handleBasicCodeChange = (event) => {
+    const value = event.target.value;
+    setBasicCode(value);
+
+    // Reset collections and selections first
+    setCollectionsWithCodes({});
+    setCollectionNames([]);
+    setFilteredCollectionNames([]);
+    setSelectedCollections({});
+    setShowCollectionDropdown(false);
+
+    // Determine which database to use based on the basic code
+    const dbName = getDatabaseForBasicCode(value);
+    setSelectedDatabase(dbName);
+
+    if (dbName) {
+      fetchCollectionsFromDatabase(dbName);
+      setShowCollectionDropdown(true);
+    }
+
+    let defaultModelType = "";
+    if (value === "FEP631") {
+      defaultModelType = "Sensor";
+    } else if (value === "FEP632") {
+      defaultModelType = "Sensor";
+    } else if (value === "FET632") {
+      defaultModelType = "Transmitter";
+    }
+
+    setModelType(defaultModelType);
+    updateLabelDetails({}, ss, sz, value);
+  };
 
   // Filter collections based on basicCode
   useEffect(() => {
+    if (!collectionNames.length) return;
+
+    let filtered = [...collectionNames];
+
     if (basicCode === "FET632") {
       // Filter collections that end with "Transmitter"
-      const transmitterCollections = collectionNames.filter((name) =>
-        name.toLowerCase().endsWith("transmitter")
+      filtered = collectionNames.filter((name) =>
+        name.toLowerCase().includes("transmitter")
       );
-      setFilteredCollectionNames(transmitterCollections);
-    } else {
-      // For other basic codes, show all collections
-      setFilteredCollectionNames(collectionNames);
+      console.log("Filtered transmitter collections:", filtered);
     }
+
+    setFilteredCollectionNames(filtered);
 
     // Clear previously selected collections that are no longer available
     const updatedSelectedCollections = { ...selectedCollections };
     Object.keys(updatedSelectedCollections).forEach((collectionName) => {
-      if (!filteredCollectionNames.includes(collectionName)) {
+      if (!filtered.includes(collectionName)) {
         delete updatedSelectedCollections[collectionName];
       }
     });
@@ -113,47 +179,38 @@ const LabelPrint = () => {
     updateLabelDetails(updatedSelectedCollections, ss, sz, basicCode);
   }, [basicCode, collectionNames]);
 
-  // Handle basic code selection with default model type
-  const handleBasicCodeChange = (event) => {
-    const value = event.target.value;
-    setBasicCode(value);
-
-    setShowCollectionDropdown(!!value);
-    setSelectedCollections({});
-
-    let defaultModelType = "";
-    if (value === "FEP631") {
-      defaultModelType = "Sensor";
-    } else if (value === "FEP632") {
-      defaultModelType = "Transmitter";
-    } else if (value === "FET632") {
-      defaultModelType = "Transmitter";
-    }
-
-    setModelType(defaultModelType);
-    updateLabelDetails({}, ss, sz, value); // Pass the basic code instead of model type
-  };
-
   // Handle model type change
   const handleModelTypeChange = (event) => {
     const value = event.target.value;
     setModelType(value);
-    updateLabelDetails(selectedCollections, ss, sz, basicCode); // Use basic code instead of model type
+    updateLabelDetails(selectedCollections, ss, sz, basicCode);
   };
 
   // Handle collection code selection
-  const handleCollectionCodeChange = (collectionName, code) => {
-    // Create a new updated collections object with the latest change
+  const handleCollectionCodeChange = (collectionName, codeValue) => {
+    console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
+
+    // Check if the value contains code and description
+    let code = codeValue;
+    if (codeValue && codeValue.includes("||")) {
+      // Extract just the code part from the selection
+      code = codeValue.split("||")[0];
+    }
+
+    // Always include the collection in selections, even with empty string (Null)
+    // This ensures "Null" selections are tracked and hyphens are added
     const updatedCollections = {
       ...selectedCollections,
       [collectionName]: code,
     };
 
+    // Log the updated collections object
+    console.log("Updated collections:", updatedCollections);
+
     // Set the state
     setSelectedCollections(updatedCollections);
 
     // Use the updated object directly when calling updateLabelDetails
-    // Instead of relying on state that might not be updated yet
     updateLabelDetails(updatedCollections, ss, sz, basicCode);
   };
 
@@ -194,16 +251,29 @@ const LabelPrint = () => {
       collectionKeys.forEach((collectionName) => {
         const code = selections[collectionName];
 
-        // Important: Explicitly check for empty string
+        // Log each collection and its value to aid debugging
+        console.log(
+          `Collection: ${collectionName}, Value: "${code}", Type: ${typeof code}`
+        );
+
+        // Important: Explicitly check for empty string (Null selection)
         if (code === "") {
-          // This is where the fix matters most - add a hyphen for "None" (empty string)
+          // Add a hyphen for "Null" (empty string)
           details += "-";
+          console.log(
+            `Added hyphen for ${collectionName}, details now: ${details}`
+          );
         } else if (code) {
           // Add the selected code if it exists and isn't empty
           details += code;
+          console.log(
+            `Added code ${code} for ${collectionName}, details now: ${details}`
+          );
         }
       });
     }
+
+    console.log(`Final label details: ${details}`);
 
     // Only update states if we have some actual details
     if (details) {
@@ -213,6 +283,31 @@ const LabelPrint = () => {
       setAllSelectionsDone(false);
       setLabelDetails("");
     }
+  };
+
+  // Function to remove a collection selection
+  const handleRemoveCollection = (collectionName) => {
+    const updatedCollections = { ...selectedCollections };
+    delete updatedCollections[collectionName];
+    setSelectedCollections(updatedCollections);
+    updateLabelDetails(updatedCollections, ss, sz, basicCode);
+  };
+
+  // Function to get display text for selected collection value
+  const getSelectedDisplayText = (collectionName) => {
+    if (!selectedCollections[collectionName]) {
+      return "Null (adds -)";
+    }
+
+    const code = selectedCollections[collectionName];
+    const codeItems = collectionsWithCodes[collectionName] || [];
+    const matchingItem = codeItems.find((item) => item.code === code);
+
+    if (matchingItem && matchingItem.description) {
+      return `${code} - ${matchingItem.description}`;
+    }
+
+    return code;
   };
 
   const handleSubmit = async (event) => {
@@ -239,6 +334,7 @@ const LabelPrint = () => {
         LabelDetails,
         Date,
         Status,
+        Database: selectedDatabase, // Add the selected database to the form data
       };
 
       const response = await api.post("/table", formData);
@@ -261,6 +357,7 @@ const LabelPrint = () => {
         setSelectedCollections({});
         setShowCollectionDropdown(false);
         setAllSelectionsDone(false);
+        setSelectedDatabase("");
       }
     } catch (error) {
       console.error("Error saving label:", error);
@@ -394,7 +491,7 @@ const LabelPrint = () => {
                         }
                       >
                         <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="FEP631">FEP631</MenuItem>
+                        <MenuItem value="FEP631">FEP631 </MenuItem>
                         <MenuItem value="FEP632">FEP632</MenuItem>
                         <MenuItem value="FET632">FET632</MenuItem>
                       </Select>
@@ -444,6 +541,46 @@ const LabelPrint = () => {
                 </Grid>
               </Grid>
 
+              {/* Selected Database Display */}
+              {selectedDatabase && (
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 1.5,
+                      mt: 1,
+                      mb: 0,
+                      bgcolor: "#e3f2fd",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" color="primary">
+                      Selected Database: <strong>{selectedDatabase}</strong>
+                    </Typography>
+                  </Paper>
+                </Grid>
+              )}
+
+              {/* Error display */}
+              {error && (
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 1.5,
+                      mt: 1,
+                      mb: 0,
+                      bgcolor: "#ffebee",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" color="error">
+                      Error: {error}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              )}
+
               {showCollectionDropdown && (
                 <Grid item xs={12}>
                   <Paper
@@ -454,10 +591,30 @@ const LabelPrint = () => {
                       mb: 2,
                       borderRadius: 2,
                       bgcolor: "#f9f9f9",
+                      position: "relative",
                     }}
                   >
+                    {isLoading && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "rgba(255, 255, 255, 0.7)",
+                          zIndex: 1,
+                        }}
+                      >
+                        <CircularProgress />
+                      </Box>
+                    )}
+
                     <Typography variant="h6" mb={2} color="primary.main">
-                      Collection Selection
+                      Collection Selection from {selectedDatabase} Database
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
 
@@ -529,18 +686,38 @@ const LabelPrint = () => {
                         </Typography>
                         <Box display="flex" flexWrap="wrap" gap={1}>
                           {Object.entries(selectedCollections).map(
-                            ([collection, value]) => (
-                              <Chip
-                                key={collection}
-                                label={`${collection}: ${
-                                  value === "" ? "Null (-)" : value
-                                }`}
-                                color="primary"
-                                onDelete={() =>
-                                  handleCollectionCodeChange(collection, "")
-                                }
-                              />
-                            )
+                            ([collection, value]) => {
+                              // Find description for this value if available
+                              const codeItems =
+                                collectionsWithCodes[collection] || [];
+                              const matchingItem = codeItems.find(
+                                (item) => item.code === value
+                              );
+                              const description =
+                                matchingItem?.description || "";
+
+                              return (
+                                <Tooltip
+                                  key={collection}
+                                  title={
+                                    description
+                                      ? description
+                                      : "No description available"
+                                  }
+                                  arrow
+                                >
+                                  <Chip
+                                    label={`${collection}: ${
+                                      value === "" ? "Null (-)" : value
+                                    }`}
+                                    color="primary"
+                                    onDelete={() =>
+                                      handleRemoveCollection(collection)
+                                    }
+                                  />
+                                </Tooltip>
+                              );
+                            }
                           )}
                         </Box>
                       </Box>
@@ -550,8 +727,8 @@ const LabelPrint = () => {
                       variant="subtitle1"
                       sx={{ mb: 2, fontWeight: "medium" }}
                     >
-                      Available Collections{" "}
-                      {basicCode === "FET632" ? "(Transmitter Only)" : ""}
+                      Available Collections from {selectedDatabase}
+                      {basicCode === "FET632" ? " (Transmitter Only)" : ""}
                     </Typography>
 
                     {filteredCollectionNames.length > 0 ? (
@@ -589,13 +766,42 @@ const LabelPrint = () => {
                                       e.target.value
                                     );
                                   }}
+                                  renderValue={() =>
+                                    getSelectedDisplayText(collectionName)
+                                  }
+                                  MenuProps={{
+                                    PaperProps: {
+                                      style: {
+                                        maxHeight: 300,
+                                      },
+                                    },
+                                  }}
                                 >
-                                  <MenuItem value="">Null</MenuItem>
+                                  <MenuItem value="">Null (adds -)</MenuItem>
                                   {collectionsWithCodes[collectionName] &&
                                     collectionsWithCodes[collectionName].map(
-                                      (code) => (
-                                        <MenuItem key={code} value={code}>
-                                          {code}
+                                      (item) => (
+                                        <MenuItem
+                                          key={item.code}
+                                          value={item.code}
+                                          sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "flex-start",
+                                          }}
+                                        >
+                                          <Typography variant="body1">
+                                            {item.code}
+                                          </Typography>
+                                          {item.description && (
+                                            <Typography
+                                              variant="caption"
+                                              color="text.secondary"
+                                              sx={{ lineHeight: 1 }}
+                                            >
+                                              {item.description}
+                                            </Typography>
+                                          )}
                                         </MenuItem>
                                       )
                                     )}
@@ -607,7 +813,8 @@ const LabelPrint = () => {
                       ))
                     ) : (
                       <Typography color="text.secondary">
-                        No collections available for the selected basic code.
+                        No collections available for the selected database and
+                        basic code.
                       </Typography>
                     )}
                   </Paper>
@@ -618,7 +825,7 @@ const LabelPrint = () => {
               {allSelectionsDone && (
                 <Grid item xs={12}>
                   <TextField
-                    fullWidth
+                    sx={{ width: "50rem" }}
                     label="Label Details"
                     variant="outlined"
                     value={LabelDetails}
