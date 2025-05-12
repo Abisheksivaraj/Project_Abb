@@ -31,6 +31,7 @@ import StatusIcon from "@mui/icons-material/RadioButtonChecked";
 import SerialNumberIcon from "@mui/icons-material/Pin";
 import DeviceHubIcon from "@mui/icons-material/DeviceHub";
 import SettingsIcon from "@mui/icons-material/Settings";
+import FitbitIcon from "@mui/icons-material/Fitbit";
 import StraightenIcon from "@mui/icons-material/Straighten";
 import { api } from "../apiConfig";
 
@@ -494,6 +495,28 @@ const LabelPrint = () => {
                         <MenuItem value="FEP631">FEP631 </MenuItem>
                         <MenuItem value="FEP632">FEP632</MenuItem>
                         <MenuItem value="FET632">FET632</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item>
+                    <FormControl variant="outlined">
+                      <InputLabel>Logo Option</InputLabel>
+                      <Select
+                        sx={{ width: "150px" }}
+                        label="Logo Option"
+                        
+                        IconComponent={() => null}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <FitbitIcon color="action" />
+                          </InputAdornment>
+                        }
+                      >
+                        <MenuItem value="">Select</MenuItem>
+                        <MenuItem value="Logo_1">Logo 1 </MenuItem>
+                        <MenuItem value="Logo_2">Logo 2</MenuItem>
+                        <MenuItem value="Logo_3">Logo 3</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>

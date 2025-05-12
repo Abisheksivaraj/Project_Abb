@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -28,6 +28,11 @@ import {
   TablePagination,
   Chip,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Modal,
 } from "@mui/material";
 
 import {
@@ -38,9 +43,19 @@ import {
   Print as PrintIcon,
   FilterList as FilterListIcon,
   RemoveRedEye as RemoveRedEyeIcon,
+  Close as CloseIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
+import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 
 import { api } from "../apiConfig";
+import fm from "../assets/fm.png";
+import black from "../assets/black.png";
+import dispose from "../assets/dispose.png";
+import manual from "../assets/manual.png";
+import hot from "../assets/hot.png";
+import warning from "../assets/warning.png";
+import QRCode from "qrcode";
 
 const MainPageTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,6 +65,11 @@ const MainPageTable = () => {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState(null);
+  const labelRef = useRef(null);
 
   // Pagination states
   const [page, setPage] = useState(0);
@@ -167,6 +187,189 @@ const MainPageTable = () => {
 
   const handleColumnMenuClose = () => {
     setColumnMenuAnchor(null);
+  };
+
+  const handlePrintLabel = async (selectedLabel) => {
+    const serialNumber = selectedLabel?.SerialNumber || "3K8225003G0365";
+    const modelNumber = selectedLabel?.ModelNumber || "FEP631M1A2030A1T1B1D0";
+    const tagNumber = selectedLabel?.TagNumber || "FM17US0062X";
+    const date = selectedLabel?.Date || "Mar 2025";
+
+    // Construct a more standard and verifiable URL
+    const qrUrl = `https://my-measurement-assistant.abb.com/products/productPage/9AAC183924?SN=${serialNumber}`;
+
+    // Generate base64 QR image
+    const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+      errorCorrectionLevel: "H",
+      width: 100, // Reduced width
+      margin: 1, // Reduce margin to make QR code more compact
+    });
+
+    const printContainer = document.createElement("div");
+    printContainer.innerHTML = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Label Print</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <style>
+        @page {
+          size: 96mm 98mm;
+          margin: 3mm;
+        }
+        body {
+          -webkit-print-color-adjust: exact;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        * {
+          color: black;
+          box-sizing: border-box;
+        }
+        div, img, hr {
+          border-color: black !important;
+        }
+      </style>
+    </head>
+    <body class="m-0 p-0 font-sans text-black">
+      <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
+          <div>
+            <img src="${black}" alt="" class="w-[35px] h-[35px] object-contain" />
+          </div>
+          <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex flex-col flex-1 border-b border-black w-full">
+          
+          <!-- Upper Section -->
+          <div class="flex w-full border-b font-semibold border-black">
+            <!-- Left Section -->
+            <div class="flex-1 text-[7px] border-r border-black p-1">
+              <div>Serial No: ${serialNumber}</div>
+              <div>Model number: ${modelNumber}</div>
+              <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+              <div class="h-[2px]"></div>
+              <div>OPTIONS 1 ></div>
+              <div>OPTIONS 2 ></div>
+              <div class="h-[2px]"></div>
+              <div>Dev. version: 01.14.00</div>
+              <div>Update:</div>
+              <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
+                <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+              </div>
+            </div>
+
+            <!-- Right Section -->
+            <div class="text-[7px] p-1 flex font-semibold">
+              <div>
+                <div>24 V DC, 60 Hz</div>
+                <div>Protection class: IP67/IP67</div>
+                <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                <div class="h-[2px]"></div>
+                <div>DN 300 (12")</div>
+                <div>Qmax: 2400 m³/h</div>
+                <div class="h-[2px]"></div>
+                <div>Liner mat: PTFE</div>
+                <div>Tmed: 130°C (266°F)</div>
+                <div class="h-[2px]"></div>
+                <div>Ss: 150.214</div>
+              </div>
+              <div class="mt-10 font-semibold">
+                <div>Fitting: ASME CL150</div>
+                <div>Fexc: 15_12.5 HZ</div>
+                <div>Elect: Hast. C-4 (2.4610)</div>
+                <div>PED:</div>
+                <div>Sz:  -0.390</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Section for logo 1 -->
+          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
+            <div class="mr-2">
+              <img src="${fm}" alt="" class="h-[7rem] w-[9rem]" />
+            </div>
+            <div>
+              <div>${tagNumber}</div>
+              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
+              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+              <br />
+              <div class="h-[2px]"></div>
+              <div>FM17CA0033X</div>
+              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
+              <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
+              <div class="h-[2px]"></div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex font-semibold justify-between items-start text-[7px] w-full p-1">
+            <div>
+              <div>Made in:</div>
+              <div>ABB India Limited, Bangalore</div>
+              <div class="text-center">${date}</div>
+            </div>
+            <div>
+              <div>Designed by ABB AG</div>
+              <div>Goettingen, Germany</div>
+            </div>
+            <div class="flex gap-[6px] font-bold items-center justify-center">
+              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+              <img src=${dispose} alt="" class="w-[35px] h-[35px]"/>
+              </div>
+              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                <img src=${hot} alt="" class="w-[35px] h-[35px]"/>
+              </div>
+              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                <img src=${warning} alt="" class="w-[35px] h-[35px]"/>
+              </div>
+              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                <img src=${manual} alt="" class="w-[35px] h-[35px]"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </html>
+  `;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.top = "-9999px";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    document.body.appendChild(iframe);
+
+    // Ensure QR code is fully loaded before printing
+    const qrImage = new Image();
+    qrImage.src = qrDataUrl;
+    qrImage.onload = () => {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(printContainer.innerHTML);
+      iframeDoc.close();
+
+      iframe.onload = () => {
+        iframe.contentWindow.print();
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 100);
+      };
+    };
   };
 
   return (
@@ -513,7 +716,11 @@ const MainPageTable = () => {
                         )}
                         {visibleColumns.action && (
                           <TableCell>
-                            <Button variant="contained" color="success">
+                            <Button
+                              variant="contained"
+                              color="success"
+                              onClick={handlePrintLabel}
+                            >
                               Preview
                             </Button>
                           </TableCell>
