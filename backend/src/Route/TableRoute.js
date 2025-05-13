@@ -5,7 +5,7 @@ const Table = require("../Models/Table");
 // POST Route to create a new Label
 route.post("/table", async (req, res) => {
   try {
-    const { LabelType, SerialNumber, TagNumber, LabelDetails, Date, Status } =
+    const { LabelType, SerialNumber, TagNumber, LabelDetails,LogoType, Date, Status } =
       req.body;
 
     const newLabel = new Table({
@@ -13,6 +13,7 @@ route.post("/table", async (req, res) => {
       SerialNumber,
       TagNumber,
       LabelDetails,
+      LogoType,
       Date,
       Status,
     });

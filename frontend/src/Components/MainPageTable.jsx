@@ -44,7 +44,7 @@ import {
   FilterList as FilterListIcon,
   RemoveRedEye as RemoveRedEyeIcon,
   Close as CloseIcon,
-  Download as DownloadIcon,
+ 
 } from "@mui/icons-material";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 
@@ -82,6 +82,7 @@ const MainPageTable = () => {
     serialNumber: true,
     tagNumber: true,
     labelDetails: true,
+    logoType: true,
     date: true,
     addedBy: true,
     status: true,
@@ -169,6 +170,7 @@ const MainPageTable = () => {
     { id: "serialNumber", label: "Serial Number" },
     { id: "tagNumber", label: "Tag Number" },
     { id: "labelDetails", label: "Label Details" },
+    { id: "logoType", label: "Logo Type" },
     { id: "date", label: "Date" },
     { id: "addedBy", label: "Added By" },
     { id: "status", label: "Status" },
@@ -189,163 +191,250 @@ const MainPageTable = () => {
     setColumnMenuAnchor(null);
   };
 
-  const handlePrintLabel = async (selectedLabel) => {
-    const serialNumber = selectedLabel?.SerialNumber || "3K8225003G0365";
-    const modelNumber = selectedLabel?.ModelNumber || "FEP631M1A2030A1T1B1D0";
-    const tagNumber = selectedLabel?.TagNumber || "FM17US0062X";
-    const date = selectedLabel?.Date || "Mar 2025";
+  // Open preview modal and set selected label
+  const openPreviewModal = (label) => {
+    setSelectedLabel(label);
+    setPreviewOpen(true);
+  };
 
-    // Construct a more standard and verifiable URL
-    const qrUrl = `https://my-measurement-assistant.abb.com/products/productPage/9AAC183924?SN=${serialNumber}`;
+  // Close preview modal
+  const closePreviewModal = () => {
+    setPreviewOpen(false);
+    setSelectedLabel(null);
+  };
 
-    // Generate base64 QR image
-    const qrDataUrl = await QRCode.toDataURL(qrUrl, {
-      errorCorrectionLevel: "H",
-      width: 100, // Reduced width
-      margin: 1, // Reduce margin to make QR code more compact
-    });
+  const handlePrintLabel = async (label) => {
+    try {
+      // First open the preview modal with the selected label
+      openPreviewModal(label);
 
-    const printContainer = document.createElement("div");
-    printContainer.innerHTML = `
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <title>Label Print</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <style>
-        @page {
-          size: 96mm 98mm;
-          margin: 3mm;
-        }
-        body {
-          -webkit-print-color-adjust: exact;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-        }
-        * {
-          color: black;
-          box-sizing: border-box;
-        }
-        div, img, hr {
-          border-color: black !important;
-        }
-      </style>
-    </head>
-    <body class="m-0 p-0 font-sans text-black">
-      <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
-        
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
+      // Extract data from the label
+      const serialNumber = label?.SerialNumber || "3K8225003G0365";
+      const modelNumber = label?.ModelNumber || "FEP631M1A2030A1T1B1D0";
+      const tagNumber = label?.TagNumber || "FM17US0062X";
+      const date = label?.Date || "Mar 2025";
+      const logoType = (label?.LogoType || "logo_1").trim().toLowerCase();
+
+      const qrUrl = `https://my-measurement-assistant.abb.com/products/productPage/9AAC183924?SN=${serialNumber}`;
+
+     
+      const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+        errorCorrectionLevel: "H",
+        width: 100,
+        margin: 1,
+      });
+
+    
+      let middleSectionContent = "";
+
+    
+      console.log("Current logoType:", logoType);
+
+      if (logoType === "logo_1") {
+    
+        middleSectionContent = `
+        <!-- Black Middle Section for logo 1 -->
+        <div class="flex-1 border-b border-black w-full p-1">
+          <!-- Black space -->
+        </div>`;
+      } else if (logoType === "logo_2") {
+    
+        middleSectionContent = `
+        <!-- Middle Section for logo 2 -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
+          <div class="mr-2">
+            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+          </div>
           <div>
-            <img src="${black}" alt="" class="w-[35px] h-[35px] object-contain" />
+            <div>FM17US0062X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+            <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+            <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
+            <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+            <br />
+            <div>FM17CA0033X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+            <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+            <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
+            <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
+            <div class="h-[2px]"></div>
+            <div>See handbook for temperature class information</div>
           </div>
-          <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
-        </div>
+        </div>`;
+      } else if (logoType === "logo_3") {
+     
+        middleSectionContent = `
+        <!-- Middle Section for logo 3 -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
+          <div class="mr-2">
+            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+          </div>
+          <div>
+            <div>FM17US0062X</div>
+            <div>NI:CL I,Div2,GPS ABCD T4</div>
+            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+            <div>CL I, ZN 2, AEx ec IIC T4</div>
+            <div> ZN 21, AEx tb IIIC T180°C</div>
+            <br />
+            <div>FM17CA0033X</div>
+            <div>NI:CL I,Div2,GPS ABCD T4</div>
+            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+            <div>Ex ec IIC T4 Gc</div>
+            <div>Ex tb IIIC T180°C Db</div>
+            <div>See handbook for temperature class information</div>
+          </div>
+        </div>`;
+      } else {
+      
+        middleSectionContent = `
+        <!-- Default Middle Section -->
+        <div class="flex-1 border-b border-black w-full p-1">
+          <div class="text-[7px] font-semibold">
+            <div>No certification information available</div>
+            <div>Please contact ABB support for details</div>
+          </div>
+        </div>`;
+      }
 
-        <!-- Main Content -->
-        <div class="flex flex-col flex-1 border-b border-black w-full">
-          
-          <!-- Upper Section -->
-          <div class="flex w-full border-b font-semibold border-black">
-            <!-- Left Section -->
-            <div class="flex-1 text-[7px] border-r border-black p-1">
-              <div>Serial No: ${serialNumber}</div>
-              <div>Model number: ${modelNumber}</div>
-              <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
-              <div class="h-[2px]"></div>
-              <div>OPTIONS 1 ></div>
-              <div>OPTIONS 2 ></div>
-              <div class="h-[2px]"></div>
-              <div>Dev. version: 01.14.00</div>
-              <div>Update:</div>
-              <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
-                <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-              </div>
-            </div>
+      const printContainer = document.createElement("div");
 
-            <!-- Right Section -->
-            <div class="text-[7px] p-1 flex font-semibold">
+    
+      console.log("Creating label with logoType:", logoType);
+      console.log("Using middleSectionContent:", middleSectionContent);
+
+      printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Label Print</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @page {
+              size: 96mm 98mm;
+              margin: 3mm;
+            }
+            body {
+              -webkit-print-color-adjust: exact;
+              margin: 0;
+              padding: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+            }
+            * {
+              color: black;
+              box-sizing: border-box;
+            }
+            div, img, hr {
+              border-color: black !important;
+            }
+          </style>
+        </head>
+        <body class="m-0 p-0 font-sans text-black">
+          <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
               <div>
-                <div>24 V DC, 60 Hz</div>
-                <div>Protection class: IP67/IP67</div>
-                <div>Tamb: -20°....+60°C (-4°....140°F)</div>
-                <div class="h-[2px]"></div>
-                <div>DN 300 (12")</div>
-                <div>Qmax: 2400 m³/h</div>
-                <div class="h-[2px]"></div>
-                <div>Liner mat: PTFE</div>
-                <div>Tmed: 130°C (266°F)</div>
-                <div class="h-[2px]"></div>
-                <div>Ss: 150.214</div>
+                <img src="${black}" alt="ABB Logo" class="w-[35px] h-[35px] object-contain" />
               </div>
-              <div class="mt-10 font-semibold">
-                <div>Fitting: ASME CL150</div>
-                <div>Fexc: 15_12.5 HZ</div>
-                <div>Elect: Hast. C-4 (2.4610)</div>
-                <div>PED:</div>
-                <div>Sz:  -0.390</div>
+              <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
+            </div>
+      
+            <!-- Main Content -->
+            <div class="flex flex-col flex-1 border-b border-black w-full">
+              
+              <!-- Upper Section -->
+              <div class="flex w-full border-b font-semibold border-black">
+                <!-- Left Section -->
+                <div class="flex-1 text-[7px] border-r border-black p-1">
+                  <div>Serial No: ${serialNumber}</div>
+                  <div>Model number: ${modelNumber}</div>
+                  <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+                  <div class="h-[2px]"></div>
+                  <div>OPTIONS 1 ></div>
+                  <div>OPTIONS 2 ></div>
+                  <div class="h-[2px]"></div>
+                  <div>Dev. version: 01.14.00</div>
+                  <div>Update:</div>
+                  <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
+                    <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                  </div>
+                </div>
+      
+                <!-- Right Section -->
+                <div class="text-[7px] p-1 flex font-semibold">
+                  <div>
+                    <div>24 V DC, 60 Hz</div>
+                    <div>Protection class: IP67/IP67</div>
+                    <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                    <div class="h-[2px]"></div>
+                    <div>DN 300 (12")</div>
+                    <div>Qmax: 2400 m³/h</div>
+                    <div class="h-[2px]"></div>
+                    <div>Liner mat: PTFE</div>
+                    <div>Tmed: 130°C (266°F)</div>
+                    <div class="h-[2px]"></div>
+                    <div>Ss: 150.214</div>
+                  </div>
+                  <div class="mt-10 font-semibold">
+                    <div>Fitting: ASME CL150</div>
+                    <div>Fexc: 15_12.5 HZ</div>
+                    <div>Elect: Hast. C-4 (2.4610)</div>
+                    <div>PED:</div>
+                    <div>Sz:  -0.390</div>
+                  </div>
+                </div>
+              </div>
+      
+              ${middleSectionContent}
+      
+              <!-- Footer -->
+              <div class="flex font-semibold justify-between items-start text-[7px] w-full p-1">
+                <div>
+                  <div>Made in:</div>
+                  <div>ABB India Limited, Bangalore</div>
+                  <div class="text-center">${date}</div>
+                </div>
+                <div>
+                  <div>Designed by ABB AG</div>
+                  <div>Goettingen, Germany</div>
+                </div>
+                <div class="flex gap-[6px] font-bold items-center justify-center">
+                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                  <img src=${dispose} alt="Dispose Icon" class="w-[35px] h-[35px]"/>
+                  </div>
+                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                    <img src=${hot} alt="Hot Surface Icon" class="w-[35px] h-[35px]"/>
+                  </div>
+                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                    <img src=${warning} alt="Warning Icon" class="w-[35px] h-[35px]"/>
+                  </div>
+                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                    <img src=${manual} alt="Manual Icon" class="w-[35px] h-[35px]"/>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </body>
+      </html>
+      `;
 
-          <!-- Middle Section for logo 1 -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
-            <div class="mr-2">
-              <img src="${fm}" alt="" class="h-[7rem] w-[9rem]" />
-            </div>
-            <div>
-              <div>${tagNumber}</div>
-              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
-              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
-              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
-              <br />
-              <div class="h-[2px]"></div>
-              <div>FM17CA0033X</div>
-              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
-              <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
-              <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
-              <div class="h-[2px]"></div>
-              <div>See handbook for temperature class information</div>
-            </div>
-          </div>
 
-          <!-- Footer -->
-          <div class="flex font-semibold justify-between items-start text-[7px] w-full p-1">
-            <div>
-              <div>Made in:</div>
-              <div>ABB India Limited, Bangalore</div>
-              <div class="text-center">${date}</div>
-            </div>
-            <div>
-              <div>Designed by ABB AG</div>
-              <div>Goettingen, Germany</div>
-            </div>
-            <div class="flex gap-[6px] font-bold items-center justify-center">
-              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-              <img src=${dispose} alt="" class="w-[35px] h-[35px]"/>
-              </div>
-              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                <img src=${hot} alt="" class="w-[35px] h-[35px]"/>
-              </div>
-              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                <img src=${warning} alt="" class="w-[35px] h-[35px]"/>
-              </div>
-              <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                <img src=${manual} alt="" class="w-[35px] h-[35px]"/>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </body>
-  </html>
-  `;
+      if (labelRef.current) {
+        labelRef.current.innerHTML = "";
+        labelRef.current.appendChild(printContainer.cloneNode(true));
+      }
+    } catch (error) {
+      console.error("Error generating label preview:", error);
+    }
+  };
+ 
+  const printLabel = () => {
+    if (!selectedLabel) return;
+
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -354,13 +443,13 @@ const MainPageTable = () => {
     iframe.style.height = "0";
     document.body.appendChild(iframe);
 
-    // Ensure QR code is fully loaded before printing
-    const qrImage = new Image();
-    qrImage.src = qrDataUrl;
-    qrImage.onload = () => {
+    
+    const contentToPrint = labelRef.current?.innerHTML;
+
+    if (contentToPrint) {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       iframeDoc.open();
-      iframeDoc.write(printContainer.innerHTML);
+      iframeDoc.write(contentToPrint);
       iframeDoc.close();
 
       iframe.onload = () => {
@@ -369,7 +458,7 @@ const MainPageTable = () => {
           document.body.removeChild(iframe);
         }, 100);
       };
-    };
+    }
   };
 
   return (
@@ -666,6 +755,16 @@ const MainPageTable = () => {
                         Label Details
                       </TableCell>
                     )}
+                    {visibleColumns.logoType && (
+                      <TableCell
+                        sx={{ cursor: "pointer", minWidth: 120 }}
+                        onClick={() => handleSort("LogoType")}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          Logo Type {getSortDirection("LogoType")}
+                        </Box>
+                      </TableCell>
+                    )}
                     {visibleColumns.date && (
                       <TableCell
                         sx={{ cursor: "pointer" }}
@@ -719,7 +818,8 @@ const MainPageTable = () => {
                             <Button
                               variant="contained"
                               color="success"
-                              onClick={handlePrintLabel}
+                              onClick={() => handlePrintLabel(row)}
+                              size="small"
                             >
                               Preview
                             </Button>
@@ -755,7 +855,6 @@ const MainPageTable = () => {
                                 component="span"
                                 sx={{
                                   display: "block",
-                                  width: "100%",
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap",
@@ -765,6 +864,9 @@ const MainPageTable = () => {
                               </Typography>
                             </Tooltip>
                           </TableCell>
+                        )}
+                        {visibleColumns.logoType && (
+                          <TableCell>{row.LogoType}</TableCell>
                         )}
                         {visibleColumns.date && (
                           <TableCell>{row.Date}</TableCell>
@@ -777,18 +879,10 @@ const MainPageTable = () => {
                             <Chip
                               label={row.Status}
                               size="small"
-                              sx={{
-                                bgcolor:
-                                  row.Status === "Active"
-                                    ? "#dcfce7"
-                                    : "#fff7ed",
-                                color:
-                                  row.Status === "Active"
-                                    ? "#166534"
-                                    : "#9a3412",
-                                fontWeight: 500,
-                                fontSize: "0.75rem",
-                              }}
+                              color={
+                                row.Status === "Active" ? "success" : "default"
+                              }
+                              sx={{ fontWeight: 500 }}
                             />
                           </TableCell>
                         )}
@@ -800,11 +894,10 @@ const MainPageTable = () => {
                         colSpan={
                           Object.values(visibleColumns).filter(Boolean).length
                         }
-                        align="center"
-                        sx={{ py: 5 }}
+                        sx={{ textAlign: "center", py: 3 }}
                       >
-                        <Typography variant="body2" color="text.secondary">
-                          No data found
+                        <Typography variant="body1" color="text.secondary">
+                          No matching records found
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -823,13 +916,65 @@ const MainPageTable = () => {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            sx={{
-              borderTop: "1px solid #e2e8f0",
-              bgcolor: "#f8fafc",
-            }}
           />
         </Card>
       </Box>
+
+      {/* Preview Modal */}
+      <Dialog
+        open={previewOpen}
+        onClose={closePreviewModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6">Label Preview</Typography>
+            <IconButton onClick={closePreviewModal} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box
+            ref={labelRef}
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              p: 2,
+              minHeight: "400px",
+            }}
+          >
+            {/* Label content will be injected here via labelRef */}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="outlined"
+            onClick={closePreviewModal}
+            startIcon={<CloseIcon />}
+          >
+            Close
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={printLabel}
+            startIcon={<PrintIcon />}
+          >
+            Print Label
+          </Button>
+          
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

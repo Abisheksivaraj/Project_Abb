@@ -56,6 +56,7 @@ const LabelPrint = () => {
 
   // Form fields that match the schema
   const [LabelType, setLabelType] = useState("");
+  const [LogoType, setLogoType] = useState("");
   const [SerialNumber, setSerialNumber] = useState("");
   const [TagNumber, setTagNumber] = useState("");
   const [LabelDetails, setLabelDetails] = useState("");
@@ -320,6 +321,7 @@ const LabelPrint = () => {
       !SerialNumber ||
       !TagNumber ||
       !LabelDetails ||
+      !LogoType ||
       !Date ||
       !Status
     ) {
@@ -333,6 +335,7 @@ const LabelPrint = () => {
         SerialNumber,
         TagNumber,
         LabelDetails,
+        LogoType,
         Date,
         Status,
         Database: selectedDatabase, // Add the selected database to the form data
@@ -350,6 +353,7 @@ const LabelPrint = () => {
         setTagNumber("");
         setLabelDetails("");
         setDate("");
+        setLogoType("");
         setStatus("active");
         setBasicCode("");
         setModelType("");
@@ -468,10 +472,14 @@ const LabelPrint = () => {
                         }
                       >
                         <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="sensor_1">Sensor(96x98)</MenuItem>
-                        <MenuItem value="sensor_2">Sensor(115x35)</MenuItem>
-                        <MenuItem value="sensor">Sensor</MenuItem>
-                        <MenuItem value="transmitter">Transmitter</MenuItem>
+                        <MenuItem value="Sensor(96x98)">
+                          Sensor(96x98)
+                        </MenuItem>
+                        <MenuItem value="Sensor(115x35)">
+                          Sensor(115x35)
+                        </MenuItem>
+                        <MenuItem value="Sensor">Sensor</MenuItem>
+                        <MenuItem value="Transmitter">Transmitter</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -505,7 +513,8 @@ const LabelPrint = () => {
                       <Select
                         sx={{ width: "150px" }}
                         label="Logo Option"
-                        
+                        value={LogoType}
+                        onChange={(e) => setLogoType(e.target.value)}
                         IconComponent={() => null}
                         endAdornment={
                           <InputAdornment position="end">
