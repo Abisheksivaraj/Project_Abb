@@ -44,7 +44,6 @@ import {
   FilterList as FilterListIcon,
   RemoveRedEye as RemoveRedEyeIcon,
   Close as CloseIcon,
- 
 } from "@mui/icons-material";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 
@@ -205,167 +204,371 @@ const MainPageTable = () => {
 
   const handlePrintLabel = async (label) => {
     try {
-      // First open the preview modal with the selected label
       openPreviewModal(label);
 
-      // Extract data from the label
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
       const modelNumber = label?.ModelNumber || "FEP631M1A2030A1T1B1D0";
       const tagNumber = label?.TagNumber || "FM17US0062X";
       const date = label?.Date || "Mar 2025";
       const logoType = (label?.LogoType || "logo_1").trim().toLowerCase();
+      const labelType = (label?.LabelType || "96x98").trim().toLowerCase();
 
       const qrUrl = `https://my-measurement-assistant.abb.com/products/productPage/9AAC183924?SN=${serialNumber}`;
 
-     
       const qrDataUrl = await QRCode.toDataURL(qrUrl, {
         errorCorrectionLevel: "H",
         width: 100,
         margin: 1,
       });
 
-    
       let middleSectionContent = "";
 
-    
       console.log("Current logoType:", logoType);
+      console.log("Current labelType:", labelType);
 
-      if (logoType === "logo_1") {
-    
-        middleSectionContent = `
-        <!-- Black Middle Section for logo 1 -->
-        <div class="flex-1 border-b border-black w-full p-1">
-          <!-- Black space -->
-        </div>`;
-      } else if (logoType === "logo_2") {
-    
-        middleSectionContent = `
-        <!-- Middle Section for logo 2 -->
-        <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
-          <div class="mr-2">
-            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
-          </div>
-          <div>
-            <div>FM17US0062X</div>
-            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-            <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
-            <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
-            <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
-            <br />
-            <div>FM17CA0033X</div>
-            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-            <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
-            <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
-            <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
-            <div class="h-[2px]"></div>
-            <div>See handbook for temperature class information</div>
-          </div>
-        </div>`;
-      } else if (logoType === "logo_3") {
-     
-        middleSectionContent = `
-        <!-- Middle Section for logo 3 -->
-        <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
-          <div class="mr-2">
-            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
-          </div>
-          <div>
-            <div>FM17US0062X</div>
-            <div>NI:CL I,Div2,GPS ABCD T4</div>
-            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-            <div>CL I, ZN 2, AEx ec IIC T4</div>
-            <div> ZN 21, AEx tb IIIC T180°C</div>
-            <br />
-            <div>FM17CA0033X</div>
-            <div>NI:CL I,Div2,GPS ABCD T4</div>
-            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-            <div>Ex ec IIC T4 Gc</div>
-            <div>Ex tb IIIC T180°C Db</div>
-            <div>See handbook for temperature class information</div>
-          </div>
-        </div>`;
-      } else {
-      
-        middleSectionContent = `
-        <!-- Default Middle Section -->
-        <div class="flex-1 border-b border-black w-full p-1">
-          <div class="text-[7px] font-semibold">
-            <div>No certification information available</div>
-            <div>Please contact ABB support for details</div>
-          </div>
-        </div>`;
+      if (labelType === "sensor(96x98)") {
+        if (logoType === "logo_1") {
+          middleSectionContent = `
+          <!-- Black Middle Section for logo 1 (96x98) -->
+          <div class="flex-1 border-b border-black w-full p-1">
+            <!-- Black space -->
+          </div>`;
+        } else if (logoType === "logo_2") {
+          middleSectionContent = `
+          <!-- Middle Section for logo 2 (96x98) -->
+          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
+            <div class="mr-2">
+              <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+            </div>
+            <div>
+              <div>FM17US0062X</div>
+              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
+              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+              <br />
+              <div>FM17CA0033X</div>
+              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
+              <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
+              <div class="h-[2px]"></div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>`;
+        } else if (logoType === "logo_3") {
+          middleSectionContent = `
+          <!-- Middle Section for logo 3 (96x98) -->
+          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b border-black w-full p-1">
+            <div class="mr-2">
+              <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+            </div>
+            <div>
+              <div>FM17US0062X</div>
+              <div>NI:CL I,Div2,GPS ABCD T4</div>
+              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+              <div>CL I, ZN 2, AEx ec IIC T4</div>
+              <div> ZN 21, AEx tb IIIC T180°C</div>
+              <br />
+              <div>FM17CA0033X</div>
+              <div>NI:CL I,Div2,GPS ABCD T4</div>
+              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+              <div>Ex ec IIC T4 Gc</div>
+              <div>Ex tb IIIC T180°C Db</div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>`;
+        } else {
+          middleSectionContent = `
+          <!-- Default Middle Section (96x98) -->
+          <div class="flex-1 border-b border-black w-full p-1">
+            <div class="text-[7px] font-semibold">
+              <div>No certification information available</div>
+              <div>Please contact ABB support for details</div>
+            </div>
+          </div>`;
+        }
+      } else if (labelType === "sensor") {
+        if (logoType === "logo_1") {
+          middleSectionContent = `
+          <!-- Black Middle Section for logo 1 (sensor) -->
+          <div class="flex-1 border-b border-black w-full p-1">
+            <!-- Black space -->
+          </div>`;
+        } else if (logoType === "logo_2") {
+          middleSectionContent = `
+          <!-- Middle Section for logo 2 (sensor) -->
+          <div class="flex flex-row font-semibold items-center justify-between text-[7px] border-b border-black w-full p-1">
+            <div class="flex items-center">
+              <img src="${fm}" alt="FM Logo" class="h-[5rem] w-[7rem] mr-2" />
+              <div class="mr-6">
+                <div>FM17US0062X</div>
+                <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+                <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              </div>
+            </div>
+            <div>
+              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
+              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>`;
+        } else if (logoType === "logo_3") {
+          middleSectionContent = `
+          <!-- Middle Section for logo 3 (sensor) -->
+          <div class="flex flex-row font-semibold items-center justify-between text-[7px] border-b border-black w-full p-1">
+            <div class="flex items-center">
+              <img src="${fm}" alt="FM Logo" class="h-[5rem] w-[7rem] mr-2" />
+              <div class="mr-6">
+                <div>FM17US0062X</div>
+                <div>NI:CL I,Div2,GPS ABCD T4</div>
+                <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+              </div>
+            </div>
+            <div>
+              <div>CL I, ZN 2, AEx ec IIC T4</div>
+              <div>ZN 21, AEx tb IIIC T180°C</div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>`;
+        } else {
+          middleSectionContent = `
+          <!-- Default Middle Section (sensor) -->
+          <div class="flex-1 border-b border-black w-full p-1">
+            <div class="text-[7px] font-semibold">
+              <div>No certification information available</div>
+              <div>Please contact ABB support for details</div>
+            </div>
+          </div>`;
+        }
+      } else if (
+        labelType === "sensor(115x35)" ||
+        labelType === "transmitter"
+      ) {
+        middleSectionContent = "";
       }
 
       const printContainer = document.createElement("div");
 
-    
-      console.log("Creating label with logoType:", logoType);
-      console.log("Using middleSectionContent:", middleSectionContent);
-
-      printContainer.innerHTML = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Label Print</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            @page {
-              size: 96mm 98mm;
-              margin: 3mm;
-            }
-            body {
-              -webkit-print-color-adjust: exact;
-              margin: 0;
-              padding: 0;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-            }
-            * {
-              color: black;
-              box-sizing: border-box;
-            }
-            div, img, hr {
-              border-color: black !important;
-            }
-          </style>
-        </head>
-        <body class="m-0 p-0 font-sans text-black">
-          <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
-            
-            <!-- Header -->
-            <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
-              <div>
-                <img src="${black}" alt="ABB Logo" class="w-[35px] h-[35px] object-contain" />
-              </div>
-              <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
-            </div>
-      
-            <!-- Main Content -->
-            <div class="flex flex-col flex-1 border-b border-black w-full">
+      if (labelType === "sensor(115x35)") {
+        printContainer.innerHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Sensor Label Print</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page {
+                size: 115mm 35mm;
+                margin: 2mm;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              * {
+                color: black;
+                box-sizing: border-box;
+              }
+              div, img, hr {
+                border-color: black !important;
+              }
+            </style>
+          </head>
+          <body class="m-0 p-0 font-sans text-black">
+            <div class="w-[113mm] h-[33mm] border border-black rounded-lg flex flex-col text-black">
               
-              <!-- Upper Section -->
-              <div class="flex w-full border-b font-semibold border-black">
-                <!-- Left Section -->
-                <div class="flex-1 text-[7px] border-r border-black p-1">
-                  <div>Serial No: ${serialNumber}</div>
-                  <div>Model number: ${modelNumber}</div>
-                  <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
-                  <div class="h-[2px]"></div>
-                  <div>OPTIONS 1 ></div>
-                  <div>OPTIONS 2 ></div>
-                  <div class="h-[2px]"></div>
-                  <div>Dev. version: 01.14.00</div>
-                  <div>Update:</div>
-                  <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
-                    <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+              <!-- Header & Main Content Combined (Simplified Design) -->
+              <div class="flex flex-col items-center justify-between w-full p-2 rounded-lg">
+                <div class="flex items-center justify-between border-b-2 w-full">
+                  <div>
+                    <img src="${black}" alt="ABB Logo" class="w-[30px] h-[30px] object-contain" />
+                  </div>
+                  <div class="text-[16px] font-semibold mr-4">ProcessMaster 630</div>
+                   <div class="w-[28px] h-[28px]">
+                    <img src=${dispose} alt="Dispose Icon" class="w-full h-full object-contain"/>
                   </div>
                 </div>
-      
-                <!-- Right Section -->
-                <div class="text-[7px] p-1 flex font-semibold">
+                
+                <div class="flex-1 text-[7px] font-semibold px-2">
+                  <div class="flex justify-between ">
+                    <div class="border-r-2 flex flex-col items-start ju">
+                      <div>Serial No: ${serialNumber}</div>
+                      <div>Model number: ${modelNumber}</div>
+                      <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+                      <div>Made in: ABB India Limited, Bangalore</div>
+                      <div>Date: ${date}</div>
+                    </div>
+                    <div>
+                      <div>24 V DC, 60 Hz</div>
+                      <div>Protection class: IP67/IP67</div>
+                      <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                      <div>Designed by ABB AG, Goettingen, Germany</div>
+                      <div>DN 300 (12")</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center">
+                  <div class="w-[33px] h-[33px] mr-2">
+                    <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                  </div>
+                 
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+        `;
+      } else if (labelType === "transmitter") {
+        printContainer.innerHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Transmitter Label Print</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page {
+                size: 115mm 35mm;
+                margin: 2mm;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              * {
+                color: black;
+                box-sizing: border-box;
+              }
+              div, img, hr {
+                border-color: black !important;
+              }
+            </style>
+          </head>
+          <body class="m-0 p-0 font-sans text-black">
+            <div class="w-[113mm] h-[33mm] border border-black rounded-lg flex flex-col text-black">
+              
+              <!-- Header & Main Content Combined (Simplified Design) -->
+              <div class="flex flex-col items-center justify-between w-full p-2 rounded-lg">
+                <div class="flex items-center justify-between border-b-2 w-full">
                   <div>
+                    <img src="${black}" alt="ABB Logo" class="w-[30px] h-[30px] object-contain" />
+                  </div>
+                  <div class="text-[16px] font-semibold mr-4">ProcessMaster 630 Transmitter</div>
+                  <div class="w-[28px] h-[28px]">
+                    <img src=${dispose} alt="Dispose Icon" class="w-full h-full object-contain"/>
+                  </div>
+                </div>
+                
+                <div class="flex-1 text-[7px] font-semibold px-2">
+                  <div class="flex justify-between">
+                    <div class="border-r-2 pr-2 flex flex-col items-start">
+                      <div>Serial No: ${serialNumber}</div>
+                      <div>Model number: ${modelNumber}</div>
+                      <div>T70E2M1ADRMCRAM5RCDTCTV2</div>
+                      <div>Made in: ABB India Limited, Bangalore</div>
+                      <div>Date: ${date}</div>
+                    </div>
+                    <div class="pl-2">
+                      <div>Input: 100-240 V AC, 50/60 Hz</div>
+                      <div>Protection class: IP67/NEMA 4X</div>
+                      <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                      <div>Designed by ABB AG, Goettingen, Germany</div>
+                      <div>Max Power: 20 VA</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between w-full">
+                  <div class="w-[33px] h-[33px]">
+                    <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                  </div>
+                  <div class="flex gap-1">
+                    <div class="w-[20px] h-[20px]">
+                      <img src=${warning} alt="Warning Icon" class="w-full h-full"/>
+                    </div>
+                    <div class="w-[20px] h-[20px]">
+                      <img src=${manual} alt="Manual Icon" class="w-full h-full"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+        `;
+      } else if (labelType === "sensor") {
+        printContainer.innerHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Sensor Label Print</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page {
+                size: 113.50mm 58.50mm;
+                margin: 2mm;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              * {
+                color: black;
+                box-sizing: border-box;
+              }
+              div, img, hr {
+                border-color: black !important;
+              }
+            </style>
+          </head>
+          <body class="m-0 p-0 font-sans text-black">
+            <div class="w-[111.5mm] h-[56.5mm] border border-black rounded-lg flex flex-col text-black">
+              
+              <!-- Header -->
+              <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
+                <div>
+                  <img src="${black}" alt="ABB Logo" class="w-[32px] h-[32px] object-contain" />
+                </div>
+                <div class="text-[18px] font-semibold text-center flex-1">ProcessMaster 630</div>
+                <div class="w-[28px] h-[28px]">
+                  <img src=${dispose} alt="Dispose Icon" class="w-full h-full object-contain"/>
+                </div>
+              </div>
+        
+              <!-- Main Content -->
+              <div class="flex flex-col flex-1 border-b border-black w-full">
+                
+                <!-- Upper Section -->
+                <div class="flex w-full border-b font-semibold border-black">
+                  <!-- Left Section -->
+                  <div class="flex-1 text-[7px] border-r border-black p-1">
+                    <div>Serial No: ${serialNumber}</div>
+                    <div>Model number: ${modelNumber}</div>
+                    <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+                    <div class="h-[2px]"></div>
+                    <div>Dev. version: 01.14.00</div>
+                    <div>Made in: ABB India Limited, Bangalore</div>
+                    <div>Date: ${date}</div>
+                  </div>
+        
+                  <!-- Right Section -->
+                  <div class="text-[7px] p-1 font-semibold">
                     <div>24 V DC, 60 Hz</div>
                     <div>Protection class: IP67/IP67</div>
                     <div>Tamb: -20°....+60°C (-4°....140°F)</div>
@@ -375,53 +578,160 @@ const MainPageTable = () => {
                     <div class="h-[2px]"></div>
                     <div>Liner mat: PTFE</div>
                     <div>Tmed: 130°C (266°F)</div>
-                    <div class="h-[2px]"></div>
-                    <div>Ss: 150.214</div>
-                  </div>
-                  <div class="mt-10 font-semibold">
-                    <div>Fitting: ASME CL150</div>
-                    <div>Fexc: 15_12.5 HZ</div>
-                    <div>Elect: Hast. C-4 (2.4610)</div>
-                    <div>PED:</div>
-                    <div>Sz:  -0.390</div>
+                    <div>Designed by ABB AG, Goettingen, Germany</div>
                   </div>
                 </div>
-              </div>
-      
-              ${middleSectionContent}
-      
-              <!-- Footer -->
-              <div class="flex font-semibold justify-between items-start text-[7px] w-full p-1">
-                <div>
-                  <div>Made in:</div>
-                  <div>ABB India Limited, Bangalore</div>
-                  <div class="text-center">${date}</div>
-                </div>
-                <div>
-                  <div>Designed by ABB AG</div>
-                  <div>Goettingen, Germany</div>
-                </div>
-                <div class="flex gap-[6px] font-bold items-center justify-center">
-                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                  <img src=${dispose} alt="Dispose Icon" class="w-[35px] h-[35px]"/>
+        
+                ${middleSectionContent}
+        
+                <!-- Footer -->
+                <div class="flex font-semibold justify-between items-center text-[7px] w-full p-1">
+                  <div class="flex-1">
+                    <div class="w-[33px] h-[33px]">
+                      <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                    </div>
                   </div>
-                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                    <img src=${hot} alt="Hot Surface Icon" class="w-[35px] h-[35px]"/>
-                  </div>
-                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                    <img src=${warning} alt="Warning Icon" class="w-[35px] h-[35px]"/>
-                  </div>
-                  <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
-                    <img src=${manual} alt="Manual Icon" class="w-[35px] h-[35px]"/>
+                  <div class="flex gap-[6px] font-bold items-center justify-center">
+                    <div class="w-[30px] h-[30px] flex items-center justify-center text-[8px]">
+                      <img src=${hot} alt="Hot Surface Icon" class="w-full h-full"/>
+                    </div>
+                    <div class="w-[30px] h-[30px] flex items-center justify-center text-[8px]">
+                      <img src=${warning} alt="Warning Icon" class="w-full h-full"/>
+                    </div>
+                    <div class="w-[30px] h-[30px] flex items-center justify-center text-[8px]">
+                      <img src=${manual} alt="Manual Icon" class="w-full h-full"/>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </body>
-      </html>
-      `;
+          </body>
+        </html>
+        `;
+      } else {
+        console.log("Creating standard label with logoType:", logoType);
+        console.log("Using middleSectionContent:", middleSectionContent);
 
+        printContainer.innerHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Label Print</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page {
+                size: 96mm 98mm;
+                margin: 3mm;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              * {
+                color: black;
+                box-sizing: border-box;
+              }
+              div, img, hr {
+                border-color: black !important;
+              }
+            </style>
+          </head>
+          <body class="m-0 p-0 font-sans text-black">
+            <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
+              
+              <!-- Header -->
+              <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
+                <div>
+                  <img src="${black}" alt="ABB Logo" class="w-[35px] h-[35px] object-contain" />
+                </div>
+                <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
+              </div>
+        
+              <!-- Main Content -->
+              <div class="flex flex-col flex-1 border-b border-black w-full">
+                
+                <!-- Upper Section -->
+                <div class="flex w-full border-b font-semibold border-black">
+                  <!-- Left Section -->
+                  <div class="flex-1 text-[7px] border-r border-black p-1">
+                    <div>Serial No: ${serialNumber}</div>
+                    <div>Model number: ${modelNumber}</div>
+                    <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+                    <div class="h-[2px]"></div>
+                    <div>OPTIONS 1 ></div>
+                    <div>OPTIONS 2 ></div>
+                    <div class="h-[2px]"></div>
+                    <div>Dev. version: 01.14.00</div>
+                    <div>Update:</div>
+                    <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
+                      <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                    </div>
+                  </div>
+        
+                  <!-- Right Section -->
+                  <div class="text-[7px] p-1 flex font-semibold">
+                    <div>
+                      <div>24 V DC, 60 Hz</div>
+                      <div>Protection class: IP67/IP67</div>
+                      <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                      <div class="h-[2px]"></div>
+                      <div>DN 300 (12")</div>
+                      <div>Qmax: 2400 m³/h</div>
+                      <div class="h-[2px]"></div>
+                      <div>Liner mat: PTFE</div>
+                      <div>Tmed: 130°C (266°F)</div>
+                      <div class="h-[2px]"></div>
+                      <div>Ss: 150.214</div>
+                    </div>
+                    <div class="mt-10 font-semibold">
+                      <div>Fitting: ASME CL150</div>
+                      <div>Fexc: 15_12.5 HZ</div>
+                      <div>Elect: Hast. C-4 (2.4610)</div>
+                      <div>PED:</div>
+                      <div>Sz:  -0.390</div>
+                    </div>
+                  </div>
+                </div>
+        
+                ${middleSectionContent}
+        
+                <!-- Footer -->
+                <div class="flex font-semibold justify-between items-start text-[7px] w-full p-1">
+                  <div>
+                    <div>Made in:</div>
+                    <div>ABB India Limited, Bangalore</div>
+                    <div class="text-center">${date}</div>
+                  </div>
+                  <div>
+                    <div>Designed by ABB AG</div>
+                    <div>Goettingen, Germany</div>
+                  </div>
+                  <div class="flex gap-[6px] font-bold items-center justify-center">
+                    <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                    <img src=${dispose} alt="Dispose Icon" class="w-[35px] h-[35px]"/>
+                    </div>
+                    <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                      <img src=${hot} alt="Hot Surface Icon" class="w-[35px] h-[35px]"/>
+                    </div>
+                    <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                      <img src=${warning} alt="Warning Icon" class="w-[35px] h-[35px]"/>
+                    </div>
+                    <div class="w-[35px] h-[35px] flex items-center justify-center text-[8px]">
+                      <img src=${manual} alt="Manual Icon" class="w-[35px] h-[35px]"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+        `;
+      }
 
       if (labelRef.current) {
         labelRef.current.innerHTML = "";
@@ -431,10 +741,9 @@ const MainPageTable = () => {
       console.error("Error generating label preview:", error);
     }
   };
- 
+
   const printLabel = () => {
     if (!selectedLabel) return;
-
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -443,7 +752,6 @@ const MainPageTable = () => {
     iframe.style.height = "0";
     document.body.appendChild(iframe);
 
-    
     const contentToPrint = labelRef.current?.innerHTML;
 
     if (contentToPrint) {
@@ -972,7 +1280,6 @@ const MainPageTable = () => {
           >
             Print Label
           </Button>
-          
         </DialogActions>
       </Dialog>
     </Box>

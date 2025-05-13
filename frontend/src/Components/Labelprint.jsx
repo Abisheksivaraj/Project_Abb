@@ -63,6 +63,25 @@ const LabelPrint = () => {
   const [Date, setDate] = useState("");
   const [Status, setStatus] = useState("active");
 
+  // New state to control LogoType visibility
+  const [showLogoType, setShowLogoType] = useState(true);
+
+  // Handle LabelType change with LogoType visibility logic
+  const handleLabelTypeChange = (event) => {
+    const value = event.target.value;
+    setLabelType(value);
+
+    // Check if we should hide the LogoType field
+    const shouldHideLogoType =
+      value === "Sensor(115x35)" || value === "Transmitter";
+    setShowLogoType(!shouldHideLogoType);
+
+    // Reset LogoType value when the field is hidden
+    if (shouldHideLogoType) {
+      setLogoType("");
+    }
+  };
+
   // Fetch collections and codes from specific database based on basic code
   const fetchCollectionsFromDatabase = async (dbName) => {
     setIsLoading(true);
@@ -316,15 +335,22 @@ const LabelPrint = () => {
     event.preventDefault();
 
     // Validate all required fields are present
-    if (
-      !LabelType ||
-      !SerialNumber ||
-      !TagNumber ||
-      !LabelDetails ||
-      !LogoType ||
-      !Date ||
-      !Status
-    ) {
+    const requiredFields = [
+      LabelType,
+      SerialNumber,
+      TagNumber,
+      LabelDetails,
+      Date,
+      Status,
+    ];
+
+    // Only validate LogoType if it's visible
+    if (showLogoType && !LogoType) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (requiredFields.some((field) => !field)) {
       alert("Please fill in all required fields");
       return;
     }
@@ -363,6 +389,7 @@ const LabelPrint = () => {
         setShowCollectionDropdown(false);
         setAllSelectionsDone(false);
         setSelectedDatabase("");
+        setShowLogoType(true); // Reset logo visibility
       }
     } catch (error) {
       console.error("Error saving label:", error);
@@ -463,7 +490,7 @@ const LabelPrint = () => {
                         sx={{ width: "150px" }}
                         label="Label Type"
                         value={LabelType}
-                        onChange={(e) => setLabelType(e.target.value)}
+                        onChange={handleLabelTypeChange}
                         IconComponent={() => null}
                         endAdornment={
                           <InputAdornment position="end">
@@ -472,9 +499,7 @@ const LabelPrint = () => {
                         }
                       >
                         <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="Sensor(96x98)">
-                          Sensor(96x98)
-                        </MenuItem>
+                        <MenuItem value="Sensor(96x98)">Sensor(96x98)</MenuItem>
                         <MenuItem value="Sensor(115x35)">
                           Sensor(115x35)
                         </MenuItem>
@@ -507,28 +532,30 @@ const LabelPrint = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Logo Option</InputLabel>
-                      <Select
-                        sx={{ width: "150px" }}
-                        label="Logo Option"
-                        value={LogoType}
-                        onChange={(e) => setLogoType(e.target.value)}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <FitbitIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="Logo_1">Logo 1 </MenuItem>
-                        <MenuItem value="Logo_2">Logo 2</MenuItem>
-                        <MenuItem value="Logo_3">Logo 3</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                  {showLogoType && (
+                    <Grid item>
+                      <FormControl variant="outlined" required>
+                        <InputLabel>Logo Option</InputLabel>
+                        <Select
+                          sx={{ width: "150px" }}
+                          label="Logo Option"
+                          value={LogoType}
+                          onChange={(e) => setLogoType(e.target.value)}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <FitbitIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="">Select</MenuItem>
+                          <MenuItem value="Logo_1">Logo 1 </MenuItem>
+                          <MenuItem value="Logo_2">Logo 2</MenuItem>
+                          <MenuItem value="Logo_3">Logo 3</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  )}
 
                   <Grid item>
                     <TextField

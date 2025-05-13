@@ -19,7 +19,6 @@ const tableSchema = new mongoose.Schema({
   },
   LogoType: {
     type: String,
-    required: true,
   },
   Date: {
     type: String,
