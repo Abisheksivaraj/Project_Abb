@@ -246,40 +246,31 @@ const LabelPrint = () => {
     updateLabelDetails(selectedCollections, ss, value, basicCode);
   };
 
-  // Update label details based on selected collections, SS, SZ and basicCode
+  
   const updateLabelDetails = (
     selections,
     currentSS,
     currentSZ,
     currentBasicCode
   ) => {
-    // Start with basic code
+
     let details = currentBasicCode || "";
 
-    // Add SS and SZ if they exist
-    if (currentSS) {
-      details += currentSS;
-    }
-
-    if (currentSZ) {
-      details += currentSZ;
-    }
-
-    // Process collection values
+   
     const collectionKeys = Object.keys(selections);
 
     if (collectionKeys.length > 0) {
       collectionKeys.forEach((collectionName) => {
         const code = selections[collectionName];
 
-        // Log each collection and its value to aid debugging
+        
         console.log(
           `Collection: ${collectionName}, Value: "${code}", Type: ${typeof code}`
         );
 
-        // Important: Explicitly check for empty string (Null selection)
+      
         if (code === "") {
-          // Add a hyphen for "Null" (empty string)
+         
           details += "-";
           console.log(
             `Added hyphen for ${collectionName}, details now: ${details}`
@@ -317,7 +308,7 @@ const LabelPrint = () => {
   // Function to get display text for selected collection value
   const getSelectedDisplayText = (collectionName) => {
     if (!selectedCollections[collectionName]) {
-      return "Null (adds -)";
+      return "Null";
     }
 
     const code = selectedCollections[collectionName];
@@ -364,7 +355,7 @@ const LabelPrint = () => {
         LogoType,
         Date,
         Status,
-        Database: selectedDatabase, // Add the selected database to the form data
+        // Database: selectedDatabase, // Add the selected database to the form data
       };
 
       const response = await api.post("/table", formData);
@@ -388,7 +379,7 @@ const LabelPrint = () => {
         setSelectedCollections({});
         setShowCollectionDropdown(false);
         setAllSelectionsDone(false);
-        setSelectedDatabase("");
+        // setSelectedDatabase("");
         setShowLogoType(true); // Reset logo visibility
       }
     } catch (error) {
@@ -600,26 +591,6 @@ const LabelPrint = () => {
                 </Grid>
               </Grid>
 
-              {/* Selected Database Display */}
-              {selectedDatabase && (
-                <Grid item xs={12}>
-                  <Paper
-                    elevation={1}
-                    sx={{
-                      p: 1.5,
-                      mt: 1,
-                      mb: 0,
-                      bgcolor: "#e3f2fd",
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      Selected Database: <strong>{selectedDatabase}</strong>
-                    </Typography>
-                  </Paper>
-                </Grid>
-              )}
-
               {/* Error display */}
               {error && (
                 <Grid item xs={12}>
@@ -672,9 +643,9 @@ const LabelPrint = () => {
                       </Box>
                     )}
 
-                    <Typography variant="h6" mb={2} color="primary.main">
+                    {/* <Typography variant="h6" mb={2} color="primary.main">
                       Collection Selection from {selectedDatabase} Database
-                    </Typography>
+                    </Typography> */}
                     <Divider sx={{ mb: 2 }} />
 
                     <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -782,13 +753,13 @@ const LabelPrint = () => {
                       </Box>
                     )}
 
-                    <Typography
+                    {/* <Typography
                       variant="subtitle1"
                       sx={{ mb: 2, fontWeight: "medium" }}
                     >
                       Available Collections from {selectedDatabase}
-                      {basicCode === "FET632" ? " (Transmitter Only)" : ""}
-                    </Typography>
+                      {basicCode === "FET632" ? " (FET632)" : ""}
+                    </Typography> */}
 
                     {filteredCollectionNames.length > 0 ? (
                       /* Collection selection grid */
@@ -836,7 +807,7 @@ const LabelPrint = () => {
                                     },
                                   }}
                                 >
-                                  <MenuItem value="">Null (adds -)</MenuItem>
+                                  <MenuItem value="">Null</MenuItem>
                                   {collectionsWithCodes[collectionName] &&
                                     collectionsWithCodes[collectionName].map(
                                       (item) => (
