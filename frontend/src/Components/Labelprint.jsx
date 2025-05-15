@@ -270,7 +270,7 @@ const LabelPrint = () => {
 
       
         if (code === "") {
-         
+        
           details += "-";
           console.log(
             `Added hyphen for ${collectionName}, details now: ${details}`
