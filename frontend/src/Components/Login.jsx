@@ -20,7 +20,7 @@ import LabelIcon from "@mui/icons-material/Label";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import bg from "../assets/Company.jpg";
+import bg from "../assets/company.jpg";
 import logo from "../abb.svg";
 import { api } from "../apiConfig";
 
