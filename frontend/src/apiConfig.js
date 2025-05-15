@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_URL = "http://localhost:2222";
+export const API_URL = "https://project-abb-backend.onrender.com";
 
 // export const API_URL = "https://fairwayenterprises.onrender.com";
 
