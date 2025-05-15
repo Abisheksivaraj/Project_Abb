@@ -256,7 +256,7 @@ const LabelPrint = () => {
 
     let details = currentBasicCode || "";
 
-   
+  
     const collectionKeys = Object.keys(selections);
 
     if (collectionKeys.length > 0) {
