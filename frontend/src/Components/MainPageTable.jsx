@@ -45,7 +45,6 @@ import {
   RemoveRedEye as RemoveRedEyeIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 
 import { api } from "../apiConfig";
 import fm from "../assets/fm.png";
@@ -207,9 +206,17 @@ const MainPageTable = () => {
       openPreviewModal(label);
 
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
-      const modelNumber = label?.ModelNumber || "FEP631M1A2030A1T1B1D0";
-      const tagNumber = label?.TagNumber || "FM17US0062X";
-      const date = label?.Date || "Mar 2025";
+      const modelNumber =
+        label?.ModelNumber || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
+
+      const getCurrentMonthYear = () => {
+        const now = new Date();
+        const month = now.toLocaleString("en-US", { month: "short" });
+        const year = now.getFullYear();
+        return `${month} ${year}`;
+      };
+
+      const date = getCurrentMonthYear();
       const logoType = (label?.LogoType || "logo_1").trim().toLowerCase();
       const labelType = (label?.LabelType || "96x98").trim().toLowerCase();
 
@@ -387,7 +394,7 @@ const MainPageTable = () => {
               <div class="flex flex-col items-center justify-between w-full p-2 rounded-lg">
                 <div class="flex items-center justify-between border-b-2 w-full">
                   <div>
-                    <img src="${black}" alt="ABB Logo" class="w-[30px] h-[30px] object-contain" />
+                    <img src="${black}" alt="ABB Logo" class="w-[30rem] h-[30rem] object-contain" />
                   </div>
                   <div class="text-[16px] font-semibold mr-4">ProcessMaster 630</div>
                    <div class="w-[28px] h-[28px]">
@@ -462,7 +469,7 @@ const MainPageTable = () => {
               <div class="flex flex-col items-center justify-between w-full p-2 rounded-lg">
                 <div class="flex items-center justify-between border-b-2 w-full">
                   <div>
-                    <img src="${black}" alt="ABB Logo" class="w-[30px] h-[30px] object-contain" />
+                    <img src="${black}" alt="ABB Logo" class="w-[30rem] h-[30rem] object-contain" />
                   </div>
                   <div class="text-[16px] font-semibold mr-4">ProcessMaster 630 Transmitter</div>
                   <div class="w-[28px] h-[28px]">
@@ -543,7 +550,7 @@ const MainPageTable = () => {
               <!-- Header -->
               <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
                 <div>
-                  <img src="${black}" alt="ABB Logo" class="w-[32px] h-[32px] object-contain" />
+                  <img src="${black}" alt="ABB Logo" class="w-[30rem] h-[30rem] object-contain"/>
                 </div>
                 <div class="text-[18px] font-semibold text-center flex-1">ProcessMaster 630</div>
                 <div class="w-[28px] h-[28px]">
@@ -642,15 +649,18 @@ const MainPageTable = () => {
             </style>
           </head>
           <body class="m-0 p-0 font-sans text-black">
-            <div class="w-[94mm] h-[94mm] border border-black rounded-lg flex flex-col text-black">
+            <div class="w-[94mm] h-[94mm] border-black border-2 rounded-lg flex flex-col text-black">
               
               <!-- Header -->
-              <div class="flex items-center justify-between border-b border-black w-full px-1 py-1 rounded-t-lg">
-                <div>
-                  <img src="${black}" alt="ABB Logo" class="w-[35px] h-[35px] object-contain" />
-                </div>
-                <div class="text-[20px] font-semibold text-center flex-1">ProcessMaster 630</div>
-              </div>
+             <div class="flex items-center justify-between border-b border-black w-full rounded-t-lg h-[3.5rem]">
+  <div class="h-full flex items-center">
+    <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
+  </div>
+  <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
+    ProcessMaster 630
+  </div>
+</div>
+
         
               <!-- Main Content -->
               <div class="flex flex-col flex-1 border-b border-black w-full">
@@ -658,29 +668,32 @@ const MainPageTable = () => {
                 <!-- Upper Section -->
                 <div class="flex w-full border-b font-semibold border-black">
                   <!-- Left Section -->
-                  <div class="flex-1 text-[7px] border-r border-black p-1">
+                  <div class="w-[10rem] text-[7px] border-r border-black p-1">
                     <div>Serial No: ${serialNumber}</div>
-                    <div>Model number: ${modelNumber}</div>
-                    <div>C70E2M1ADRMCRAM5RCDTCTV2</div>
+                    
+                    <div>Model number: <span class="wrap-break-word">${modelNumber}</span></div>
+                    
+                    
                     <div class="h-[2px]"></div>
                     <div>OPTIONS 1 ></div>
                     <div>OPTIONS 2 ></div>
                     <div class="h-[2px]"></div>
                     <div>Dev. version: 01.14.00</div>
                     <div>Update:</div>
-                    <div class="w-[33px] h-[33px] ml-[9rem] border bg-gray-200 text-[6px] text-center flex items-center justify-center">
-                      <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-                    </div>
+                  <div class="w-[33px] h-[33px] ml-[7.3rem] border text-center flex items-center justify-center -mt-4">
+  <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+</div>
+
                   </div>
         
                   <!-- Right Section -->
-                  <div class="text-[7px] p-1 flex font-semibold">
+                  <div class="text-[7px] h-4 p-1 flex font-semibold">
                     <div>
                       <div>24 V DC, 60 Hz</div>
                       <div>Protection class: IP67/IP67</div>
-                      <div>Tamb: -20°....+60°C (-4°....140°F)</div>
+                      <div class="whitespace-nowrap">Tamb: -20°....+60°C (-4°....140°F)</div>
                       <div class="h-[2px]"></div>
-                      <div>DN 300 (12")</div>
+                      <div>size:DN 300 (12")</div>
                       <div>Qmax: 2400 m³/h</div>
                       <div class="h-[2px]"></div>
                       <div>Liner mat: PTFE</div>
@@ -688,10 +701,10 @@ const MainPageTable = () => {
                       <div class="h-[2px]"></div>
                       <div>Ss: 150.214</div>
                     </div>
-                    <div class="mt-10 font-semibold">
+                    <div class="mt-10 -ml-4 font-semibold">
                       <div>Fitting: ASME CL150</div>
-                      <div>Fexc: 15_12.5 HZ</div>
-                      <div>Elect: Hast. C-4 (2.4610)</div>
+                      <div class="whitespace-nowrap">Fexc: 15_12.5 HZ</div>
+                      <div class="whitespace-nowrap">Elect: Hast. C-4 (2.4610)</div>
                       <div>PED:</div>
                       <div>Sz:  -0.390</div>
                     </div>
