@@ -21,11 +21,13 @@ const settings = [
     label: "Logout",
     icon: <LogoutIcon fontSize="small" />,
     action: () => {
-      // Add your logout logic here
       console.log("Logout clicked");
-      // For example: clear localStorage, redirect to login page, etc.
-      // localStorage.removeItem("token");
-      // window.location.href = "/login";
+      // Clear any authentication tokens
+      localStorage.removeItem("token");
+      // Close the profile menu before navigation
+      handleProfileMenuClose();
+      // Navigate to home page
+      navigate("/");
     },
   },
 ];
@@ -53,6 +55,12 @@ function MainPage() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleLogout = () => {
+    console.log("Logging out...");
+    handleProfileMenuClose();
+    navigate("/");
   };
 
   return (
