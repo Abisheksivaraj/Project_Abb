@@ -33,6 +33,7 @@ import DeviceHubIcon from "@mui/icons-material/DeviceHub";
 import SettingsIcon from "@mui/icons-material/Settings";
 import FitbitIcon from "@mui/icons-material/Fitbit";
 import StraightenIcon from "@mui/icons-material/Straighten";
+import VersionIcon from "@mui/icons-material/Rule"; // Added icon for DevVersion
 import { api } from "../apiConfig";
 
 // List of collections to exclude from the UI
@@ -62,6 +63,7 @@ const LabelPrint = () => {
   const [LabelDetails, setLabelDetails] = useState("");
   const [Date, setDate] = useState("");
   const [Status, setStatus] = useState("active");
+  const [DevVersion, setDevVersion] = useState(""); // Added DevVersion state
 
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
@@ -246,31 +248,25 @@ const LabelPrint = () => {
     updateLabelDetails(selectedCollections, ss, value, basicCode);
   };
 
-  
   const updateLabelDetails = (
     selections,
     currentSS,
     currentSZ,
     currentBasicCode
   ) => {
-
     let details = currentBasicCode || "";
 
-  
     const collectionKeys = Object.keys(selections);
 
     if (collectionKeys.length > 0) {
       collectionKeys.forEach((collectionName) => {
         const code = selections[collectionName];
 
-        
         console.log(
           `Collection: ${collectionName}, Value: "${code}", Type: ${typeof code}`
         );
 
-      
         if (code === "") {
-        
           details += "-";
           console.log(
             `Added hyphen for ${collectionName}, details now: ${details}`
@@ -355,7 +351,8 @@ const LabelPrint = () => {
         LogoType,
         Date,
         Status,
-        // Database: selectedDatabase, // Add the selected database to the form data
+        DevVersion, // Add DevVersion to the form data
+        // Database: selectedDatabase,
       };
 
       const response = await api.post("/table", formData);
@@ -372,6 +369,7 @@ const LabelPrint = () => {
         setDate("");
         setLogoType("");
         setStatus("active");
+        setDevVersion(""); // Reset DevVersion
         setBasicCode("");
         setModelType("");
         setSS("");
@@ -587,6 +585,25 @@ const LabelPrint = () => {
                         <MenuItem value="inactive">Inactive</MenuItem>
                       </Select>
                     </FormControl>
+                  </Grid>
+
+                  {/* Add DevVersion field */}
+                  <Grid item>
+                    <TextField
+                      sx={{ width: "200px" }}
+                      label="Dev Version"
+                      placeholder="Enter Dev Version..."
+                      variant="outlined"
+                      value={DevVersion}
+                      onChange={(e) => setDevVersion(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <VersionIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                   </Grid>
                 </Grid>
               </Grid>

@@ -32,6 +32,43 @@ const tableSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  DevVersion: {
+    type: String,
+  
+  },
+  powerSupply: {
+    type: String,
+  },
+  Tamb: {
+    type: String,
+  },
+  size: {
+    type: String,
+  },
+  Qmax: {
+    type: String,
+  },
+  Linermat: {
+    type: String,
+  },
+  Tmed: {
+    type: String,
+  },
+  Fitting: {
+    type: String,
+  },
+
+  ProtectionClass: {
+    type: String,
+  },
+
+  Fexc: {
+    type: String,
+  },
+
+  Elect: {
+    type: String,
+  },
 
   createdAt: {
     type: Date,

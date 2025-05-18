@@ -63,6 +63,7 @@ const MainPageTable = () => {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deviceVersion, setDeviceVersion] = useState({});
 
   // Preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -206,6 +207,7 @@ const MainPageTable = () => {
       openPreviewModal(label);
 
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
+      const deviceVersion = label?.DevVersion || "1.03.4";
       const modelNumber =
         label?.ModelNumber || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
 
@@ -421,7 +423,7 @@ const MainPageTable = () => {
               <span class="font-bold">Model number: </span>
               <span class="break-words">${modelNumber}</span>
             </div>
-            <div><strong>Dev. version:</strong> 01.14.00</div>
+            <div><strong>Dev. version:</strong>${deviceVersion}</div>
             <div><strong>Update:</strong></div>
           </div>
           <!-- Fixed size for QR code -->
@@ -610,7 +612,7 @@ Liner mat : PTFE
               <span class="font-bold">Model number: </span>
               <span class="break-words">${modelNumber}</span>
             </div>
-            <div><strong>Dev. version:</strong> 01.14.00</div>
+            <div><strong>Dev. version:</strong>${deviceVersion}</div>
             <div><strong>Update:</strong></div>
           </div>
           <!-- Fixed size for QR code -->
@@ -797,7 +799,7 @@ Liner mat : PTFE
             <div>Serial No: ${serialNumber}</div>
             <div>Model number: <span class="break-words">${modelNumber}</span></div>
             <div class="h-[2px]"></div>
-            <div class="mt-7">Dev. version: 01.14.00</div>
+            <div class="mt-7">Dev. version:${deviceVersion}</div>
             <!-- QR Code positioned with absolute positioning -->
             <div class="w-[33px] h-[33px] absolute right-2 top-[3.5rem] border border-black">
               <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
@@ -936,7 +938,7 @@ Liner mat : PTFE
   <div>OPTIONS 1 ></div>
   <div>OPTIONS 2 ></div>
   <div class="h-[2px]"></div>
-  <div>Dev. version: 01.14.00</div>
+  <div>Dev. version:${deviceVersion}</div>
   <div>Update:</div>
 
   <div class="w-[33px] h-[33px] ml-[5.5rem] border text-center flex items-center justify-center -mt-4">
