@@ -62,7 +62,7 @@ const LabelPrint = () => {
   const [TagNumber, setTagNumber] = useState("");
   const [LabelDetails, setLabelDetails] = useState("");
   const [Date, setDate] = useState("");
-  const [Status, setStatus] = useState("active");
+  const [Status, setStatus] = useState("Active");
   const [DevVersion, setDevVersion] = useState(""); // Added DevVersion state
 
   // New state to control LogoType visibility
@@ -372,7 +372,7 @@ const LabelPrint = () => {
         setLabelDetails("");
         setDate("");
         setLogoType("");
-        setStatus("active");
+        setStatus("Active");
         setDevVersion(""); // Reset DevVersion
         setBasicCode("");
         setModelType("");
@@ -585,8 +585,8 @@ const LabelPrint = () => {
                           </InputAdornment>
                         }
                       >
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
+                        <MenuItem value="Active">Active</MenuItem>
+                        <MenuItem value="Inactive">Inactive</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>

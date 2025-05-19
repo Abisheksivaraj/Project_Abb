@@ -33,6 +33,8 @@ import {
   DialogContent,
   DialogActions,
   Modal,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 import {
@@ -44,6 +46,8 @@ import {
   FilterList as FilterListIcon,
   RemoveRedEye as RemoveRedEyeIcon,
   Close as CloseIcon,
+  FileDownload as FileDownloadIcon,
+  ContentCopy as ContentCopyIcon,
 } from "@mui/icons-material";
 
 import { api } from "../apiConfig";
@@ -54,6 +58,11 @@ import manual from "../assets/manual.png";
 import hot from "../assets/hot.png";
 import warning from "../assets/warning.png";
 import QRCode from "qrcode";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+import * as XLSX from "xlsx";
+import { CSVLink } from "react-csv";
 
 const MainPageTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,6 +73,12 @@ const MainPageTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deviceVersion, setDeviceVersion] = useState({});
+  const csvLinkRef = useRef(null);
+
+  // Alert state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
 
   // Preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -73,6 +88,10 @@ const MainPageTable = () => {
   // Pagination states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Print view state
+  const [printView, setPrintView] = useState(false);
+  const printRef = useRef(null);
 
   const [visibleColumns, setVisibleColumns] = useState({
     sNo: true,
@@ -202,12 +221,184 @@ const MainPageTable = () => {
     setSelectedLabel(null);
   };
 
+  // Show alert message
+  const showAlert = (message, severity = "success") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
+
+  // Close alert
+  const handleAlertClose = () => {
+    setAlertOpen(false);
+  };
+
+  // Export functions
+  const handleCopyToClipboard = () => {
+    // Create a string representation of the table data
+    const headers = columnVisibilityOptions
+      .filter((col) => visibleColumns[col.id])
+      .map((col) => col.label);
+
+    const rows = filteredData.map((row, index) => {
+      const rowData = [];
+      if (visibleColumns.sNo) rowData.push(index + 1);
+      if (visibleColumns.labelType) rowData.push(row.LabelType || "");
+      if (visibleColumns.serialNumber) rowData.push(row.SerialNumber || "");
+      if (visibleColumns.tagNumber) rowData.push(row.TagNumber || "");
+      if (visibleColumns.labelDetails) rowData.push(row.LabelDetails || "");
+      if (visibleColumns.logoType) rowData.push(row.LogoType || "");
+      if (visibleColumns.date) rowData.push(row.Date || "");
+      if (visibleColumns.addedBy) rowData.push(row.AddedBy || "");
+      if (visibleColumns.status) rowData.push(row.Status || "");
+      return rowData.join("\t");
+    });
+
+    const tableText = [headers.join("\t"), ...rows].join("\n");
+
+    navigator.clipboard
+      .writeText(tableText)
+      .then(() => {
+        showAlert("Table data copied to clipboard");
+      })
+      .catch((err) => {
+        showAlert("Failed to copy table data", "error");
+      });
+  };
+
+  const handleCSVExport = () => {
+    if (csvLinkRef.current) {
+      csvLinkRef.current.link.click();
+      showAlert("CSV file downloaded successfully");
+    }
+  };
+
+  const handleExcelExport = () => {
+    try {
+      // Prepare data for export
+      const headers = columnVisibilityOptions
+        .filter((col) => visibleColumns[col.id] && col.id !== "action")
+        .map((col) => col.label);
+
+      const exportData = filteredData.map((row, index) => {
+        const rowData = {};
+        if (visibleColumns.sNo) rowData["S No"] = index + 1;
+        if (visibleColumns.labelType)
+          rowData["Label Type"] = row.LabelType || "";
+        if (visibleColumns.serialNumber)
+          rowData["Serial Number"] = row.SerialNumber || "";
+        if (visibleColumns.tagNumber)
+          rowData["Tag Number"] = row.TagNumber || "";
+        if (visibleColumns.labelDetails)
+          rowData["Label Details"] = row.LabelDetails || "";
+        if (visibleColumns.logoType) rowData["Logo Type"] = row.LogoType || "";
+        if (visibleColumns.date) rowData["Date"] = row.Date || "";
+        if (visibleColumns.addedBy) rowData["Added By"] = row.AddedBy || "";
+        if (visibleColumns.status) rowData["Status"] = row.Status || "";
+        return rowData;
+      });
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData, {
+        header: headers,
+      });
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Labels");
+
+      // Generate and download file
+      XLSX.writeFile(workbook, "label_data.xlsx");
+      showAlert("Excel file downloaded successfully");
+    } catch (error) {
+      console.error("Excel export error:", error);
+      showAlert("Failed to export to Excel", "error");
+    }
+  };
+
+  const handlePDFExport = () => {
+    try {
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("Label Print Data", 14, 15);
+      doc.setFontSize(10);
+      doc.text("Generated on: " + new Date().toLocaleString(), 14, 22);
+
+      // Header
+      const tableColumn = [];
+      if (visibleColumns.sNo) tableColumn.push("S No");
+      columnVisibilityOptions.forEach((col) => {
+        if (visibleColumns[col.id] && col.id !== "action") {
+          tableColumn.push(col.label);
+        }
+      });
+
+      // Body
+      const tableRows = filteredData.map((row, index) => {
+        const rowData = [];
+        if (visibleColumns.sNo) rowData.push(index + 1);
+        if (visibleColumns.labelType) rowData.push(row.LabelType || "");
+        if (visibleColumns.serialNumber) rowData.push(row.SerialNumber || "");
+        if (visibleColumns.tagNumber) rowData.push(row.TagNumber || "");
+        if (visibleColumns.labelDetails) rowData.push(row.LabelDetails || "");
+        if (visibleColumns.logoType) rowData.push(row.LogoType || "");
+        if (visibleColumns.date) rowData.push(row.Date || "");
+        if (visibleColumns.addedBy) rowData.push(row.AddedBy || "");
+        if (visibleColumns.status) rowData.push(row.Status || "");
+        return rowData;
+      });
+
+     
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        styles: { fontSize: 8 },
+      });
+      
+
+      doc.save("label_data.pdf");
+      showAlert("PDF file downloaded successfully");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      showAlert("Failed to export to PDF", "error");
+    }
+  };
+  
+
+  const handlePrintTable = () => {
+    setPrintView(true);
+    setTimeout(() => {
+      window.print();
+      setPrintView(false);
+    }, 500);
+  };
+
+  // Prepare data for CSV export
+  const csvData = filteredData.map((row, index) => {
+    const csvRow = {};
+    if (visibleColumns.sNo) csvRow["S No"] = index + 1;
+    if (visibleColumns.labelType) csvRow["Label Type"] = row.LabelType || "";
+    if (visibleColumns.serialNumber)
+      csvRow["Serial Number"] = row.SerialNumber || "";
+    if (visibleColumns.tagNumber) csvRow["Tag Number"] = row.TagNumber || "";
+    if (visibleColumns.labelDetails)
+      csvRow["Label Details"] = row.LabelDetails || "";
+    if (visibleColumns.logoType) csvRow["Logo Type"] = row.LogoType || "";
+    if (visibleColumns.date) csvRow["Date"] = row.Date || "";
+    if (visibleColumns.addedBy) csvRow["Added By"] = row.AddedBy || "";
+    if (visibleColumns.status) csvRow["Status"] = row.Status || "";
+    return csvRow;
+  });
   const handlePrintLabel = async (label) => {
     try {
       openPreviewModal(label);
 
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
-      const deviceVersion = label?.DevVersion || "1.03.4";
+      const deviceVersion = label?.DevVersion;
       const sz = label?.sz;
       const ss = label?.ss;
       const modelNumber =
@@ -1218,6 +1409,7 @@ Liner mat : PTFE
             <Button
               size="small"
               variant="outlined"
+              onClick={handleCopyToClipboard}
               sx={{
                 color: "#475569",
                 borderColor: "#cbd5e1",
@@ -1226,20 +1418,29 @@ Liner mat : PTFE
             >
               Copy
             </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{
-                color: "#475569",
-                borderColor: "#cbd5e1",
-                textTransform: "none",
-              }}
+            <CSVLink
+              data={csvData}
+              filename="label_data.csv"
+              ref={csvLinkRef}
+              style={{ textDecoration: "none" }} // optional: remove underline
             >
-              CSV
-            </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{
+                  color: "#475569",
+                  borderColor: "#cbd5e1",
+                  textTransform: "none",
+                }}
+              >
+                CSV
+              </Button>
+            </CSVLink>
+
             <Button
               size="small"
               variant="outlined"
+              onClick={handleExcelExport}
               sx={{
                 color: "#475569",
                 borderColor: "#cbd5e1",
@@ -1251,6 +1452,7 @@ Liner mat : PTFE
             <Button
               size="small"
               variant="outlined"
+              onClick={handlePDFExport}
               sx={{
                 color: "#475569",
                 borderColor: "#cbd5e1",
@@ -1262,6 +1464,7 @@ Liner mat : PTFE
             <Button
               size="small"
               variant="outlined"
+              onClick={handlePrintTable}
               sx={{
                 color: "#475569",
                 borderColor: "#cbd5e1",
@@ -1483,7 +1686,11 @@ Liner mat : PTFE
                               label={row.Status}
                               size="small"
                               color={
-                                row.Status === "Active" ? "success" : "default"
+                                row.Status === "Active"
+                                  ? "success"
+                                  : row.Status === "Inactive"
+                                  ? "error"
+                                  : "default"
                               }
                               sx={{ fontWeight: 500 }}
                             />
@@ -1577,6 +1784,20 @@ Liner mat : PTFE
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleAlertClose}
+          severity={alertSeverity}
+          sx={{ width: "100%" }}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
