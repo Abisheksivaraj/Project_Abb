@@ -24,6 +24,8 @@ route.post("/table", async (req, res) => {
       ProtectionClass,
       Fexc,
       Elect,
+      ss,
+      sz,
     } = req.body;
 
     const newLabel = new Table({
@@ -33,6 +35,7 @@ route.post("/table", async (req, res) => {
       LabelDetails,
       LogoType,
       Date,
+      ss,sz,
       Status,
       DevVersion,
       powerSupply,

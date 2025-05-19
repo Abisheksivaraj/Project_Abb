@@ -329,6 +329,8 @@ const LabelPrint = () => {
       LabelDetails,
       Date,
       Status,
+      ss,
+      sz
     ];
 
     // Only validate LogoType if it's visible
@@ -351,7 +353,9 @@ const LabelPrint = () => {
         LogoType,
         Date,
         Status,
-        DevVersion, // Add DevVersion to the form data
+        DevVersion,
+        ss,
+        sz, // Add DevVersion to the form data
         // Database: selectedDatabase,
       };
 

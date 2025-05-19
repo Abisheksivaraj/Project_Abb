@@ -208,6 +208,8 @@ const MainPageTable = () => {
 
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
       const deviceVersion = label?.DevVersion || "1.03.4";
+      const sz = label?.sz;
+      const ss = label?.ss;
       const modelNumber =
         label?.ModelNumber || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
 
@@ -525,11 +527,11 @@ Liner mat : PTFE
 <div class="flex flex-row gap-[4.2rem]">
 <p>
 
- Ss:  0.34
+ Ss: ${ss}
 </p>
 
 <p>
- Sz:  0.34
+ Sz: ${sz}
 </p>
 
 
@@ -712,11 +714,11 @@ Liner mat : PTFE
 <div class="flex flex-row gap-[4.2rem]">
 <p>
 
- Ss:  0.34
+ Ss: ${ss}
 </p>
 
 <p>
- Sz:  0.34
+ Sz:  ${sz}
 </p>
 
 
@@ -801,7 +803,7 @@ Liner mat : PTFE
             <div class="h-[2px]"></div>
             <div class="mt-7">Dev. version:${deviceVersion}</div>
             <!-- QR Code positioned with absolute positioning -->
-            <div class="w-[33px] h-[33px] absolute right-2 top-[3.5rem] border border-black">
+            <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] border border-black">
               <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
             </div>
           </div>
@@ -833,8 +835,8 @@ Liner mat : PTFE
             </div>
 
             <div class="flex gap-[3.3rem]">
-              <p>Ss : 147.130</p>
-              <p>Sz: -10.07900</p>
+              <p>Ss : ${ss}</p>
+              <p>Sz: ${sz}</p>
             </div>
           </div>
         </div>
@@ -941,7 +943,7 @@ Liner mat : PTFE
   <div>Dev. version:${deviceVersion}</div>
   <div>Update:</div>
 
-  <div class="w-[33px] h-[33px] ml-[5.5rem] border text-center flex items-center justify-center -mt-4">
+  <div class="w-[33px] h-[33px] ml-[6.3rem] border text-center flex items-center justify-center -mt-4">
     <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
   </div>
 </div>
@@ -977,9 +979,9 @@ Liner mat : PTFE
     <div>PED:</div>
   </div>
 
-  <div class="flex items-center gap-[3.9rem]">
-    <div>Ss: 150.214</div>
-    <div>Sz: -0.390</div>
+  <div class="flex items-center gap-[4.4rem]">
+    <div>Ss: ${ss}</div>
+    <div>Sz: ${sz}</div>
   </div>
 </div>
 

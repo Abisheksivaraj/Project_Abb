@@ -20,6 +20,14 @@ const tableSchema = new mongoose.Schema({
   LogoType: {
     type: String,
   },
+  ss: {
+    type: String,
+    required: true,
+  },
+  sz: {
+    type: String,
+    required: true,
+  },
   Date: {
     type: String,
     required: true,
@@ -34,7 +42,6 @@ const tableSchema = new mongoose.Schema({
   },
   DevVersion: {
     type: String,
-  
   },
   powerSupply: {
     type: String,
