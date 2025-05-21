@@ -356,7 +356,7 @@ const LabelPrint = () => {
         DevVersion,
         ss,
         sz, // Add DevVersion to the form data
-        powerSupply, // Database: selectedDatabase,
+       // Database: selectedDatabase,
       };
 
       const response = await api.post("/table", formData);
