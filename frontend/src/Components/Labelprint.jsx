@@ -28,16 +28,159 @@ import BarcodeIcon from "@mui/icons-material/QrCode";
 import CodeIcon from "@mui/icons-material/Code";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import StatusIcon from "@mui/icons-material/RadioButtonChecked";
-import SerialNumberIcon from "@mui/icons-material/Pin";
 import DeviceHubIcon from "@mui/icons-material/DeviceHub";
 import SettingsIcon from "@mui/icons-material/Settings";
 import FitbitIcon from "@mui/icons-material/Fitbit";
 import StraightenIcon from "@mui/icons-material/Straighten";
-import VersionIcon from "@mui/icons-material/Rule"; // Added icon for DevVersion
+import VersionIcon from "@mui/icons-material/Rule";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
+import SpeedIcon from "@mui/icons-material/Speed";
 import { api } from "../apiConfig";
 
 // List of collections to exclude from the UI
 const EXCLUDED_COLLECTIONS = ["admins", "tabledatas"];
+
+// Collection order definitions for each basic code
+const COLLECTION_ORDERS = {
+  FEP631: [
+    "Explosion protection Certification",
+    "Housing Type / Housing Material / Cable Glands",
+    "Nominal Diameter",
+    "Process connection",
+    "Liner Material",
+    "Process connection material",
+    "Electrode design",
+    "Measuring electrode material",
+    "Grounding Electrode / Full Pipe Detection",
+    "Grounding accessories",
+    "Protection Class Transmitter / Protection Class Sensor",
+    "Power supply",
+    "Display",
+    "Outputs",
+    "Design Level",
+    "Option Card 1",
+    "Option Card 2",
+    "Usage Certifications",
+    "SIL certficate",
+    "Shipping Register Certificate",
+    "Calibration Certifications",
+    "Other Usage Certifications",
+    "Sensor Length",
+    "Potable Water and Food&Beverage Approvals",
+    "Other Explosion Protection Certifications and other Approvals",
+    "Other Options",
+    "Documentation Language",
+    "Pressure Bearing parts Material Source Tests & Reports",
+    "Sensor Housing Material",
+    "Configuration Type",
+    "Transmitter Software Function Package",
+    "Calibration Type",
+    "Signal cable",
+    "Device Identification Label",
+    "Temperature Range of Installation / Ambient Temperature Range",
+    "Number of Testpoints",
+    "Verification Capability",
+    "Communication options activated",
+    "Connector type",
+  ],
+  FEP632: [
+    "Explosion protection Certification",
+    "Housing Type / Housing Material / Cable Glands",
+    "Nominal Diameter",
+    "Process connection",
+    "Liner Material",
+    "Process connection material",
+    "Electrode design",
+    "Measuring electrode material",
+    "Grounding Electrode / Full Pipe Detection",
+    "Grounding accessories",
+    "Protection Class Transmitter / Protection Class Sensor",
+    "Power supply",
+    "Display",
+    "Outputs",
+    "Design Level",
+    "Option Card 1",
+    "Option Card 2",
+    "Usage Certifications",
+    "Calibration Certifications",
+    "Other Usage Certifications",
+    "Power Supply Line Frequency",
+    "Sensor Length",
+    "Potable Water and Food&Beverage Approvals",
+    "Other Explosion Protection Certifications and other Approvals",
+    "Other Options",
+    "Documentation Language",
+    "Pressure Bearing parts Material Source Tests & Reports",
+    "Sensor Housing Material",
+    "Configuration Type",
+    "Transmitter Software Function Package",
+    "Calibration Type",
+    "Signal cable",
+    "Device Identification Label",
+    "Temperature Range of Installation / Ambient Temperature Range",
+    "Number of Testpoints",
+    "Verification Capability",
+  ],
+  FET632: [
+    "Explosion protection Certification Transmitter",
+    "Housing Type / Housing Material / Cable Glands Transmitter",
+    "Protection Class Transmitter / Protection Class Sensor Transmitter",
+    "Power supply Transmitter",
+    "Display Transmitter",
+    "Outputs Transmitter",
+    "Option Card 1 Transmitter",
+    "Option Card 2 Transmitter",
+    "SIL certificate Transmitter",
+    "Shipping Register Certificate Transmitter",
+    "Potable Water and Food & Beverage Approvals Transmitter",
+    "Other Explosion Protection Certifications and other Approvals Transmitter",
+    "Other Options Transmitter",
+    "Documentation Language Transmitter",
+    "Device Identification Label Transmitter",
+    "Temperature Range of Installation / Ambient Temperature Range Transmitter",
+    "Remote Transmitter Mounting Kit Transmitter",
+    "Transmitter Software Function Package Transmitter",
+  ],
+};
+
+// Static data for Tamb dropdown
+const TMED_OPTIONS = [
+  {
+    code: "130°C(266°F)",
+    description: "PTFE, PFA, ETFE",
+  },
+  {
+    code: "80°C (194°F/176°F)",
+    description: "hard rubber",
+  },
+  {
+    code: "60°C(140°F)",
+    description: "soft rubber",
+  },
+];
+
+// Static data for Qmax dropdown - you can replace this with your actual Qmax values
+const QMAX_OPTIONS = [
+  { code: "15", description: "100 l/min" },
+  { code: "20", description: "150 l/min" },
+  { code: "25", description: "200 l/min" },
+  { code: "32", description: "400 l/min" },
+  { code: "40", description: "600 l/min" },
+  { code: "50", description: "60 m³/h" },
+  { code: "65", description: "120 m³/h" },
+  { code: "80", description: "180 m³/h" },
+  { code: "100", description: "240 m³/h" },
+  { code: "125", description: "420 m³/h" },
+  { code: "150", description: "600 m³/h" },
+  { code: "200", description: "1080 m³/h" },
+  { code: "250", description: "1800 m³/h" },
+  { code: "300", description: "2400 m³/h" },
+  { code: "350", description: "3300 m³/h" },
+  { code: "400", description: "4500 m³/h" },
+  { code: "450", description: "6000 m³/h" },
+  { code: "500", description: "6600 m³/h" },
+  { code: "600", description: "9600 m³/h" },
+];
 
 const LabelPrint = () => {
   const navigate = useNavigate();
@@ -63,7 +206,18 @@ const LabelPrint = () => {
   const [LabelDetails, setLabelDetails] = useState("");
   const [Date, setDate] = useState("");
   const [Status, setStatus] = useState("Active");
-  const [DevVersion, setDevVersion] = useState(""); // Added DevVersion state
+  const [DevVersion, setDevVersion] = useState("");
+
+  // Add powerSupply state
+  const [powerSupply, setPowerSupply] = useState("");
+  const [ProtectionClass, setProtectionClass] = useState("");
+  const [Tamb, setTamb] = useState("");
+  const [Size, setSize] = useState("");
+  // const [Qmax, setQmax] = useState("");
+  // const [Tmed, setTmed] = useState("");
+  // New states for Qmax and Tamb dropdowns
+  const [selectedQmax, setSelectedQmax] = useState("");
+  const [selectedTmedDropdown, setSelectedTambDropdown] = useState("");
 
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
@@ -82,6 +236,24 @@ const LabelPrint = () => {
     if (shouldHideLogoType) {
       setLogoType("");
     }
+  };
+
+  // Handle Qmax dropdown change
+  const handleQmaxChange = (event) => {
+    const value = event.target.value;
+    setSelectedQmax(value);
+
+    // Update label details when Qmax changes
+    updateLabelDetails(selectedCollections, ss, sz, basicCode);
+  };
+
+  // Handle Tamb dropdown change
+  const handleTambDropdownChange = (event) => {
+    const value = event.target.value;
+    setSelectedTambDropdown(value);
+
+    // Update label details when Tamb changes
+    updateLabelDetails(selectedCollections, ss, sz, basicCode);
   };
 
   // Fetch collections and codes from specific database based on basic code
@@ -139,6 +311,31 @@ const LabelPrint = () => {
     }
   };
 
+  // Function to order collections based on the basic code
+  const orderCollections = (collections, basicCode) => {
+    const order = COLLECTION_ORDERS[basicCode];
+    if (!order) return collections;
+
+    const orderedCollections = [];
+    const remainingCollections = [...collections];
+
+    // Add collections in the specified order
+    order.forEach((orderedName) => {
+      const index = remainingCollections.findIndex(
+        (name) => name.trim().toLowerCase() === orderedName.trim().toLowerCase()
+      );
+      if (index !== -1) {
+        orderedCollections.push(remainingCollections[index]);
+        remainingCollections.splice(index, 1);
+      }
+    });
+
+    // Add any remaining collections that weren't in the order list
+    orderedCollections.push(...remainingCollections);
+
+    return orderedCollections;
+  };
+
   // Handle basic code selection with database selection
   const handleBasicCodeChange = (event) => {
     const value = event.target.value;
@@ -150,6 +347,14 @@ const LabelPrint = () => {
     setFilteredCollectionNames([]);
     setSelectedCollections({});
     setShowCollectionDropdown(false);
+
+    // Reset powerSupply when basic code changes
+    setPowerSupply("");
+    setProtectionClass("");
+    setTamb("");
+    setSize("");
+    setSelectedQmax("");
+    setSelectedTambDropdown("");
 
     // Determine which database to use based on the basic code
     const dbName = getDatabaseForBasicCode(value);
@@ -173,7 +378,7 @@ const LabelPrint = () => {
     updateLabelDetails({}, ss, sz, value);
   };
 
-  // Filter collections based on basicCode
+  // Filter collections based on basicCode and apply ordering
   useEffect(() => {
     if (!collectionNames.length) return;
 
@@ -187,12 +392,14 @@ const LabelPrint = () => {
       console.log("Filtered transmitter collections:", filtered);
     }
 
-    setFilteredCollectionNames(filtered);
+    // Apply ordering based on basic code
+    const orderedFiltered = orderCollections(filtered, basicCode);
+    setFilteredCollectionNames(orderedFiltered);
 
     // Clear previously selected collections that are no longer available
     const updatedSelectedCollections = { ...selectedCollections };
     Object.keys(updatedSelectedCollections).forEach((collectionName) => {
-      if (!filtered.includes(collectionName)) {
+      if (!orderedFiltered.includes(collectionName)) {
         delete updatedSelectedCollections[collectionName];
       }
     });
@@ -213,27 +420,101 @@ const LabelPrint = () => {
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
 
-    // Check if the value contains code and description
+    const trimmedName = collectionName.trim();
+    const lowerName = trimmedName.toLowerCase();
+
+    // Special collection detectors
+    const isPowerSupply =
+      lowerName.includes("power") && lowerName.includes("supply");
+
+    const isProtectionClass =
+      lowerName.includes("protection") &&
+      (lowerName.includes("transmitter") || lowerName.includes("sensor"));
+
+    const isTamb =
+      lowerName.includes("temperature") &&
+      (lowerName.includes("ambient") || lowerName.includes("range"));
+
+    const isAmbianceRangeTransmitter =
+      lowerName.includes("temperature") &&
+      lowerName.includes("ambiance") &&
+      lowerName.includes("transmitter");
+
+    // FIXED: More comprehensive Size detection
+    const isSize =
+      trimmedName === "Nominal Diameter" ||
+      (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
+      lowerName.includes("nominaldiameter") ||
+      (lowerName.includes("size") && lowerName.includes("diameter"));
+
+    console.log(`Collection "${collectionName}" detection:`, {
+      isPowerSupply,
+      isProtectionClass,
+      isTamb,
+      isAmbianceRangeTransmitter,
+      isSize,
+      lowerName,
+      trimmedName, // Added for debugging
+    });
+
+    // Handle special collections
+    if (
+      isPowerSupply ||
+      isProtectionClass ||
+      isTamb ||
+      isAmbianceRangeTransmitter ||
+      isSize
+    ) {
+      let setStateFunction = null;
+      let fieldName = "";
+
+      if (isPowerSupply) {
+        setStateFunction = setPowerSupply;
+        fieldName = "Power Supply";
+      } else if (isProtectionClass) {
+        setStateFunction = setProtectionClass;
+        fieldName = "Protection Class";
+      } else if (isTamb || isAmbianceRangeTransmitter) {
+        setStateFunction = setTamb;
+        fieldName = "Temperature Range";
+      } else if (isSize) {
+        setStateFunction = setSize;
+        fieldName = "Size/Nominal Diameter";
+      }
+
+      if (setStateFunction) {
+        if (codeValue === "") {
+          setStateFunction("");
+          console.log(`${fieldName} cleared`);
+        } else {
+          const codeItems = collectionsWithCodes[collectionName] || [];
+          const matchingItem = codeItems.find(
+            (item) => item.code === codeValue
+          );
+          const description = matchingItem?.description || codeValue;
+
+          setStateFunction(description);
+          console.log(
+            `${fieldName} selected - Code: ${codeValue}, Description: ${description}`
+          );
+        }
+      }
+    }
+
+    // Extract code if it includes "||"
     let code = codeValue;
     if (codeValue && codeValue.includes("||")) {
-      // Extract just the code part from the selection
       code = codeValue.split("||")[0];
     }
 
-    // Always include the collection in selections, even with empty string (Null)
-    // This ensures "Null" selections are tracked and hyphens are added
     const updatedCollections = {
       ...selectedCollections,
       [collectionName]: code,
     };
 
-    // Log the updated collections object
     console.log("Updated collections:", updatedCollections);
 
-    // Set the state
     setSelectedCollections(updatedCollections);
-
-    // Use the updated object directly when calling updateLabelDetails
     updateLabelDetails(updatedCollections, ss, sz, basicCode);
   };
 
@@ -281,6 +562,14 @@ const LabelPrint = () => {
       });
     }
 
+    // Add Qmax and Tamb dropdown values to details if selected
+    if (selectedQmax) {
+      details += selectedQmax;
+    }
+    if (selectedTmedDropdown) {
+      details += selectedTmedDropdown;
+    }
+
     console.log(`Final label details: ${details}`);
 
     // Only update states if we have some actual details
@@ -298,6 +587,27 @@ const LabelPrint = () => {
     const updatedCollections = { ...selectedCollections };
     delete updatedCollections[collectionName];
     setSelectedCollections(updatedCollections);
+
+    const lowerName = collectionName.toLowerCase();
+    const trimmedName = collectionName.trim();
+
+    // Clear the appropriate state based on collection type
+    if (lowerName.includes("power") && lowerName.includes("supply")) {
+      setPowerSupply("");
+    } else if (lowerName.includes("protection")) {
+      setProtectionClass("");
+    } else if (lowerName.includes("temperature")) {
+      setTamb("");
+    } else if (
+      trimmedName === "Nominal Diameter" ||
+      (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
+      lowerName.includes("nominaldiameter") ||
+      (lowerName.includes("size") && lowerName.includes("diameter"))
+    ) {
+      setSize(""); // This should clear the Size state
+      console.log("Size field cleared due to collection removal");
+    }
+
     updateLabelDetails(updatedCollections, ss, sz, basicCode);
   };
 
@@ -330,7 +640,7 @@ const LabelPrint = () => {
       Date,
       Status,
       ss,
-      sz
+      sz,
     ];
 
     // Only validate LogoType if it's visible
@@ -355,9 +665,17 @@ const LabelPrint = () => {
         Status,
         DevVersion,
         ss,
-        sz, // Add DevVersion to the form data
-       // Database: selectedDatabase,
+        sz,
+        powerSupply,
+        ProtectionClass,
+        Tamb,
+
+        Size,
+        selectedQmax,
+        selectedTmedDropdown,
       };
+
+      console.log("Submitting form data:", formData);
 
       const response = await api.post("/table", formData);
 
@@ -373,16 +691,21 @@ const LabelPrint = () => {
         setDate("");
         setLogoType("");
         setStatus("Active");
-        setDevVersion(""); // Reset DevVersion
+        setDevVersion("");
+        setPowerSupply("");
+        setTamb("");
+        setSize("");
+        setProtectionClass("");
         setBasicCode("");
         setModelType("");
         setSS("");
         setSZ("");
+        setSelectedQmax("");
+        setSelectedTambDropdown("");
         setSelectedCollections({});
         setShowCollectionDropdown(false);
         setAllSelectionsDone(false);
-        // setSelectedDatabase("");
-        setShowLogoType(true); // Reset logo visibility
+        setShowLogoType(true);
       }
     } catch (error) {
       console.error("Error saving label:", error);
@@ -393,11 +716,17 @@ const LabelPrint = () => {
     }
   };
 
-  // Group collection names into chunks of 5 for better display
   const groupedCollections = [];
   for (let i = 0; i < filteredCollectionNames.length; i += 5) {
     groupedCollections.push(filteredCollectionNames.slice(i, i + 5));
   }
+  const chunkArray = (arr, size) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) {
+      result.push(arr.slice(i, i + size));
+    }
+    return result;
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -450,7 +779,7 @@ const LabelPrint = () => {
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <SerialNumberIcon color="action" />
+                            {/* <SerialNumberIcon color="action" /> */}
                           </InputAdornment>
                         ),
                       }}
@@ -569,12 +898,17 @@ const LabelPrint = () => {
                       }}
                     />
                   </Grid>
+                </Grid>
+              </Grid>
 
+              {/* Second row of fields */}
+              <Grid item xs={12}>
+                <Grid container spacing={2} alignItems="center">
                   <Grid item>
-                    <FormControl variant="outlined" required>
+                    <FormControl variant="outlined">
                       <InputLabel>Status</InputLabel>
                       <Select
-                        sx={{ width: "200px" }}
+                        sx={{ width: "150px" }}
                         label="Status"
                         value={Status}
                         onChange={(e) => setStatus(e.target.value)}
@@ -591,12 +925,33 @@ const LabelPrint = () => {
                     </FormControl>
                   </Grid>
 
-                  {/* Add DevVersion field */}
+                  <Grid item>
+                    <FormControl variant="outlined">
+                      <InputLabel>Model Type</InputLabel>
+                      <Select
+                        sx={{ width: "150px" }}
+                        label="Model Type"
+                        value={modelType}
+                        onChange={handleModelTypeChange}
+                        IconComponent={() => null}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <DeviceHubIcon color="action" />
+                          </InputAdornment>
+                        }
+                      >
+                        <MenuItem value="">Select</MenuItem>
+                        <MenuItem value="Sensor">Sensor</MenuItem>
+                        <MenuItem value="Transmitter">Transmitter</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
                   <Grid item>
                     <TextField
-                      sx={{ width: "200px" }}
+                      sx={{ width: "150px" }}
                       label="Dev Version"
-                      placeholder="Enter Dev Version..."
+                      placeholder="Enter Version..."
                       variant="outlined"
                       value={DevVersion}
                       onChange={(e) => setDevVersion(e.target.value)}
@@ -609,300 +964,297 @@ const LabelPrint = () => {
                       }}
                     />
                   </Grid>
+
+                  <Grid item>
+                    <TextField
+                      sx={{ width: "100px" }}
+                      label="SS"
+                      placeholder="SS..."
+                      variant="outlined"
+                      value={ss}
+                      onChange={(e) => handleSSChange(e.target.value)}
+                      required
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <SettingsIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item>
+                    <TextField
+                      sx={{ width: "100px" }}
+                      label="SZ"
+                      placeholder="SZ..."
+                      variant="outlined"
+                      value={sz}
+                      onChange={(e) => handleSZChange(e.target.value)}
+                      required
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <StraightenIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
                 </Grid>
               </Grid>
 
-              {/* Error display */}
+              {/* Qmax and Tmed Dropdowns */}
+              <Grid item xs={12}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item>
+                    <FormControl variant="outlined">
+                      <InputLabel>Qmax</InputLabel>
+                      <Select
+                        sx={{ width: "150px" }}
+                        label="Qmax"
+                        value={selectedQmax}
+                        onChange={handleQmaxChange}
+                        IconComponent={() => null}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <SpeedIcon color="action" />
+                          </InputAdornment>
+                        }
+                      >
+                        <MenuItem value="">Select</MenuItem>
+                        {QMAX_OPTIONS.map((option) => (
+                          <MenuItem key={option.code} value={option.code}>
+                            <Tooltip title={option.description} arrow>
+                              <Box>
+                                {option.code} - {option.description}
+                              </Box>
+                            </Tooltip>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item>
+                    <FormControl variant="outlined">
+                      <InputLabel>Tmed</InputLabel>
+                      <Select
+                        sx={{ width: "200px" }}
+                        label="Tmed"
+                        value={selectedTmedDropdown}
+                        onChange={handleTambDropdownChange}
+                        IconComponent={() => null}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <ThermostatIcon color="action" />
+                          </InputAdornment>
+                        }
+                      >
+                        <MenuItem value="">Select</MenuItem>
+                        {TMED_OPTIONS.map((option) => (
+                          <MenuItem key={option.code} value={option.code}>
+                            <Tooltip title={option.description} arrow>
+                              <Box>
+                                {option.code} - {option.description}
+                              </Box>
+                            </Tooltip>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {/* Loading and Error States */}
+              {isLoading && (
+                <Grid item xs={12}>
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    py={2}
+                  >
+                    <CircularProgress size={24} sx={{ mr: 2 }} />
+                    <Typography>Loading collections...</Typography>
+                  </Box>
+                </Grid>
+              )}
+
               {error && (
                 <Grid item xs={12}>
                   <Paper
-                    elevation={1}
-                    sx={{
-                      p: 1.5,
-                      mt: 1,
-                      mb: 0,
-                      bgcolor: "#ffebee",
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Typography variant="subtitle2" color="error">
-                      Error: {error}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              )}
-
-              {showCollectionDropdown && (
-                <Grid item xs={12}>
-                  <Paper
-                    elevation={2}
                     sx={{
                       p: 2,
-                      mt: 2,
-                      mb: 2,
-                      borderRadius: 2,
-                      bgcolor: "#f9f9f9",
-                      position: "relative",
+                      bgcolor: "error.light",
+                      color: "error.contrastText",
                     }}
                   >
-                    {isLoading && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: "rgba(255, 255, 255, 0.7)",
-                          zIndex: 1,
-                        }}
-                      >
-                        <CircularProgress />
-                      </Box>
-                    )}
-
-                    {/* <Typography variant="h6" mb={2} color="primary.main">
-                      Collection Selection from {selectedDatabase} Database
-                    </Typography> */}
-                    <Divider sx={{ mb: 2 }} />
-
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                      <Grid item>
-                        <FormControl variant="outlined">
-                          <InputLabel>Model Type</InputLabel>
-                          <Select
-                            sx={{ width: "200px" }}
-                            label="Model Type"
-                            value={modelType}
-                            onChange={handleModelTypeChange}
-                            IconComponent={() => null}
-                            endAdornment={
-                              <InputAdornment position="end">
-                                <DeviceHubIcon color="action" />
-                              </InputAdornment>
-                            }
-                          >
-                            <MenuItem value="">None</MenuItem>
-                            <MenuItem value="Transmitter">Transmitter</MenuItem>
-                            <MenuItem value="Sensor">Sensor</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
-
-                      <Grid item>
-                        <TextField
-                          sx={{ width: "200px" }}
-                          label="SS"
-                          placeholder="Enter SS..."
-                          variant="outlined"
-                          value={ss}
-                          onChange={(e) => handleSSChange(e.target.value)}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <SettingsIcon color="action" />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-
-                      <Grid item>
-                        <TextField
-                          sx={{ width: "200px" }}
-                          label="SZ"
-                          placeholder="Enter SZ..."
-                          variant="outlined"
-                          value={sz}
-                          onChange={(e) => handleSZChange(e.target.value)}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <StraightenIcon color="action" />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-
-                    {/* Selected collections display */}
-                    {Object.keys(selectedCollections).length > 0 && (
-                      <Box mb={3}>
-                        <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                          Selected Collections:
-                        </Typography>
-                        <Box display="flex" flexWrap="wrap" gap={1}>
-                          {Object.entries(selectedCollections).map(
-                            ([collection, value]) => {
-                              // Find description for this value if available
-                              const codeItems =
-                                collectionsWithCodes[collection] || [];
-                              const matchingItem = codeItems.find(
-                                (item) => item.code === value
-                              );
-                              const description =
-                                matchingItem?.description || "";
-
-                              return (
-                                <Tooltip
-                                  key={collection}
-                                  title={
-                                    description
-                                      ? description
-                                      : "No description available"
-                                  }
-                                  arrow
-                                >
-                                  <Chip
-                                    label={`${collection}: ${
-                                      value === "" ? "Null (-)" : value
-                                    }`}
-                                    color="primary"
-                                    onDelete={() =>
-                                      handleRemoveCollection(collection)
-                                    }
-                                  />
-                                </Tooltip>
-                              );
-                            }
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {/* <Typography
-                      variant="subtitle1"
-                      sx={{ mb: 2, fontWeight: "medium" }}
-                    >
-                      Available Collections from {selectedDatabase}
-                      {basicCode === "FET632" ? " (FET632)" : ""}
-                    </Typography> */}
-
-                    {filteredCollectionNames.length > 0 ? (
-                      /* Collection selection grid */
-                      groupedCollections.map((row, rowIndex) => (
-                        <Grid
-                          container
-                          spacing={2}
-                          key={rowIndex}
-                          sx={{ mb: 2 }}
-                        >
-                          {row.map((collectionName) => (
-                            <Grid
-                              item
-                              key={collectionName}
-                              xs={12}
-                              sm={6}
-                              md={2.4}
-                              width={210}
-                            >
-                              <FormControl fullWidth variant="outlined">
-                                <InputLabel>{collectionName}</InputLabel>
-                                <Select
-                                  label={collectionName}
-                                  value={
-                                    selectedCollections.hasOwnProperty(
-                                      collectionName
-                                    )
-                                      ? selectedCollections[collectionName]
-                                      : ""
-                                  }
-                                  onChange={(e) => {
-                                    handleCollectionCodeChange(
-                                      collectionName,
-                                      e.target.value
-                                    );
-                                  }}
-                                  renderValue={() =>
-                                    getSelectedDisplayText(collectionName)
-                                  }
-                                  MenuProps={{
-                                    PaperProps: {
-                                      style: {
-                                        maxHeight: 300,
-                                      },
-                                    },
-                                  }}
-                                >
-                                  <MenuItem value="">Null</MenuItem>
-                                  {collectionsWithCodes[collectionName] &&
-                                    collectionsWithCodes[collectionName].map(
-                                      (item) => (
-                                        <MenuItem
-                                          key={item.code}
-                                          value={item.code}
-                                          sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "flex-start",
-                                          }}
-                                        >
-                                          <Typography variant="body1">
-                                            {item.code}
-                                          </Typography>
-                                          {item.description && (
-                                            <Typography
-                                              variant="caption"
-                                              color="text.secondary"
-                                              sx={{ lineHeight: 1 }}
-                                            >
-                                              {item.description}
-                                            </Typography>
-                                          )}
-                                        </MenuItem>
-                                      )
-                                    )}
-                                </Select>
-                              </FormControl>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      ))
-                    ) : (
-                      <Typography color="text.secondary">
-                        No collections available for the selected database and
-                        basic code.
-                      </Typography>
-                    )}
+                    <Typography variant="body1">{error}</Typography>
                   </Paper>
                 </Grid>
               )}
 
-              {/* Display generated label details */}
-              {allSelectionsDone && (
+              {/* Collections Dropdown Section */}
+              {showCollectionDropdown && !isLoading && (
                 <Grid item xs={12}>
-                  <TextField
-                    sx={{ width: "50rem" }}
-                    label="Label Details"
-                    variant="outlined"
-                    value={LabelDetails}
-                    onChange={(e) => setLabelDetails(e.target.value)}
-                    required
-                    InputProps={{
-                      readOnly: false,
-                    }}
-                  />
+                  <Paper sx={{ p: 3, bgcolor: "grey.50", borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom color="text.primary">
+                      Select Collection Codes ({selectedDatabase} Database)
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+
+                    {groupedCollections.map((group, groupIndex) => {
+                      // Chunk the group into subgroups of 6
+                      const chunksOfSix = chunkArray(group, 9);
+
+                      return chunksOfSix.map((chunk, chunkIndex) => (
+                        <Grid
+                          container
+                          spacing={1}
+                          key={`${groupIndex}-${chunkIndex}`}
+                          sx={{ mb: 2, ml: 2 }}
+                        >
+                          {chunk.map((collectionName) => {
+                            const codeItems =
+                              collectionsWithCodes[collectionName] || [];
+                            return (
+                              <Grid
+                                item
+                                xs={12}
+                                sm={6}
+                                md={4}
+                                lg={2}
+                                xl={2}
+                                key={collectionName}
+                              >
+                                <FormControl
+                                  fullWidth
+                                  variant="outlined"
+                                  size="small"
+                                  sx={{ minWidth: 210 }}
+                                >
+                                  <InputLabel>{collectionName}</InputLabel>
+                                  <Select
+                                    label={collectionName}
+                                    value={
+                                      selectedCollections[collectionName] || ""
+                                    }
+                                    onChange={(e) =>
+                                      handleCollectionCodeChange(
+                                        collectionName,
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <MenuItem value="">None</MenuItem>
+                                    {codeItems.map((item, index) => (
+                                      <MenuItem key={index} value={item.code}>
+                                        <Tooltip
+                                          title={item.description || item.code}
+                                          arrow
+                                        >
+                                          <Box>
+                                            {item.code}
+                                            {item.description &&
+                                              ` - ${item.description}`}
+                                          </Box>
+                                        </Tooltip>
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
+                      ));
+                    })}
+                  </Paper>
                 </Grid>
               )}
-            </Grid>
 
-            {/* Submit Button */}
-            <Box display="flex" justifyContent="flex-end" mt={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="error"
-                endIcon={<ArrowForwardIcon />}
-                size="large"
-                sx={{ px: 4, py: 1 }}
-              >
-                Submit
-              </Button>
-            </Box>
+              {/* Selected Collections Display */}
+              {/* {Object.keys(selectedCollections).length > 0 && (
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, bgcolor: "info.light", borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom color="info.main">
+                      Selected Collections
+                    </Typography>
+                    <Box display="flex" flexWrap="wrap" gap={1}>
+                      {Object.entries(selectedCollections).map(
+                        ([collectionName, code]) => (
+                          <Chip
+                            key={collectionName}
+                            label={`${collectionName}: ${getSelectedDisplayText(
+                              collectionName
+                            )}`}
+                            onDelete={() =>
+                              handleRemoveCollection(collectionName)
+                            }
+                            color="info"
+                            variant="outlined"
+                            sx={{ m: 0.5 }}
+                          />
+                        )
+                      )}
+                    </Box>
+                  </Paper>
+                </Grid>
+              )} */}
+
+              {/* Label Details Display */}
+              {LabelDetails && (
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, borderRadius: 2, width: "100%" }}>
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{ fontWeight: "bold" }}
+                    >
+                      Label Details
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      variant="outlined"
+                      value={LabelDetails}
+                      onChange={(e) => setLabelDetails(e.target.value)}
+                      InputProps={{
+                        readOnly: false,
+                        sx: { fontSize: "1.1rem", fontWeight: "medium" },
+                      }}
+                      sx={{ width: "100%" }}
+                    />
+                  </Paper>
+                </Grid>
+              )}
+
+              {/* Submit Button */}
+              <Grid item xs={12}>
+                <Box display="flex" justifyContent="center" mt={3}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    endIcon={<ArrowForwardIcon />}
+                    sx={{
+                      px: 6,
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontSize: "1.1rem",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Save Label
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           </form>
         </CardContent>
       </Card>

@@ -349,7 +349,6 @@ const MainPageTable = () => {
         return rowData;
       });
 
-     
       autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
@@ -358,7 +357,6 @@ const MainPageTable = () => {
         alternateRowStyles: { fillColor: [245, 245, 245] },
         styles: { fontSize: 8 },
       });
-      
 
       doc.save("label_data.pdf");
       showAlert("PDF file downloaded successfully");
@@ -367,7 +365,6 @@ const MainPageTable = () => {
       showAlert("Failed to export to PDF", "error");
     }
   };
-  
 
   const handlePrintTable = () => {
     setPrintView(true);
@@ -402,7 +399,15 @@ const MainPageTable = () => {
       const sz = label?.sz;
       const ss = label?.ss;
       const modelNumber =
-        label?.ModelNumber || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
+        label?.LabelDetails || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
+
+      const power = label?.powerSupply;
+
+      
+      const tamb = label?.Tamb;
+
+      
+      const protection = label?.ProtectionClass;
 
       const getCurrentMonthYear = () => {
         const now = new Date();
@@ -631,7 +636,7 @@ const MainPageTable = () => {
 
 <div class="flex flex-row  gap-[3rem]">
 <p>
-24 V DC, 60 Hz   
+${power}  
 </p>
 <p>
   Smax>20VA
@@ -641,12 +646,12 @@ const MainPageTable = () => {
 
 <p>
 
-Protection class : IP 67 / IP 67
+Protection class : ${protection}
 </p>
 
 
 <p>
-Tamb : -20.....+60°C (-4°....140° F)
+Tamb : ${tamb}
 </p>
 
 
@@ -820,7 +825,7 @@ Liner mat : PTFE
 
 <div class="flex flex-row  gap-[3rem]">
 <p>
-24 V DC, 60 Hz   
+${power}    
 </p>
 
 
@@ -828,12 +833,12 @@ Liner mat : PTFE
 
 <p>
 
-Protection class : IP 67 / IP 67
+Protection class : ${protection}
 </p>
 
 
 <p>
-Tamb : -20.....+60°C (-4°....140° F)
+Tamb : ${tamb}
 </p>
 
 
@@ -1001,9 +1006,9 @@ Liner mat : PTFE
     
           <!-- Right Section -->
           <div class="text-[7px] w-[60%] p-1 font-bold">
-            <p>24 V DC, 60 Hz</p>
+            <p>${power}</p>
             <p>Protection class: IP67/IP67</p>
-            <p>Tamb: -20°....+60°C (-4°....140°F)</p>
+            <p>Tamb: ${tamb}</p>
             
             <div class="flex gap-9">
               <p>Size : DN 100(4")</p>
@@ -1106,7 +1111,7 @@ Liner mat : PTFE
             <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
               
               <!-- Header -->
-             <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[3.5rem]">
+            <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[3.5rem]">
   <div class="h-full flex items-center">
     <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
   </div>
@@ -1143,9 +1148,9 @@ Liner mat : PTFE
                   <!-- Right Section -->
                   <div class="font-bold  text-[8px] h-4 p-1 flex font-fam ">
                     <div>
-                      <div>24 V DC, 60 Hz</div>
+                      <div>${power}</div>
                       <div>Protection class: IP67/IP67</div>
-                      <div class="whitespace-nowrap">Tamb: -20°....+60°C (-4°....140°F)</div>
+                      <div class="whitespace-nowrap">Tamb:${tamb}</div>
                       <div class="h-[2px]"></div>
                       
 
