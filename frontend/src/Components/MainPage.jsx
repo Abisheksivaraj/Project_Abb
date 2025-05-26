@@ -14,13 +14,11 @@ import MenuItem from "@mui/material/MenuItem";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 import logo from "../abb.svg";
-import MainPageTable from "./MainPageTable";
 
 function MainPage() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const img = new Image();
@@ -128,8 +126,6 @@ function MainPage() {
           </Toolbar>
         </Container>
       </AppBar>
-
-      <MainPageTable />
     </>
   );
 }

@@ -403,7 +403,8 @@ const MainPageTable = () => {
 
       const power = label?.powerSupply;
 
-      
+      const qmax = label?.selectedQmax;
+      const tmed = label?.selectedTmedDropdown;
       const tamb = label?.Tamb;
 
       
@@ -673,7 +674,7 @@ Size :  DN 150 (6")
 <div class="flex flex-row gap-[2.1rem]">
 <p>
 
-Qmax : 600 m³/h
+Qmax : ${qmax}
 </p>
 
 <p>
@@ -706,7 +707,7 @@ Liner mat : PTFE
 <div class="flex flex-row gap-5">
 <p>
 
- Tmed : 130°C (266°F)
+ Tmed : ${tmed}
 </p>
 
 <p>
@@ -860,7 +861,7 @@ Size :  DN 150 (6")
 <div class="flex flex-row gap-[2.1rem]">
 <p>
 
-Qmax : 600 m³/h
+Qmax : ${qmax}
 </p>
 
 <p>
@@ -893,7 +894,7 @@ Liner mat : PTFE
 <div class="flex flex-row gap-5">
 <p>
 
- Tmed : 130°C (266°F)
+ Tmed : ${tmed}
 </p>
 
 <p>
@@ -1016,7 +1017,7 @@ Liner mat : PTFE
             </div>
 
             <div class="flex gap-[1.5rem]">
-              <p>Qmax : 240 m³/h(4")</p>
+              <p>Qmax :${qmax}</p>
               <p>Fexc: 15_12.5 HZ</p>
             </div>
 
@@ -1026,7 +1027,7 @@ Liner mat : PTFE
             </div>
 
             <div class="flex gap-[1.4rem]">
-              <p>Tmed : 130°C (266°F)</p>
+              <p>Tmed :${tmed}</p>
               <p>PED:</p>
             </div>
 
@@ -1161,7 +1162,7 @@ Liner mat : PTFE
                       </div>
 
   <div class="flex items-center gap-[2.6rem]">
-    <div>Qmax: 2400 m³/h</div>
+    <div>Qmax:${qmax}</div>
     <div class="whitespace-nowrap">Fexc: 15_12.5 HZ</div>
   </div>
 
@@ -1171,7 +1172,7 @@ Liner mat : PTFE
   </div>
 
   <div class="flex items-center gap-[1.8rem]">
-    <div>Tmed: 130°C (266°F)</div>
+    <div>Tmed:${tmed}</div>
     <div>PED:</div>
   </div>
 

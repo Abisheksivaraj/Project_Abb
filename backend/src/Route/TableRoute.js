@@ -20,8 +20,20 @@ route.post("/table", async (req, res) => {
       ProtectionClass,
       Tamb,
       selectedQmax,
-      selectedTmedDropdown, // Fixed: matches frontend variable name
+      selectedTmedDropdown,
       Size,
+      LinerMaterial, // Add this to the destructuring
+      // Add the 10 additional fields from frontend
+      field1,
+      field2,
+      field3,
+      field4,
+      field5,
+      field6,
+      field7,
+      field8,
+      field9,
+      field10,
     } = req.body;
 
     // Log the received data for debugging
@@ -42,6 +54,17 @@ route.post("/table", async (req, res) => {
       selectedQmax,
       selectedTmedDropdown,
       Size,
+      LinerMaterial,
+      field1,
+      field2,
+      field3,
+      field4,
+      field5,
+      field6,
+      field7,
+      field8,
+      field9,
+      field10,
     });
 
     const newLabel = new Table({
@@ -59,8 +82,20 @@ route.post("/table", async (req, res) => {
       ProtectionClass,
       Tamb,
       selectedQmax,
-      selectedTmedDropdown, // Fixed: matches frontend variable name
+      selectedTmedDropdown,
       Size,
+      LinerMaterial,
+      // Include the additional fields if your schema supports them
+      field1,
+      field2,
+      field3,
+      field4,
+      field5,
+      field6,
+      field7,
+      field8,
+      field9,
+      field10,
     });
 
     await newLabel.save();

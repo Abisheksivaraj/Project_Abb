@@ -52,7 +52,6 @@ const tableSchema = new mongoose.Schema({
   Tamb: {
     type: String,
   },
-  // Fixed field names to match frontend
   selectedQmax: {
     type: String,
   },
@@ -60,6 +59,40 @@ const tableSchema = new mongoose.Schema({
     type: String,
   },
   Size: {
+    type: String,
+  },
+  LinerMaterial: {
+    type: String,
+  },
+  // Add the 10 additional display fields from the frontend
+  field1: {
+    type: String,
+  },
+  field2: {
+    type: String,
+  },
+  field3: {
+    type: String,
+  },
+  field4: {
+    type: String,
+  },
+  field5: {
+    type: String,
+  },
+  field6: {
+    type: String,
+  },
+  field7: {
+    type: String,
+  },
+  field8: {
+    type: String,
+  },
+  field9: {
+    type: String,
+  },
+  field10: {
     type: String,
   },
   createdAt: {

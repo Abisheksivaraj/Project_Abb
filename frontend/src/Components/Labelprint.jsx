@@ -26,10 +26,10 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import TagIcon from "@mui/icons-material/LocalOffer";
 import BarcodeIcon from "@mui/icons-material/QrCode";
 import CodeIcon from "@mui/icons-material/Code";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+
 import StatusIcon from "@mui/icons-material/RadioButtonChecked";
 import DeviceHubIcon from "@mui/icons-material/DeviceHub";
-import SettingsIcon from "@mui/icons-material/Settings";
+import FormatListNumberedRtlIcon from "@mui/icons-material/FormatListNumberedRtl";
 import FitbitIcon from "@mui/icons-material/Fitbit";
 import StraightenIcon from "@mui/icons-material/Straighten";
 import VersionIcon from "@mui/icons-material/Rule";
@@ -213,11 +213,12 @@ const LabelPrint = () => {
   const [ProtectionClass, setProtectionClass] = useState("");
   const [Tamb, setTamb] = useState("");
   const [Size, setSize] = useState("");
+  const [LinerMaterial, setLinerMaterial] = useState("");
   // const [Qmax, setQmax] = useState("");
   // const [Tmed, setTmed] = useState("");
   // New states for Qmax and Tamb dropdowns
   const [selectedQmax, setSelectedQmax] = useState("");
-  const [selectedTmedDropdown, setSelectedTambDropdown] = useState("");
+  const [selectedTmedDropdown, setSelectedTmedDropdown] = useState("");
 
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
@@ -250,7 +251,7 @@ const LabelPrint = () => {
   // Handle Tamb dropdown change
   const handleTambDropdownChange = (event) => {
     const value = event.target.value;
-    setSelectedTambDropdown(value);
+    setSelectedTmedDropdown(value);
 
     // Update label details when Tamb changes
     updateLabelDetails(selectedCollections, ss, sz, basicCode);
@@ -350,11 +351,12 @@ const LabelPrint = () => {
 
     // Reset powerSupply when basic code changes
     setPowerSupply("");
+    setLinerMaterial();
     setProtectionClass("");
     setTamb("");
     setSize("");
     setSelectedQmax("");
-    setSelectedTambDropdown("");
+    setSelectedTmedDropdown("");
 
     // Determine which database to use based on the basic code
     const dbName = getDatabaseForBasicCode(value);
@@ -563,12 +565,12 @@ const LabelPrint = () => {
     }
 
     // Add Qmax and Tamb dropdown values to details if selected
-    if (selectedQmax) {
-      details += selectedQmax;
-    }
-    if (selectedTmedDropdown) {
-      details += selectedTmedDropdown;
-    }
+    // if (selectedQmax) {
+    //   details += selectedQmax;
+    // }
+    // if (selectedTmedDropdown) {
+    //   details += selectedTmedDropdown;
+    // }
 
     console.log(`Final label details: ${details}`);
 
@@ -667,6 +669,7 @@ const LabelPrint = () => {
         ss,
         sz,
         powerSupply,
+        LinerMaterial,
         ProtectionClass,
         Tamb,
 
@@ -701,7 +704,7 @@ const LabelPrint = () => {
         setSS("");
         setSZ("");
         setSelectedQmax("");
-        setSelectedTambDropdown("");
+        setSelectedTmedDropdown("");
         setSelectedCollections({});
         setShowCollectionDropdown(false);
         setAllSelectionsDone(false);
@@ -766,494 +769,472 @@ const LabelPrint = () => {
             <Grid container spacing={3}>
               {/* First row of fields */}
               <Grid item xs={12}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "200px" }}
-                      label="Serial Number"
-                      placeholder="Enter Serial Number..."
-                      variant="outlined"
-                      value={SerialNumber}
-                      onChange={(e) => setSerialNumber(e.target.value)}
-                      required
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {/* <SerialNumberIcon color="action" /> */}
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "200px" }}
-                      label="Tag Number"
-                      placeholder="Enter Tag Number..."
-                      variant="outlined"
-                      value={TagNumber}
-                      onChange={(e) => setTagNumber(e.target.value)}
-                      required
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <TagIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item>
-                    <FormControl variant="outlined" required>
-                      <InputLabel>Label Type</InputLabel>
-                      <Select
+                <Paper sx={{ p: 3 }}>
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item>
+                      <TextField
                         sx={{ width: "150px" }}
-                        label="Label Type"
-                        value={LabelType}
-                        onChange={handleLabelTypeChange}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <BarcodeIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="Sensor(96x98)">Sensor(96x98)</MenuItem>
-                        <MenuItem value="Sensor(115x35)">
-                          Sensor(115x35)
-                        </MenuItem>
-                        <MenuItem value="Sensor">Sensor</MenuItem>
-                        <MenuItem value="Transmitter">Transmitter</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                        label="Serial No"
+                        placeholder="Enter Serial Number..."
+                        variant="outlined"
+                        value={SerialNumber}
+                        onChange={(e) => setSerialNumber(e.target.value)}
+                        required
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <FormatListNumberedRtlIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
 
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Basic Code</InputLabel>
-                      <Select
+                    <Grid item>
+                      <TextField
                         sx={{ width: "150px" }}
-                        label="Basic Code"
-                        value={basicCode}
-                        onChange={handleBasicCodeChange}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <CodeIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="FEP631">FEP631 </MenuItem>
-                        <MenuItem value="FEP632">FEP632</MenuItem>
-                        <MenuItem value="FET632">FET632</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                        label="Tag No"
+                        placeholder="Enter Tag Number..."
+                        variant="outlined"
+                        value={TagNumber}
+                        onChange={(e) => setTagNumber(e.target.value)}
+                        required
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <TagIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
 
-                  {showLogoType && (
                     <Grid item>
                       <FormControl variant="outlined" required>
-                        <InputLabel>Logo Option</InputLabel>
+                        <InputLabel>Label Type</InputLabel>
                         <Select
                           sx={{ width: "150px" }}
-                          label="Logo Option"
-                          value={LogoType}
-                          onChange={(e) => setLogoType(e.target.value)}
+                          label="Label Type"
+                          value={LabelType}
+                          onChange={handleLabelTypeChange}
                           IconComponent={() => null}
                           endAdornment={
                             <InputAdornment position="end">
-                              <FitbitIcon color="action" />
+                              <BarcodeIcon color="action" />
                             </InputAdornment>
                           }
                         >
                           <MenuItem value="">Select</MenuItem>
-                          <MenuItem value="Logo_1">Logo 1 </MenuItem>
-                          <MenuItem value="Logo_2">Logo 2</MenuItem>
-                          <MenuItem value="Logo_3">Logo 3</MenuItem>
+                          <MenuItem value="Sensor(96x98)">
+                            Sensor(96x98)
+                          </MenuItem>
+                          <MenuItem value="Sensor(115x35)">
+                            Sensor(115x35)
+                          </MenuItem>
+                          <MenuItem value="Sensor">Sensor</MenuItem>
+                          <MenuItem value="Transmitter">Transmitter</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
-                  )}
 
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "200px" }}
-                      label="Manufacturing Date"
-                      type="date"
-                      variant="outlined"
-                      value={Date}
-                      onChange={(e) => setDate(e.target.value)}
-                      required
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <CalendarTodayIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
+                    <Grid item>
+                      <FormControl variant="outlined">
+                        <InputLabel>Basic Code</InputLabel>
+                        <Select
+                          sx={{ width: "150px" }}
+                          label="Basic Code"
+                          value={basicCode}
+                          onChange={handleBasicCodeChange}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <CodeIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="">Select</MenuItem>
+                          <MenuItem value="FEP631">FEP631 </MenuItem>
+                          <MenuItem value="FEP632">FEP632</MenuItem>
+                          <MenuItem value="FET632">FET632</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {showLogoType && (
+                      <Grid item>
+                        <FormControl variant="outlined" required>
+                          <InputLabel>Logo Option</InputLabel>
+                          <Select
+                            sx={{ width: "150px" }}
+                            label="Logo Option"
+                            value={LogoType}
+                            onChange={(e) => setLogoType(e.target.value)}
+                            IconComponent={() => null}
+                            endAdornment={
+                              <InputAdornment position="end">
+                                <FitbitIcon color="action" />
+                              </InputAdornment>
+                            }
+                          >
+                            <MenuItem value="">Select</MenuItem>
+                            <MenuItem value="Logo_1">Logo 1 </MenuItem>
+                            <MenuItem value="Logo_2">Logo 2</MenuItem>
+                            <MenuItem value="Logo_3">Logo 3</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                    )}
+
+                    <Grid item>
+                      <TextField
+                        sx={{ width: "150px" }}
+                        label="Manufacturing Date"
+                        type="date"
+                        variant="outlined"
+                        value={Date}
+                        onChange={(e) => setDate(e.target.value)}
+                        required
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <TextField
+                        sx={{ width: "120px" }}
+                        label="Device Version"
+                        placeholder="Enter Device Version..."
+                        variant="outlined"
+                        value={DevVersion}
+                        onChange={(e) => setDevVersion(e.target.value)}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <VersionIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
+                </Paper>
               </Grid>
 
-              {/* Second row of fields */}
+              {/* Second row - SS and SZ */}
               <Grid item xs={12}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        sx={{ width: "150px" }}
-                        label="Status"
-                        value={Status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <StatusIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="Active">Active</MenuItem>
-                        <MenuItem value="Inactive">Inactive</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Model Type</InputLabel>
-                      <Select
-                        sx={{ width: "150px" }}
+                <Paper sx={{ p: 3 }}>
+                  <Grid container spacing={2} alignItems="center">
+                    {/* Model Type */}
+                    <Grid item>
+                      <TextField
                         label="Model Type"
-                        value={modelType}
-                        onChange={handleModelTypeChange}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <DeviceHubIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="Sensor">Sensor</MenuItem>
-                        <MenuItem value="Transmitter">Transmitter</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "150px" }}
-                      label="Dev Version"
-                      placeholder="Enter Version..."
-                      variant="outlined"
-                      value={DevVersion}
-                      onChange={(e) => setDevVersion(e.target.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <VersionIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "100px" }}
-                      label="SS"
-                      placeholder="SS..."
-                      variant="outlined"
-                      value={ss}
-                      onChange={(e) => handleSSChange(e.target.value)}
-                      required
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <SettingsIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item>
-                    <TextField
-                      sx={{ width: "100px" }}
-                      label="SZ"
-                      placeholder="SZ..."
-                      variant="outlined"
-                      value={sz}
-                      onChange={(e) => handleSZChange(e.target.value)}
-                      required
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <StraightenIcon color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              {/* Qmax and Tmed Dropdowns */}
-              <Grid item xs={12}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Qmax</InputLabel>
-                      <Select
                         sx={{ width: "150px" }}
-                        label="Qmax"
-                        value={selectedQmax}
-                        onChange={handleQmaxChange}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <SpeedIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        {QMAX_OPTIONS.map((option) => (
-                          <MenuItem key={option.code} value={option.code}>
-                            <Tooltip title={option.description} arrow>
-                              <Box>
-                                {option.code} - {option.description}
-                              </Box>
-                            </Tooltip>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                        variant="outlined"
+                        value={modelType}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <DeviceHubIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
 
-                  <Grid item>
-                    <FormControl variant="outlined">
-                      <InputLabel>Tmed</InputLabel>
-                      <Select
-                        sx={{ width: "200px" }}
-                        label="Tmed"
-                        value={selectedTmedDropdown}
-                        onChange={handleTambDropdownChange}
-                        IconComponent={() => null}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <ThermostatIcon color="action" />
-                          </InputAdornment>
-                        }
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        {TMED_OPTIONS.map((option) => (
-                          <MenuItem key={option.code} value={option.code}>
-                            <Tooltip title={option.description} arrow>
-                              <Box>
-                                {option.code} - {option.description}
-                              </Box>
-                            </Tooltip>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    <Grid item>
+                      <FormControl variant="outlined" required>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          sx={{ width: "150px" }}
+                          label="Status"
+                          value={Status}
+                          onChange={(e) => setStatus(e.target.value)}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <StatusIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="Active">Active</MenuItem>
+                          <MenuItem value="Inactive">Inactive</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* SS Field */}
+                    <Grid item>
+                      <TextField
+                        sx={{ width: "150px" }}
+                        label="SS"
+                        placeholder="Enter SS..."
+                        variant="outlined"
+                        value={ss}
+                        onChange={(e) => handleSSChange(e.target.value)}
+                        required
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <StraightenIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    {/* SZ Field */}
+                    <Grid item>
+                      <TextField
+                        sx={{ width: "150px" }}
+                        label="SZ"
+                        placeholder="Enter SZ..."
+                        variant="outlined"
+                        value={sz}
+                        onChange={(e) => handleSZChange(e.target.value)}
+                        required
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <SpeedIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Qmax Dropdown */}
+                    <Grid item>
+                      <FormControl sx={{ width: "150px" }} variant="outlined">
+                        <InputLabel>Qmax</InputLabel>
+                        <Select
+                          label="Qmax"
+                          value={selectedQmax}
+                          onChange={handleQmaxChange}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <SpeedIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="">Select</MenuItem>
+                          {QMAX_OPTIONS.map((option) => (
+                            <MenuItem key={option.code} value={option.code}>
+                              {option.code} - {option.description}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Tmed Dropdown */}
+                    <Grid item>
+                      <FormControl sx={{ width: "200px" }} variant="outlined">
+                        <InputLabel>Tmed</InputLabel>
+                        <Select
+                          label="Tmed"
+                          value={selectedTmedDropdown}
+                          onChange={handleTambDropdownChange}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <ThermostatIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="">Select</MenuItem>
+                          {TMED_OPTIONS.map((option) => (
+                            <MenuItem key={option.code} value={option.code}>
+                              {option.code} - {option.description}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
                   </Grid>
-                </Grid>
+                </Paper>
               </Grid>
 
-              {/* Loading and Error States */}
-              {isLoading && (
-                <Grid item xs={12}>
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    py={2}
-                  >
-                    <CircularProgress size={24} sx={{ mr: 2 }} />
-                    <Typography>Loading collections...</Typography>
-                  </Box>
-                </Grid>
-              )}
-
-              {error && (
+              {/* Collections Section */}
+              {showCollectionDropdown && (
                 <Grid item xs={12}>
                   <Paper
+                    elevation={2}
                     sx={{
-                      p: 2,
-                      bgcolor: "error.light",
-                      color: "error.contrastText",
+                      p: 3,
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
                     }}
                   >
-                    <Typography variant="body1">{error}</Typography>
-                  </Paper>
-                </Grid>
-              )}
-
-              {/* Collections Dropdown Section */}
-              {showCollectionDropdown && !isLoading && (
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 3, bgcolor: "grey.50", borderRadius: 2 }}>
-                    <Typography variant="h6" gutterBottom color="text.primary">
-                      Select Collection Codes ({selectedDatabase} Database)
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-
-                    {groupedCollections.map((group, groupIndex) => {
-                      // Chunk the group into subgroups of 6
-                      const chunksOfSix = chunkArray(group, 9);
-
-                      return chunksOfSix.map((chunk, chunkIndex) => (
-                        <Grid
-                          container
-                          spacing={1}
-                          key={`${groupIndex}-${chunkIndex}`}
-                          sx={{ mb: 2, ml: 2 }}
-                        >
-                          {chunk.map((collectionName) => {
-                            const codeItems =
-                              collectionsWithCodes[collectionName] || [];
-                            return (
-                              <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                                md={4}
-                                lg={2}
-                                xl={2}
-                                key={collectionName}
-                              >
-                                <FormControl
-                                  fullWidth
-                                  variant="outlined"
-                                  size="small"
-                                  sx={{ minWidth: 210 }}
-                                >
-                                  <InputLabel>{collectionName}</InputLabel>
-                                  <Select
-                                    label={collectionName}
-                                    value={
-                                      selectedCollections[collectionName] || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleCollectionCodeChange(
-                                        collectionName,
-                                        e.target.value
-                                      )
-                                    }
-                                  >
-                                    <MenuItem value="">None</MenuItem>
-                                    {codeItems.map((item, index) => (
-                                      <MenuItem key={index} value={item.code}>
-                                        <Tooltip
-                                          title={item.description || item.code}
-                                          arrow
-                                        >
-                                          <Box>
-                                            {item.code}
-                                            {item.description &&
-                                              ` - ${item.description}`}
-                                          </Box>
-                                        </Tooltip>
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                            );
-                          })}
-                        </Grid>
-                      ));
-                    })}
-                  </Paper>
-                </Grid>
-              )}
-
-              {/* Selected Collections Display */}
-              {/* {Object.keys(selectedCollections).length > 0 && (
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 3, bgcolor: "info.light", borderRadius: 2 }}>
-                    <Typography variant="h6" gutterBottom color="info.main">
-                      Selected Collections
-                    </Typography>
-                    <Box display="flex" flexWrap="wrap" gap={1}>
-                      {Object.entries(selectedCollections).map(
-                        ([collectionName, code]) => (
-                          <Chip
-                            key={collectionName}
-                            label={`${collectionName}: ${getSelectedDisplayText(
-                              collectionName
-                            )}`}
-                            onDelete={() =>
-                              handleRemoveCollection(collectionName)
-                            }
-                            color="info"
-                            variant="outlined"
-                            sx={{ m: 0.5 }}
-                          />
-                        )
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <DeviceHubIcon sx={{ mr: 1, color: "primary.main" }} />
+                      <Typography variant="h6" fontWeight="bold">
+                        Configuration Options
+                      </Typography>
+                      {isLoading && (
+                        <CircularProgress size={20} sx={{ ml: 2 }} />
                       )}
                     </Box>
-                  </Paper>
-                </Grid>
-              )} */}
 
-              {/* Label Details Display */}
-              {LabelDetails && (
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 3, borderRadius: 2, width: "100%" }}>
-                    <Typography
-                      variant="h6"
-                      gutterBottom
-                      sx={{ fontWeight: "bold" }}
-                    >
-                      Label Details
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      variant="outlined"
-                      value={LabelDetails}
-                      onChange={(e) => setLabelDetails(e.target.value)}
-                      InputProps={{
-                        readOnly: false,
-                        sx: { fontSize: "1.1rem", fontWeight: "medium" },
-                      }}
-                      sx={{ width: "100%" }}
-                    />
+                    {error && (
+                      <Typography color="error" sx={{ mb: 2 }}>
+                        {error}
+                      </Typography>
+                    )}
+
+                    {filteredCollectionNames.length > 0 && (
+                      <Grid container spacing={2}>
+                        {chunkArray(filteredCollectionNames, 6).map(
+                          (chunk, chunkIndex) => (
+                            <Grid item xs={12} key={chunkIndex}>
+                              <Grid container spacing={2}>
+                                {chunk.map((collectionName) => (
+                                  <Grid item xs={4} key={collectionName}>
+                                    <FormControl
+                                      variant="outlined"
+                                      fullWidth={false} // set to false so width is not 100%
+                                      size="medium"
+                                      sx={{ width: "170px" }} // set your desired width here
+                                    >
+                                      <InputLabel>
+                                        {collectionName.length > 25
+                                          ? `${collectionName.substring(
+                                              0,
+                                              25
+                                            )}...`
+                                          : collectionName}
+                                      </InputLabel>
+                                      <Select
+                                        label={
+                                          collectionName.length > 25
+                                            ? `${collectionName.substring(
+                                                0,
+                                                25
+                                              )}...`
+                                            : collectionName
+                                        }
+                                        value={
+                                          selectedCollections[collectionName] ||
+                                          ""
+                                        }
+                                        onChange={(e) =>
+                                          handleCollectionCodeChange(
+                                            collectionName,
+                                            e.target.value
+                                          )
+                                        }
+                                        IconComponent={() => null}
+                                      >
+                                        <MenuItem value="">Select</MenuItem>
+                                        {collectionsWithCodes[
+                                          collectionName
+                                        ]?.map((item) => (
+                                          <MenuItem
+                                            key={item.code}
+                                            value={item.code}
+                                          >
+                                            <Tooltip
+                                              title={item.description || ""}
+                                              placement="top"
+                                            >
+                                              <Box>
+                                                {item.code}
+                                                {item.description &&
+                                                  ` - ${item.description.substring(
+                                                    0,
+                                                    30
+                                                  )}${
+                                                    item.description.length > 30
+                                                      ? "..."
+                                                      : ""
+                                                  }`}
+                                              </Box>
+                                            </Tooltip>
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                  </Grid>
+                                ))}
+                              </Grid>
+                            </Grid>
+                          )
+                        )}
+                      </Grid>
+                    )}
                   </Paper>
                 </Grid>
               )}
 
-              {/* Submit Button */}
+              {/* Summary Section */}
               <Grid item xs={12}>
-                <Box display="flex" justifyContent="center" mt={3}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="success"
-                    size="large"
-                    endIcon={<ArrowForwardIcon />}
-                    sx={{
-                      px: 6,
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontSize: "1.1rem",
-                      fontWeight: "bold",
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom fontWeight="bold">
+                    Model Number
+                  </Typography>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <TextField
+                    fullWidth
+                    label="Generated Model Number"
+                    variant="outlined"
+                    value={LabelDetails}
+                    onChange={(e) => setLabelDetails(e.target.value)}
+                    required
+                    multiline
+                    rows={1}
+                    InputProps={{
+                      readOnly: false,
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <CodeIcon color="action" />
+                        </InputAdornment>
+                      ),
                     }}
-                  >
-                    Save Label
-                  </Button>
-                </Box>
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "rgba(255, 255, 255, 0.8)",
+                        width: "70rem",
+                        height: "50px",
+                      },
+                    }}
+                  />
+                </Paper>
               </Grid>
+
+              {/* Submit Button */}
+            </Grid>
+            <Grid item xs={12} mt={3}>
+              <Box display="flex" justifyContent="flex-end" gap={2}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: "bold",
+                    background: (theme) =>
+                      `linear-gradient(45deg, ${theme.palette.success.main} 30%, ${theme.palette.success.dark} 90%)`,
+                    "&:hover": {
+                      background: (theme) =>
+                        `linear-gradient(45deg, ${theme.palette.success.dark} 30%, ${theme.palette.success.main} 90%)`,
+                    },
+                  }}
+                >
+                  Save Label
+                </Button>
+              </Box>
             </Grid>
           </form>
         </CardContent>
