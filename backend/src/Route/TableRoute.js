@@ -14,19 +14,35 @@ route.post("/table", async (req, res) => {
       DevVersion,
       Date,
       Status,
-      powerSupply,
-      Tamb,
-      size,
-      Qmax,
-      Linermat,
-      Tmed,
-      Fitting,
-      ProtectionClass,
-      Fexc,
-      Elect,
       ss,
       sz,
+      powerSupply,
+      ProtectionClass,
+      Tamb,
+      selectedQmax,
+      selectedTmedDropdown, // Fixed: matches frontend variable name
+      Size,
     } = req.body;
+
+    // Log the received data for debugging
+    console.log("Received form data:", {
+      LabelType,
+      SerialNumber,
+      TagNumber,
+      LabelDetails,
+      LogoType,
+      DevVersion,
+      Date,
+      Status,
+      ss,
+      sz,
+      powerSupply,
+      ProtectionClass,
+      Tamb,
+      selectedQmax,
+      selectedTmedDropdown,
+      Size,
+    });
 
     const newLabel = new Table({
       LabelType,
@@ -35,19 +51,16 @@ route.post("/table", async (req, res) => {
       LabelDetails,
       LogoType,
       Date,
-      ss,sz,
+      ss,
+      sz,
       Status,
       DevVersion,
       powerSupply,
-      Tamb,
-      size,
-      Qmax,
-      Linermat,
-      Tmed,
-      Fitting,
       ProtectionClass,
-      Fexc,
-      Elect,
+      Tamb,
+      selectedQmax,
+      selectedTmedDropdown, // Fixed: matches frontend variable name
+      Size,
     });
 
     await newLabel.save();
@@ -57,7 +70,9 @@ route.post("/table", async (req, res) => {
       .json({ message: "Label saved successfully", data: newLabel });
   } catch (error) {
     console.error("Saving Label Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
   }
 });
 
