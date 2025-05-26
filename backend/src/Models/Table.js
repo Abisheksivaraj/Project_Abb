@@ -46,37 +46,22 @@ const tableSchema = new mongoose.Schema({
   powerSupply: {
     type: String,
   },
-  Tamb: {
-    type: String,
-  },
-  size: {
-    type: String,
-  },
-  Qmax: {
-    type: String,
-  },
-  Linermat: {
-    type: String,
-  },
-  Tmed: {
-    type: String,
-  },
-  Fitting: {
-    type: String,
-  },
-
   ProtectionClass: {
     type: String,
   },
-
-  Fexc: {
+  Tamb: {
     type: String,
   },
-
-  Elect: {
+  // Fixed field names to match frontend
+  selectedQmax: {
     type: String,
   },
-
+  selectedTmedDropdown: {
+    type: String,
+  },
+  Size: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -200,4 +200,63 @@ route.get("/all-collections-data", async (req, res) => {
   }
 });
 
+
+
+
+
+// Route to get data from a specific collection by name
+route.get("/collections-by-name/:collectionName", async (req, res) => {
+  try {
+    const { collectionName } = req.params;
+
+    // Validate collection name (basic security check)
+    if (!collectionName || typeof collectionName !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid collection name provided",
+      });
+    }
+
+    // Skip excluded collections for security
+    const excludedCollections = ["admins", "tabledatas"];
+    if (excludedCollections.includes(collectionName.toLowerCase())) {
+      return res.status(403).json({
+        success: false,
+        message: "Access to this collection is not allowed",
+      });
+    }
+
+    // Get the dynamic model for the collection
+    const model = await getModelByCollectionName(collectionName);
+    
+    if (!model) {
+      return res.status(404).json({
+        success: false,
+        message: `Collection '${collectionName}' not found`,
+      });
+    }
+
+    // Fetch all documents from the collection
+    const data = await model.find({}).select("code description -_id");
+
+    // Log for debugging
+    console.log(`Retrieved ${data.length} documents from collection: ${collectionName}`);
+
+    res.json({
+      success: true,
+      collection: collectionName,
+      data: data,
+      count: data.length,
+    });
+
+  } catch (error) {
+    console.error(`Error fetching data from collection ${req.params.collectionName}:`, error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching collection data",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = route;
