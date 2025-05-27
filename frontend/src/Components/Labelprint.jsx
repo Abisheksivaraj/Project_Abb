@@ -214,8 +214,8 @@ const LabelPrint = () => {
   const [Tamb, setTamb] = useState("");
   const [Size, setSize] = useState("");
   const [LinerMaterial, setLinerMaterial] = useState("");
-  // const [Qmax, setQmax] = useState("");
-  // const [Tmed, setTmed] = useState("");
+  const [Fitting, setFitting] = useState("");
+  const [Elect, setElect] = useState("");
   // New states for Qmax and Tamb dropdowns
   const [selectedQmax, setSelectedQmax] = useState("");
   const [selectedTmedDropdown, setSelectedTmedDropdown] = useState("");
@@ -354,6 +354,8 @@ const LabelPrint = () => {
     setLinerMaterial();
     setProtectionClass("");
     setTamb("");
+    setFitting();
+    setElect();
     setSize("");
     setSelectedQmax("");
     setSelectedTmedDropdown("");
@@ -419,6 +421,7 @@ const LabelPrint = () => {
   };
 
   // Handle collection code selection
+  // Handle collection code selection - FIXED VERSION
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
 
@@ -446,8 +449,22 @@ const LabelPrint = () => {
     const isSize =
       trimmedName === "Nominal Diameter" ||
       (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
-      lowerName.includes("nominaldiameter") ||
-      (lowerName.includes("size") && lowerName.includes("diameter"));
+      lowerName.includes("nominaldiameter");
+
+    // Process connection detection for Fitting
+    const isProcessConnection =
+      trimmedName === "Process connection" ||
+      lowerName.includes("process connection") ||
+      lowerName.includes("processconnection");
+
+    // FIXED: Measuring electrode material detection for Elect
+    const isElect =
+      trimmedName === "Measuring electrode material" ||
+      lowerName.includes("measuring electrode material") ||
+      lowerName.includes("measuringelectrodematerial") ||
+      (lowerName.includes("measuring") &&
+        lowerName.includes("electrode") &&
+        lowerName.includes("material"));
 
     console.log(`Collection "${collectionName}" detection:`, {
       isPowerSupply,
@@ -455,8 +472,10 @@ const LabelPrint = () => {
       isTamb,
       isAmbianceRangeTransmitter,
       isSize,
+      isProcessConnection,
+      isElect,
       lowerName,
-      trimmedName, // Added for debugging
+      trimmedName,
     });
 
     // Handle special collections
@@ -465,7 +484,9 @@ const LabelPrint = () => {
       isProtectionClass ||
       isTamb ||
       isAmbianceRangeTransmitter ||
-      isSize
+      isSize ||
+      isProcessConnection ||
+      isElect
     ) {
       let setStateFunction = null;
       let fieldName = "";
@@ -482,6 +503,12 @@ const LabelPrint = () => {
       } else if (isSize) {
         setStateFunction = setSize;
         fieldName = "Size/Nominal Diameter";
+      } else if (isProcessConnection) {
+        setStateFunction = setFitting;
+        fieldName = "Process Connection/Fitting";
+      } else if (isElect) {
+        setStateFunction = setElect;
+        fieldName = "Measuring electrode material/Elect";
       }
 
       if (setStateFunction) {
@@ -493,12 +520,23 @@ const LabelPrint = () => {
           const matchingItem = codeItems.find(
             (item) => item.code === codeValue
           );
-          const description = matchingItem?.description || codeValue;
 
-          setStateFunction(description);
-          console.log(
-            `${fieldName} selected - Code: ${codeValue}, Description: ${description}`
-          );
+          // FIXED: Store the code value instead of description for Size
+          // This ensures the actual code gets sent to the backend
+          if (isSize) {
+            // For Size, store the code value (which contains the actual size info)
+            setStateFunction(codeValue);
+            console.log(
+              `${fieldName} selected - Code: ${codeValue} (stored as code)`
+            );
+          } else {
+            // For other fields, store the description as before
+            const description = matchingItem?.description || codeValue;
+            setStateFunction(description);
+            console.log(
+              `${fieldName} selected - Code: ${codeValue}, Description: ${description}`
+            );
+          }
         }
       }
     }
@@ -533,8 +571,7 @@ const LabelPrint = () => {
 
   const updateLabelDetails = (
     selections,
-    currentSS,
-    currentSZ,
+
     currentBasicCode
   ) => {
     let details = currentBasicCode || "";
@@ -672,7 +709,8 @@ const LabelPrint = () => {
         LinerMaterial,
         ProtectionClass,
         Tamb,
-
+        Fitting,
+        Elect,
         Size,
         selectedQmax,
         selectedTmedDropdown,

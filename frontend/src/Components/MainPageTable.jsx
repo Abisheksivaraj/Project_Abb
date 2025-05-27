@@ -123,7 +123,6 @@ const MainPageTable = () => {
     fetchTableData();
   }, []);
 
-  // Sorting logic
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -158,14 +157,12 @@ const MainPageTable = () => {
     return 0;
   });
 
-  // Filter by search term across all columns
   const filteredData = sortedData.filter((row) =>
     Object.values(row).some((value) =>
       String(value).toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  // Pagination handlers
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -406,8 +403,10 @@ const MainPageTable = () => {
       const qmax = label?.selectedQmax;
       const tmed = label?.selectedTmedDropdown;
       const tamb = label?.Tamb;
-
-      
+      const fitting = label?.Fitting;
+      const elect = label?.Elect;
+      const size = label?.Size;
+      const fexc = label?.Fexc;
       const protection = label?.ProtectionClass;
 
       const getCurrentMonthYear = () => {
@@ -562,192 +561,201 @@ const MainPageTable = () => {
 
       if (labelType === "sensor(115x35)") {
         printContainer.innerHTML = `
-        <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Sensor Label Print</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            @page {
-              size: 115mm 35mm;
-              margin: 0;
-            }
-            body {
-              -webkit-print-color-adjust: exact;
-              margin: 0;
-              padding: 0;
-            }
-            * {
-              box-sizing: border-box;
-              color: black;
-            }
-            .label-border {
-              border: 2px solid black;
-              box-sizing: border-box;
-            }
-            .divider {
-              border-color: black;
-            }
-          </style>
-        </head>
-        <body class="m-0 p-0 font-sans text-black text-[7px]">
-          <!-- Single container with complete border -->
-          <div class="w-[115mm] h-[35mm] label-border">
-            <!-- Inner padding wrapper -->
-            <div class="flex flex-col h-full">
-              <!-- Header with bottom border -->
-            <div class="flex justify-between items-center border-b-2 border-black">
-
-                <!-- Left Logo -->
-                <div class="w-[2.5rem] flex-shrink-0">
-                  <img src=${black} alt="ABB Logo" class="w-full object-contain" />
+       <!DOCTYPE html>
+<html>
+<head>
+    <title>ABB ProcessMaster 630 Label</title>
+    <style>
+        @page {
+            size: 115mm 35mm;
+            margin: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 7px;
+            line-height: 1.1;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .label-container {
+            width: 115mm;
+            height: 35mm;
+            border: 2px solid black;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid black;
+            padding: 2px 4px;
+            height: 20px;
+        }
+        
+        .abb-logo {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            width: 35px;
+        }
+        
+        .title {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .dispose-icon {
+            width: 15px;
+            height: 15px;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+        
+        .left-section {
+            width: 50%;
+            border-right: 2px solid black;
+            padding: 3px;
+            display: flex;
+            position: relative;
+        }
+        
+        .left-text {
+            flex: 1;
+        }
+        
+        .qr-code {
+            position: absolute;
+            right: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 35px;
+            height: 35px;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+        }
+        
+        .right-section {
+            width: 50%;
+            padding: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1px;
+        }
+        
+        .info-item {
+            font-size: 7px;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="label-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="abb-logo">ABB</div>
+            <div class="title">ProcessMaster 630</div>
+            <div class="dispose-icon">🗑</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Section -->
+            <div class="left-section">
+                <div class="left-text font-bold text-[8px]">
+                    <div><span class="font-bold">Serial No :</span> ${serialNumber}</div>
+                    <div style="margin-top: 2px;"><span class="bold">Model number:</span> ${modelNumber.substring(
+                      0,
+                      30
+                    )}</div>
+                    <div style="margin-top: 2px;">${modelNumber.substring(
+                      30,
+                      65
+                    )}</div>
+                    <div style="margin-top: 2px;">${modelNumber.substring(
+                      65,
+                      90
+                    )}</div>
+                    <div style="margin-top: 8px;"><span class="bold">Dev. version:</span> ${deviceVersion}</div>
+                    <div style="margin-top: 2px;"><span class="bold">Update:</span></div>
                 </div>
-                <!-- Title -->
-                <div class="text-center text-[14px] font-bold flex-grow">ProcessMaster 630</div>
-                <!-- Dispose Icon -->
-                <div class="w-[6mm] h-[6mm] flex-shrink-0">
-                  <img src=${dispose} alt="Dispose" class="w-full h-full object-contain" />
-                </div>
-              </div>
-              <!-- Main content flex container -->
-              <div class="flex font-bold text-[8px] mt-1 leading-[0.8rem] flex-grow">
                 
-            <!-- Left side with fixed-width columns to ensure QR code doesn't resize -->
-      <div class="w-1/2 p-1 border-r-2 divider h-full flex flex-col justify-between">
-        <div class="flex">
-          <!-- Fixed width for the text column -->
-          <div class="flex flex-col space-y-[1px] w-[60%] overflow-hidden mr-1">
-            <div class="w-full whitespace-nowrap">Serial No: ${serialNumber}</div>
-            <div class="pb-1">
-              <span class="font-bold">Model number: </span>
-              <span class="break-words">${modelNumber}</span>
-            </div>
-            <div><strong>Dev. version:</strong>${deviceVersion}</div>
-            <div><strong>Update:</strong></div>
-          </div>
-          <!-- Fixed size for QR code -->
-          <div class="w-[40px]  mt-12 ml-[3rem] flex-shrink-0">
+                <!-- QR Code -->
+               <div class="w-[40px]  mt-[4rem] -ml-[3rem] flex-shrink-0">
             <img src=${qrDataUrl} alt="QR" class="border w-[40px] h-[40px] object-contain" />
           </div>
-        </div>
-      </div>
-                <!-- Right side full height -->
-                <div class="w-[60%] pl-2 text-[8px] leading-[10px] h-full">
-            
-
-<div class="flex flex-row  gap-[3rem]">
-<p>
-${power}  
-</p>
-<p>
-  Smax>20VA
-</p>
-
-</div>
-
-<p>
-
-Protection class : ${protection}
-</p>
-
-
-<p>
-Tamb : ${tamb}
-</p>
-
-
-<div class="flex flex-row gap-8">
-<p>
-
-Size :  DN 150 (6")
-</p>
-
-<p>
-
- Fitting: ASME CL150
-</p>
-
-
-</div>
-
-
-<div class="flex flex-row gap-[2.1rem]">
-<p>
-
-Qmax : ${qmax}
-</p>
-
-<p>
-
-
- Fexec: 15_12.5 HZ
-</p>
-
-
-</div>
-
-
-
-
-<div class="flex flex-row gap-12">
-<p>
-
-Liner mat : PTFE
-</p>
-
-<p>
-
-  Elect:Stainless steel 316Ti (1.4571)
-</p>
-
-
-</div>
-
-
-<div class="flex flex-row gap-5">
-<p>
-
- Tmed : ${tmed}
-</p>
-
-<p>
-
- PED:
-
-</p>
-
-
-</div>
-
-
-
-<div class="flex flex-row gap-[4.2rem]">
-<p>
-
- Ss: ${ss}
-</p>
-
-<p>
- Sz: ${sz}
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-                </div>
-              </div>
             </div>
-          </div>
-        </body>
-      </html>
-      
+            
+            <!-- Right Section -->
+            <div class="right-section"> 
+                <div class="info-row">
+                    <div class="info-item text-[8px] font-bold">24 V DC, 60 Hz</div>
+                    <div class="info-item text-[8px] font-bold">Smax>20VA</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Protection class : IP 67 / IP 67</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Tamb : -20.....+60°C (-4°.....140° F)</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Size : DN 150 (6")</div>
+                    <div class="info-item">Fitting: ASME C1150</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Qmax : 600 m³/h</div>
+                    <div class="info-item">Fexec: 15_12.5 HZ</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Liner mat : PTFE</div>
+                    <div class="info-item">Elect:Stainless steel 316Ti (1.4571)</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Tmed : 130°C (266°F)</div>
+                    <div class="info-item">PED:</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">Ss: 205.610</div>
+                    <div class="info-item">Sz: 0.34720</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
       `;
       } else if (labelType === "transmitter") {
         printContainer.innerHTML = `
@@ -807,10 +815,7 @@ Liner mat : PTFE
           <!-- Fixed width for the text column -->
           <div class="flex flex-col space-y-[1px] w-[60%] overflow-hidden mr-1">
             <div class="w-full whitespace-nowrap">Serial No: ${serialNumber}</div>
-            <div class="pb-1">
-              <span class="font-bold">Model number: </span>
-              <span class="break-words">${modelNumber}</span>
-            </div>
+            <div>Model number: <span class="break-words">${modelNumber}</span></div>
             <div><strong>Dev. version:</strong>${deviceVersion}</div>
             <div><strong>Update:</strong></div>
           </div>
@@ -846,12 +851,12 @@ Tamb : ${tamb}
 <div class="flex flex-row gap-8">
 <p>
 
-Size :  DN 150 (6")
+Size :${size}
 </p>
 
 <p>
 
- Fitting: ASME CL150
+ Fitting: ${fitting}
 </p>
 
 
@@ -884,7 +889,7 @@ Liner mat : PTFE
 
 <p>
 
-  Elect:Stainless steel 316Ti (1.4571)
+  Elect:${elect}
 </p>
 
 
@@ -1012,18 +1017,18 @@ Liner mat : PTFE
             <p>Tamb: ${tamb}</p>
             
             <div class="flex gap-9">
-              <p>Size : DN 100(4")</p>
-              <p>Fitting: ASME CL 150</p>
+              <p>Size :${size}</p>
+              <p>Fitting:${fitting}</p>
             </div>
 
             <div class="flex gap-[1.5rem]">
               <p>Qmax :${qmax}</p>
-              <p>Fexc: 15_12.5 HZ</p>
+              <p>Fexc:${fexc}</p>
             </div>
 
             <div class="flex gap-[2.4rem]">
               <p>Liner mat : PTFE</p>
-              <p>Elect: Stainless steel 316Ti (1.4571)</p>
+              <p>Elect:${elect}</p>
             </div>
 
             <div class="flex gap-[1.4rem]">
@@ -1112,7 +1117,7 @@ Liner mat : PTFE
             <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
               
               <!-- Header -->
-            <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[3.5rem]">
+            <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
   <div class="h-full flex items-center">
     <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
   </div>
@@ -1128,7 +1133,7 @@ Liner mat : PTFE
                 <!-- Upper Section -->
                 <div class="flex w-full border-b-2 font-semibold border-black">
                   <!-- Left Section -->
-                 <div class="w-[9rem] font-bold  text-[8px] border-r-2 border-black p-1">
+                <div class="w-[10rem] font-bold  text-[8px] border-r-2 border-black p-1">
   <div>Serial No: ${serialNumber}</div>
   
   <div>Model number: <span class="break-words">${modelNumber}</span></div>
@@ -1158,17 +1163,17 @@ Liner mat : PTFE
 <div class="flex flex-col gap-[1px]">
 <div class="flex gap-[.8rem]">
                       <div class="w-full">size:DN 300 (12")</div>
-                      <div class="w-full whitespace-nowrap">Fitting: ASME CL150</div>
+                      <div class="w-full whitespace-nowrap">Fitting:${fitting}</div>
                       </div>
 
   <div class="flex items-center gap-[2.6rem]">
     <div>Qmax:${qmax}</div>
-    <div class="whitespace-nowrap">Fexc: 15_12.5 HZ</div>
+    <div class="whitespace-nowrap">Fexc:${fexc}</div>
   </div>
 
   <div class="flex items-center gap-[2.8rem]">
     <div class="whitespace-nowrap">Liner mat: PTFE</div>
-    <div class="whitespace-nowrap">Elect: Hast. C-4 (2.4610)</div>
+    <div class="whitespace-nowrap">Elect:${elect}</div>
   </div>
 
   <div class="flex items-center gap-[1.8rem]">

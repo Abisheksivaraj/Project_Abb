@@ -64,41 +64,93 @@ const tableSchema = new mongoose.Schema({
   LinerMaterial: {
     type: String,
   },
-  // Add the 10 additional display fields from the frontend
-  field1: {
+  Fitting: {
     type: String,
   },
-  field2: {
+  Elect: {
     type: String,
   },
-  field3: {
-    type: String,
-  },
-  field4: {
-    type: String,
-  },
-  field5: {
-    type: String,
-  },
-  field6: {
-    type: String,
-  },
-  field7: {
-    type: String,
-  },
-  field8: {
-    type: String,
-  },
-  field9: {
-    type: String,
-  },
-  field10: {
+  Fexc: {
     type: String,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+});
+
+// Pre-save middleware to automatically set Fexc based on Size
+tableSchema.pre("save", function (next) {
+  // Only set Fexc if Size is provided
+  if (this.Size) {
+    // Extract numeric value from Size (assuming format like "DN 50", "DN 100", etc.)
+    const sizeMatch = this.Size.match(/DN\s*(\d+)/i);
+
+    if (sizeMatch) {
+      const sizeValue = parseInt(sizeMatch[1]);
+
+      if (sizeValue < 65) {
+        this.Fexc = "30_15 HZ";
+      } else if (sizeValue >= 65) {
+        this.Fexc = "15_12.5 HZ";
+      }
+    } else {
+      // If Size doesn't match DN format, try to extract just the number
+      const numericMatch = this.Size.match(/(\d+)/);
+      if (numericMatch) {
+        const sizeValue = parseInt(numericMatch[1]);
+
+        if (sizeValue < 65) {
+          this.Fexc = "30_15 HZ";
+        } else if (sizeValue >= 65) {
+          this.Fexc = "15_12.5 HZ";
+        }
+      }
+    }
+  }
+
+  next();
+});
+
+// Pre-update middleware to handle updates
+tableSchema.pre(["updateOne", "findOneAndUpdate"], function (next) {
+  const update = this.getUpdate();
+
+  // Check if Size is being updated
+  if (update.Size || (update.$set && update.$set.Size)) {
+    const sizeValue = update.Size || update.$set.Size;
+
+    // Extract numeric value from Size
+    const sizeMatch = sizeValue.match(/DN\s*(\d+)/i);
+    let numericSize;
+
+    if (sizeMatch) {
+      numericSize = parseInt(sizeMatch[1]);
+    } else {
+      const numericMatch = sizeValue.match(/(\d+)/);
+      if (numericMatch) {
+        numericSize = parseInt(numericMatch[1]);
+      }
+    }
+
+    if (numericSize !== undefined) {
+      if (numericSize < 65) {
+        if (update.$set) {
+          update.$set.Fexc = "30_15 HZ";
+        } else {
+          update.Fexc = "30_15 HZ";
+        }
+      } else if (numericSize >= 65) {
+        if (update.$set) {
+          update.$set.Fexc = "15_12.5 HZ";
+        } else {
+          update.Fexc = "15_12.5 HZ";
+        }
+      }
+    }
+  }
+
+  next();
 });
 
 const table = mongoose.model("tableData", tableSchema);
