@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const connectDb = async () => {
   try {
     // Use process.env.MONGO_URI to access environment variable
-    const mongoUri ="mongodb://localhost:27017/Project";
+    const mongoUri = "mongodb://127.0.0.1:27017/Project";
 
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected successfully");
