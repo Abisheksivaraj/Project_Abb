@@ -5,129 +5,604 @@ const {
 } = require("../Models/DynamicModals");
 const route = express.Router();
 const mongoose = require("mongoose");
-
 const { MongoClient } = require("mongodb");
 
-// MongoDB connection string with connection pooling
-const uri =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://abishekwebdev:2222@projectabb.casqv0l.mongodb.net/" ||
-  "mongodb://localhost:27017";
+// MongoDB connection string with better fallback handling
+const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
+const defaultDbName = process.env.DEFAULT_DB_NAME || "ProjectABB";
 
 // Create a cached client instance to avoid reconnecting on every request
 let clientConnection = null;
 
-// Get MongoDB client connection
+// Get MongoDB client connection with better error handling
 const getClient = async () => {
-  if (!clientConnection) {
-    const client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10,
-    });
-    clientConnection = await client.connect();
+  try {
+    if (!clientConnection) {
+      console.log("Creating new MongoDB connection...");
+      const client = new MongoClient(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 10000,
+      });
+      clientConnection = await client.connect();
+      console.log("MongoDB connection established successfully");
+    }
+    return clientConnection;
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error);
+    clientConnection = null;
+    throw error;
   }
-  return clientConnection;
 };
 
-// Endpoint to get collections from a specific database with codes and descriptions
-route.get("/collections-by-database/:dbName", async (req, res) => {
-  try {
-    const dbName = req.params.dbName;
+// 1. GET ALL DATABASES
+route.get("/databases", async (req, res) => {
+  console.log("\n=== Fetching all databases ===");
 
-    // Validate the database name for security
+  try {
+    const client = await getClient();
+    const adminDb = client.db().admin();
+    const databases = await adminDb.listDatabases();
+
+    // Filter out system databases if needed
+    const userDatabases = databases.databases.filter(
+      (db) => !["admin", "local", "config"].includes(db.name)
+    );
+
+    console.log(`Found ${userDatabases.length} user databases`);
+
+    res.json({
+      success: true,
+      databases: userDatabases.map((db) => ({
+        name: db.name,
+        sizeOnDisk: db.sizeOnDisk,
+        empty: db.empty || false,
+      })),
+      totalDatabases: userDatabases.length,
+    });
+  } catch (error) {
+    console.error("Error fetching databases:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching databases",
+      error: error.message,
+    });
+  }
+});
+
+// 2. GET DATABASE STRUCTURE (databases with their collections)
+route.get("/database-structure", async (req, res) => {
+  console.log("\n=== Fetching complete database structure ===");
+
+  try {
+    const client = await getClient();
+    const adminDb = client.db().admin();
+    const databases = await adminDb.listDatabases();
+
+    const databaseStructure = {};
+
+    // Get collections for each database
+    for (const dbInfo of databases.databases) {
+      // Skip system databases
+      if (["admin", "local", "config"].includes(dbInfo.name)) {
+        continue;
+      }
+
+      try {
+        const db = client.db(dbInfo.name);
+        const collections = await db.listCollections().toArray();
+
+        databaseStructure[dbInfo.name] = {
+          info: {
+            sizeOnDisk: dbInfo.sizeOnDisk,
+            empty: dbInfo.empty || false,
+          },
+          collections: collections.map((col) => ({
+            name: col.name,
+            type: col.type || "collection",
+          })),
+        };
+
+        console.log(
+          `Database ${dbInfo.name}: ${collections.length} collections`
+        );
+      } catch (dbError) {
+        console.error(`Error accessing database ${dbInfo.name}:`, dbError);
+        databaseStructure[dbInfo.name] = {
+          info: { error: "Access denied or connection failed" },
+          collections: [],
+        };
+      }
+    }
+
+    res.json({
+      success: true,
+      databaseStructure,
+      totalDatabases: Object.keys(databaseStructure).length,
+    });
+  } catch (error) {
+    console.error("Error fetching database structure:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching database structure",
+      error: error.message,
+    });
+  }
+});
+
+// 3. GET COLLECTIONS FOR A SPECIFIC DATABASE
+route.get("/databases/:dbName/collections", async (req, res) => {
+  const { dbName } = req.params;
+  console.log(`\n=== Fetching collections for database: ${dbName} ===`);
+
+  try {
+    // Validate database name
     const allowedDatabases = [
       "Fep631",
-      "ProjectAbb",
-      "test",
+      "ProjectABB",
+      "Project",
       "Fep632",
       "Transmitter",
+      "admin",
     ];
+
     if (!allowedDatabases.includes(dbName)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid database name",
+        message: `Invalid database name. Allowed databases: ${allowedDatabases.join(
+          ", "
+        )}`,
       });
     }
 
     const client = await getClient();
     const db = client.db(dbName);
+    const collections = await db.listCollections().toArray();
+
+    console.log(`Found ${collections.length} collections in ${dbName}`);
+
+    res.json({
+      success: true,
+      database: dbName,
+      collections: collections.map((col) => ({
+        name: col.name,
+        type: col.type || "collection",
+      })),
+      totalCollections: collections.length,
+    });
+  } catch (error) {
+    console.error(`Error fetching collections for database ${dbName}:`, error);
+    res.status(500).json({
+      success: false,
+      message: `Error fetching collections for database ${dbName}`,
+      error: error.message,
+    });
+  }
+});
+
+// 4. GET COLLECTION DATA WITH METADATA
+route.get(
+  "/databases/:dbName/collections/:collectionName",
+  async (req, res) => {
+    const { dbName, collectionName } = req.params;
+    const { limit = 100, skip = 0, fields } = req.query;
+
+    console.log(`\n=== Fetching data from ${dbName}.${collectionName} ===`);
+
+    try {
+      // Security validation
+      const allowedDatabases = [
+        "Fep631",
+        "ProjectABB",
+        "Project",
+        "Fep632",
+        "Transmitter",
+        "admin",
+      ];
+      const excludedCollections = ["admins", "tabledatas"];
+
+      if (!allowedDatabases.includes(dbName)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid database name",
+        });
+      }
+
+      if (excludedCollections.includes(collectionName.toLowerCase())) {
+        return res.status(403).json({
+          success: false,
+          message: "Access to this collection is not allowed",
+        });
+      }
+
+      const client = await getClient();
+      const db = client.db(dbName);
+      const collection = db.collection(collectionName);
+
+      // Get collection statistics
+      const stats = await db.command({ collStats: collectionName });
+      const totalDocuments = await collection.countDocuments();
+
+      // Build projection object if fields are specified
+      let projection = {};
+      if (fields) {
+        const fieldList = fields.split(",");
+        fieldList.forEach((field) => {
+          projection[field.trim()] = 1;
+        });
+      } else {
+        // Default projection for code/description pattern
+        projection = { code: 1, description: 1, _id: 0 };
+      }
+
+      // Fetch documents with pagination
+      const documents = await collection
+        .find({})
+        .project(projection)
+        .skip(parseInt(skip))
+        .limit(parseInt(limit))
+        .toArray();
+
+      console.log(
+        `Retrieved ${documents.length} documents from ${dbName}.${collectionName}`
+      );
+
+      res.json({
+        success: true,
+        database: dbName,
+        collection: collectionName,
+        metadata: {
+          totalDocuments,
+          size: stats.size,
+          avgObjSize: stats.avgObjSize,
+          storageSize: stats.storageSize,
+          indexes: stats.nindexes,
+        },
+        pagination: {
+          skip: parseInt(skip),
+          limit: parseInt(limit),
+          returned: documents.length,
+          hasMore: parseInt(skip) + documents.length < totalDocuments,
+        },
+        data: documents,
+      });
+    } catch (error) {
+      console.error(
+        `Error fetching data from ${dbName}.${collectionName}:`,
+        error
+      );
+      res.status(500).json({
+        success: false,
+        message: "Error fetching collection data",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// 5. SEARCH ACROSS ALL DATABASES AND COLLECTIONS
+route.get("/search", async (req, res) => {
+  const { query, field = "code", databases } = req.query;
+
+  if (!query) {
+    return res.status(400).json({
+      success: false,
+      message: "Search query is required",
+    });
+  }
+
+  console.log(`\n=== Searching for "${query}" in field "${field}" ===`);
+
+  try {
+    const client = await getClient();
+    const adminDb = client.db().admin();
+    const allDatabases = await adminDb.listDatabases();
+
+    // Filter databases to search
+    let databasesToSearch = allDatabases.databases
+      .filter((db) => !["admin", "local", "config"].includes(db.name))
+      .map((db) => db.name);
+
+    if (databases) {
+      const requestedDbs = databases.split(",");
+      databasesToSearch = databasesToSearch.filter((db) =>
+        requestedDbs.includes(db)
+      );
+    }
+
+    const searchResults = {};
+
+    for (const dbName of databasesToSearch) {
+      try {
+        const db = client.db(dbName);
+        const collections = await db.listCollections().toArray();
+
+        searchResults[dbName] = {};
+
+        for (const colInfo of collections) {
+          if (["admins", "tabledatas"].includes(colInfo.name)) {
+            continue;
+          }
+
+          try {
+            const collection = db.collection(colInfo.name);
+
+            // Create search filter
+            const searchFilter = {};
+            searchFilter[field] = { $regex: query, $options: "i" };
+
+            const results = await collection
+              .find(searchFilter)
+              .project({ code: 1, description: 1, _id: 0 })
+              .limit(50)
+              .toArray();
+
+            if (results.length > 0) {
+              searchResults[dbName][colInfo.name] = results;
+            }
+          } catch (colError) {
+            console.error(
+              `Error searching in ${dbName}.${colInfo.name}:`,
+              colError
+            );
+          }
+        }
+
+        // Remove empty databases from results
+        if (Object.keys(searchResults[dbName]).length === 0) {
+          delete searchResults[dbName];
+        }
+      } catch (dbError) {
+        console.error(`Error searching in database ${dbName}:`, dbError);
+      }
+    }
+
+    // Count total results
+    let totalResults = 0;
+    Object.values(searchResults).forEach((dbResults) => {
+      Object.values(dbResults).forEach((colResults) => {
+        totalResults += colResults.length;
+      });
+    });
+
+    res.json({
+      success: true,
+      searchQuery: query,
+      searchField: field,
+      totalResults,
+      results: searchResults,
+    });
+  } catch (error) {
+    console.error("Error performing search:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error performing search",
+      error: error.message,
+    });
+  }
+});
+
+// 6. EXISTING ENHANCED ENDPOINT (Updated)
+route.get("/collections-by-database/:dbName", async (req, res) => {
+  console.log(
+    `\n=== Starting collections fetch for database: ${req.params.dbName} ===`
+  );
+
+  try {
+    const dbName = req.params.dbName;
+    console.log(`Requested database: ${dbName}`);
+
+    // Validate the database name for security
+    const allowedDatabases = [
+      "Fep631",
+
+      "Project",
+      "Fep632",
+      "Transmitter",
+      "admins",
+    ];
+
+    if (!allowedDatabases.includes(dbName)) {
+      console.log(`Invalid database name requested: ${dbName}`);
+      return res.status(400).json({
+        success: false,
+        message: `Invalid database name. Allowed databases: ${allowedDatabases.join(
+          ", "
+        )}`,
+      });
+    }
+
+    const client = await getClient();
+    console.log("Client obtained successfully");
+
+    // Connect to the specified database
+    const targetDb = client.db(dbName);
+    console.log(`Connected to database: ${dbName}`);
+
+    // List all databases for debugging
+    const adminDb = client.db().admin();
+    const databases = await adminDb.listDatabases();
+    console.log(
+      "Available databases:",
+      databases.databases.map((db) => db.name)
+    );
 
     // Get all collections in the specified database
-    const collections = await db.listCollections().toArray();
-    const collectionNames = collections.map((collection) => collection.name);
+    console.log(`Listing collections in database: ${targetDb.databaseName}`);
+    const collections = await targetDb.listCollections().toArray();
+    console.log(
+      `Found ${collections.length} collections:`,
+      collections.map((c) => c.name)
+    );
 
-    // Initialize collectionsWithData object
+    if (collections.length === 0) {
+      console.log("No collections found in the database");
+      return res.json({
+        success: true,
+        database: dbName,
+        collectionsWithData: {},
+        message: "No collections found in the specified database",
+      });
+    }
+
+    const collectionNames = collections.map((collection) => collection.name);
     const collectionsWithData = {};
 
     // For each collection, get codes and descriptions
     for (const collectionName of collectionNames) {
+      console.log(`\nProcessing collection: ${collectionName}`);
+
       // Skip excluded collections
       if (["admins", "tabledatas"].includes(collectionName)) {
+        console.log(`Skipping excluded collection: ${collectionName}`);
         continue;
       }
 
       try {
-        const collection = db.collection(collectionName);
+        const collection = targetDb.collection(collectionName);
+
+        // Check if collection exists and has documents
+        const docCount = await collection.countDocuments();
+        console.log(`Collection ${collectionName} has ${docCount} documents`);
+
+        if (docCount === 0) {
+          console.log(`Collection ${collectionName} is empty`);
+          collectionsWithData[collectionName] = [];
+          continue;
+        }
 
         // Get all documents with code and description fields
-        // Make sure we're retrieving all documents without any limit
         const documents = await collection
-          .find()
+          .find({})
           .project({ code: 1, description: 1, _id: 0 })
+          .limit(1000)
           .toArray();
 
-        // Log the count of documents retrieved for debugging
         console.log(
           `Retrieved ${documents.length} documents from ${collectionName}`
         );
 
-        // Add to the result object
+        if (documents.length > 0) {
+          console.log(
+            `Sample document from ${collectionName}:`,
+            JSON.stringify(documents[0], null, 2)
+          );
+        }
+
         collectionsWithData[collectionName] = documents;
       } catch (collectionError) {
         console.error(
           `Error fetching data for collection ${collectionName}:`,
           collectionError
         );
-        // Still include the collection in the results, but with empty data
         collectionsWithData[collectionName] = [];
       }
     }
 
-    // Log the total collections and their data sizes
+    console.log(`\nFinal results:`);
     console.log(
-      `Total collections found: ${Object.keys(collectionsWithData).length}`
+      `Total collections processed: ${Object.keys(collectionsWithData).length}`
     );
     Object.keys(collectionsWithData).forEach((key) => {
       console.log(`${key}: ${collectionsWithData[key].length} items`);
     });
 
-    res.json({
+    const response = {
       success: true,
       database: dbName,
+      actualDatabase: targetDb.databaseName,
       collectionsWithData,
-    });
+      totalCollections: Object.keys(collectionsWithData).length,
+      availableDatabases: databases.databases.map((db) => db.name),
+    };
+
+    console.log("=== Request completed successfully ===\n");
+    res.json(response);
   } catch (error) {
-    console.error("Error fetching collections:", error);
+    console.error("=== ERROR in collections-by-database endpoint ===");
+    console.error("Error details:", error);
+    console.error("Error stack:", error.stack);
+    console.error("=== END ERROR ===\n");
+
     res.status(500).json({
       success: false,
       message: "Error fetching collections",
+      error: error.message,
+      details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
+  }
+});
+
+// 7. HEALTH CHECK ENDPOINT
+route.get("/health-check", async (req, res) => {
+  try {
+    const client = await getClient();
+    const adminDb = client.db().admin();
+    const databases = await adminDb.listDatabases();
+
+    res.json({
+      success: true,
+      message: "MongoDB connection is healthy",
+      connectionUri: uri.replace(/\/\/.*@/, "//***:***@"),
+      availableDatabases: databases.databases.map((db) => ({
+        name: db.name,
+        sizeOnDisk: db.sizeOnDisk,
+      })),
+    });
+  } catch (error) {
+    console.error("Health check failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "MongoDB connection failed",
       error: error.message,
     });
   }
 });
 
-// Get description for a code from any collection
+// 8. GET COLLECTION INDEXES
+route.get(
+  "/databases/:dbName/collections/:collectionName/indexes",
+  async (req, res) => {
+    const { dbName, collectionName } = req.params;
+
+    try {
+      const client = await getClient();
+      const db = client.db(dbName);
+      const collection = db.collection(collectionName);
+
+      const indexes = await collection.indexes();
+
+      res.json({
+        success: true,
+        database: dbName,
+        collection: collectionName,
+        indexes: indexes,
+      });
+    } catch (error) {
+      console.error(
+        `Error fetching indexes for ${dbName}.${collectionName}:`,
+        error
+      );
+      res.status(500).json({
+        success: false,
+        message: "Error fetching collection indexes",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Legacy endpoints (keeping for backward compatibility)
 route.get("/find-description/:code", async (req, res) => {
   try {
     const { code } = req.params;
     const allModels = await getAllCodeModels();
 
-    // Try to find the code in any collection
     let result = null;
     let sourceCollection = null;
 
-    // Search through all collections for the code
     for (const model of allModels) {
       const found = await model.findOne({ code });
       if (found) {
@@ -156,23 +631,15 @@ route.get("/find-description/:code", async (req, res) => {
   }
 });
 
-// Enhanced endpoint to get all collections with their codes and descriptions
 route.get("/all-collections-data", async (req, res) => {
   try {
-    // Get all collections in the database
     const collections = await mongoose.connection.db
       .listCollections()
       .toArray();
-
-    // Extract just the collection names
     const collectionNames = collections.map((collection) => collection.name);
-
-    // Result object to store all collections with their codes and descriptions
     const result = {};
 
-    // Get codes and descriptions for each collection
     for (const collectionName of collectionNames) {
-      // Skip excluded collections
       if (["admins", "tabledatas"].includes(collectionName)) {
         continue;
       }
@@ -181,8 +648,6 @@ route.get("/all-collections-data", async (req, res) => {
       if (model) {
         const data = await model.find({}).select("code description -_id");
         result[collectionName] = data;
-
-        // Log the count of documents retrieved from each collection
         console.log(
           `Retrieved ${data.length} documents from ${collectionName}`
         );
@@ -200,24 +665,17 @@ route.get("/all-collections-data", async (req, res) => {
   }
 });
 
-
-
-
-
-// Route to get data from a specific collection by name
 route.get("/collections-by-name/:collectionName", async (req, res) => {
   try {
     const { collectionName } = req.params;
 
-    // Validate collection name (basic security check)
-    if (!collectionName || typeof collectionName !== 'string') {
+    if (!collectionName || typeof collectionName !== "string") {
       return res.status(400).json({
         success: false,
         message: "Invalid collection name provided",
       });
     }
 
-    // Skip excluded collections for security
     const excludedCollections = ["admins", "tabledatas"];
     if (excludedCollections.includes(collectionName.toLowerCase())) {
       return res.status(403).json({
@@ -226,9 +684,8 @@ route.get("/collections-by-name/:collectionName", async (req, res) => {
       });
     }
 
-    // Get the dynamic model for the collection
     const model = await getModelByCollectionName(collectionName);
-    
+
     if (!model) {
       return res.status(404).json({
         success: false,
@@ -236,11 +693,11 @@ route.get("/collections-by-name/:collectionName", async (req, res) => {
       });
     }
 
-    // Fetch all documents from the collection
     const data = await model.find({}).select("code description -_id");
 
-    // Log for debugging
-    console.log(`Retrieved ${data.length} documents from collection: ${collectionName}`);
+    console.log(
+      `Retrieved ${data.length} documents from collection: ${collectionName}`
+    );
 
     res.json({
       success: true,
@@ -248,9 +705,11 @@ route.get("/collections-by-name/:collectionName", async (req, res) => {
       data: data,
       count: data.length,
     });
-
   } catch (error) {
-    console.error(`Error fetching data from collection ${req.params.collectionName}:`, error);
+    console.error(
+      `Error fetching data from collection ${req.params.collectionName}:`,
+      error
+    );
     res.status(500).json({
       success: false,
       message: "Error fetching collection data",
