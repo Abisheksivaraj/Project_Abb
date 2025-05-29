@@ -53,10 +53,10 @@ import {
 import { api } from "../apiConfig";
 import fm from "../assets/fm.png";
 import black from "../assets/black.png";
-import dispose from "../assets/dispose.png";
-import manual from "../assets/manual.png";
-import hot from "../assets/hot.png";
-import warning from "../assets/warning.png";
+import dispose from "../assets/bin3.png";
+import manual from "../assets/book.png";
+import hot from "../assets/fire3.png";
+
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -443,7 +443,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -466,7 +466,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -505,7 +505,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (sensor) -->
-          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[7px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -524,7 +524,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (sensor) -->
-         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[7px] border-b-2 h-[3rem] border-black w-full p-1">
+         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -1066,9 +1066,9 @@ Liner mat : PTFE
                     <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
                       <img src=${hot} alt="Hot Surface Icon" class="w-[25px] h-[25px]"/>
                     </div>
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${warning} alt="Warning Icon" class="w-[25px] h-[25px]"/>
-                    </div>
+                    // <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
+                    //   <img src=${warning} alt="Warning Icon" class="w-[25px] h-[25px]"/>
+                    // </div>
                     <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
                       <img src=${manual} alt="Manual Icon" class="w-[25px] h-[25px]"/>
                     </div>
@@ -1128,77 +1128,79 @@ Liner mat : PTFE
 
         
               <!-- Main Content -->
-              <div class="flex flex-col flex-1 border-b-2 border-black w-full">
+              <div class="flex w-full border-b-2 font-semibold border-black">
                 
                 <!-- Upper Section -->
-                <div class="flex w-full border-b-2 font-semibold border-black">
-                  <!-- Left Section -->
-                <div class="w-[10rem] font-bold  text-[8px] border-r-2 border-black p-1">
-  <div>Serial No: ${serialNumber}</div>
-  
-  <div>Model number: <span class="break-words">${modelNumber}</span></div>
-  
-  <div class="h-[2px]"></div>
-  <div>OPTIONS 1 ></div>
-  <div>OPTIONS 2 ></div>
-  <div class="h-[2px]"></div>
-  <div>Dev. version:${deviceVersion}</div>
-  <div>Update:</div>
+                        <div class="w-[10rem] font-bold text-[8px] border-r-2 border-black p-1">
+            <div>Serial No: ${serialNumber}</div>
+            
+            <div style="margin-top: 1px;">
+                <span class="font-bold">Model number: </span>${modelNumber.substring(
+                  0,
+                  18
+                )}
+            </div>
+            <div style="margin-top: 0px;">${modelNumber.substring(18, 46)}</div>
+            <div style="margin-top: 0px;">${modelNumber.substring(46, 72)}</div>
+             <div style="margin-top: 0px;">${modelNumber.substring(
+               72,
+               100
+             )}</div>
+            <div class="h-[1px]"></div>
+            <div>OPTIONS 1 ></div>
+            <div>OPTIONS 2 ></div>
+            <div class="h-[1px]"></div>
+            <div>Dev. version:${deviceVersion}</div>
+            <div>Update:</div>
 
-  <div class="w-[33px] h-[33px] ml-[6.3rem] border text-center flex items-center justify-center -mt-4">
-    <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-  </div>
-</div>
+            <div class="w-[33px] h-[33px] ml-[6.3rem] border text-center flex items-center justify-center -mt-6">
+                <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+            </div>
+        </div>
 
-        
-                  <!-- Right Section -->
-                  <div class="font-bold  text-[8px] h-4 p-1 flex font-fam ">
-                    <div>
-                      <div>${power}</div>
-                      <div>Protection class: IP67/IP67</div>
-                      <div class="whitespace-nowrap">Tamb:${tamb}</div>
-                      <div class="h-[2px]"></div>
-                      
-
-<div class="flex flex-col gap-[1px]">
-<div class="flex gap-[.8rem]">
-                      <div class="w-full">size:DN 300 (12")</div>
-                      <div class="w-full whitespace-nowrap">Fitting:${fitting}</div>
-                      </div>
-
-  <div class="flex items-center gap-[2.6rem]">
-    <div>Qmax:${qmax}</div>
-    <div class="whitespace-nowrap">Fexc:${fexc}</div>
-  </div>
-
-  <div class="flex items-center gap-[2.8rem]">
-    <div class="whitespace-nowrap">Liner mat: PTFE</div>
-    <div class="whitespace-nowrap">Elect:${elect}</div>
-  </div>
-
-  <div class="flex items-center gap-[1.8rem]">
-    <div>Tmed:${tmed}</div>
-    <div>PED:</div>
-  </div>
-
-  <div class="flex items-center gap-[4.4rem]">
-    <div>Ss: ${ss}</div>
-    <div>Sz: ${sz}</div>
-  </div>
-</div>
-
-                      
-                    
-                  
-                      
+        <!-- Right Section -->
+        <div class="font-bold text-[8px] p-1  font-fam">
+            <div>
+                <div>${power}</div>
+                <div>Protection class: IP67/IP67</div>
+                <div class="whitespace-nowrap">Tamb:${tamb}</div>
+                <div class="h-[1px]"></div>
+                
+                <div class="flex flex-col gap-[0px]">
+                    <div class="flex">
+                        <div class="w-full">size:DN 300 (12")</div>
+                        <div class="w-full whitespace-nowrap">Fitting:${fitting}</div>
                     </div>
-                  </div>
+
+                    <div class="flex items-center gap-[3.5rem]">
+                        <div>Qmax:${qmax}</div>
+                        <div class="whitespace-nowrap">Fexc:${fexc}</div>
+                    </div>
+
+                    <div class="flex items-center gap-[1.8rem]">
+                        <div class="whitespace-nowrap">Liner mat: PTFE</div>
+                        <div class="whitespace-nowrap">Elect:${elect}</div>
+                    </div>
+
+                    <div class="flex items-center gap-[1.2rem]">
+                        <div>Tmed:${tmed}</div>
+                        <div>PED:</div>
+                    </div>
+
+                    <div class="flex items-center gap-[4rem]">
+                        <div>Ss: ${ss}</div>
+                        <div>Sz: ${sz}</div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
         
                 ${middleSectionContent}
         
                 <!-- Footer -->
-                <div class="flex font-semibold justify-between items-start text-[7px] w-full px-2">
+                <div class="flex font-semibold justify-between items-start text-[8px]  w-full px-3">
                   <div>
                     <div>Made in:</div>
                     <div>ABB India Limited, Bangalore</div>
@@ -1208,20 +1210,16 @@ Liner mat : PTFE
                     <div>Designed by ABB AG</div>
                     <div>Goettingen, Germany</div>
                   </div>
-                  <div class="flex mt-1 gap-[6px] font-bold items-center justify-center">
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                    <img src=${dispose} alt="Dispose Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${hot} alt="Hot Surface Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${warning} alt="Warning Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${manual} alt="Manual Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                  </div>
+                 <div class="flex mt-[-0.8rem] items-start justify-start">
+  <div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
+    <img src=${dispose} alt="Dispose Icon" class="w-full h-full object-contain"/>
+  </div><div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
+    <img src=${hot} alt="Hot Surface Icon" class="w-full h-full object-contain"/>
+  </div><div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
+    <img src=${manual} alt="Manual Icon" class="w-full h-full object-contain"/>
+  </div>
+</div>
+
                 </div>
               </div>
             </div>

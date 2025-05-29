@@ -571,7 +571,8 @@ const LabelPrint = () => {
 
   const updateLabelDetails = (
     selections,
-
+    currentSS, // This parameter is still received but won't be used
+    currentSZ,
     currentBasicCode
   ) => {
     let details = currentBasicCode || "";
@@ -599,6 +600,12 @@ const LabelPrint = () => {
           );
         }
       });
+    }
+
+    // Add SZ value to details if it exists (SS is excluded)
+    if (currentSZ) {
+      details += currentSZ;
+      console.log(`Added SZ ${currentSZ}, details now: ${details}`);
     }
 
     // Add Qmax and Tamb dropdown values to details if selected
