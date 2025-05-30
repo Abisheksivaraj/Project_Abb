@@ -1084,148 +1084,167 @@ Liner mat : PTFE
         console.log("Using middleSectionContent:", middleSectionContent);
 
         printContainer.innerHTML = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Label Print</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              @page {
-                size: 96mm 98mm;
-                margin: 3mm;
-              }
-              body {
-                -webkit-print-color-adjust: exact;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-              font-family: Arial
-              }
-              * {
-                color: black;
-                box-sizing: border-box;
-              }
-              div, img, hr {
-                border-color: black !important;
-              }
-            </style>
-          </head>
-          <body class="m-0 p-0 font-sans text-black">
-            <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
-              
-              <!-- Header -->
-            <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
-  <div class="h-full flex items-center">
-    <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
-  </div>
-  <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
-    ProcessMaster 630
-  </div>
-</div>
-
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Label Print</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <style>
+        @page {
+          size: 96mm 98mm;
+          margin: 3mm;
+        }
+        body {
+          -webkit-print-color-adjust: exact;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          font-family: Arial;
+        }
+        * {
+          color: black;
+          box-sizing: border-box;
+        }
+        div, img, hr {
+          border-color: black !important;
+        }
+      </style>
+    </head>
+    <body class="m-0 p-0 font-sans text-black">
+      <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
         
-              <!-- Main Content -->
-              <div class="flex w-full border-b-2 font-semibold border-black">
-                
-                <!-- Upper Section -->
-                        <div class="w-[10rem] font-bold text-[8px] border-r-2 border-black p-1">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
+          <div class="h-full flex items-center">
+            <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
+          </div>
+          <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
+            ProcessMaster 630
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex w-full border-b-2 font-semibold border-black flex-grow h-[7.5rem]">
+          
+          <!-- Left Section -->
+          <div class="w-[10rem] font-bold text-[8px] border-r-2 border-black p-1">
             <div>Serial No: ${serialNumber}</div>
-            
             <div style="margin-top: 1px;">
-                <span class="font-bold">Model number: </span>${modelNumber.substring(
-                  0,
-                  18
-                )}
+              <span class="font-bold">Model number: </span>${modelNumber.substring(
+                0,
+                18
+              )}
             </div>
             <div style="margin-top: 0px;">${modelNumber.substring(18, 46)}</div>
             <div style="margin-top: 0px;">${modelNumber.substring(46, 72)}</div>
-             <div style="margin-top: 0px;">${modelNumber.substring(
-               72,
-               100
-             )}</div>
+            <div style="margin-top: 0px;">${modelNumber.substring(
+              72,
+              100
+            )}</div>
             <div class="h-[1px]"></div>
             <div>OPTIONS 1 ></div>
             <div>OPTIONS 2 ></div>
             <div class="h-[1px]"></div>
             <div>Dev. version:${deviceVersion}</div>
             <div>Update:</div>
-
-            <div class="w-[33px] h-[33px] ml-[6.3rem] border text-center flex items-center justify-center -mt-6">
-                <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+            <div class="w-[33px] h-[33px] ml-[7.4rem] border text-center flex items-center justify-center mt-[-33px]">
+              <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
             </div>
-        </div>
+          </div>
 
-        <!-- Right Section -->
-        <div class="font-bold text-[8px] p-1  font-fam">
-            <div>
-                <div>${power}</div>
-                <div>Protection class: IP67/IP67</div>
-                <div class="whitespace-nowrap">Tamb:${tamb}</div>
-                <div class="h-[1px]"></div>
-                
-                <div class="flex flex-col gap-[0px]">
-                    <div class="flex">
-                        <div class="w-full">size:DN 300 (12")</div>
-                        <div class="w-full whitespace-nowrap">Fitting:${fitting}</div>
+        
+                <!-- Right Section - Fixed Layout -->
+                <div class="font-bold text-[8px] p-1 font-fam flex-1 fixed-height">
+                  
+                  <!-- Power Section - Fixed Height -->
+                  <div class="text-truncate" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                    ${power}
+                  </div>
+                  
+                  <!-- Protection Class - Fixed Height -->
+                  <div style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                    Protection class: IP67/IP67
+                  </div>
+                  
+                  <!-- Temperature - Fixed Height -->
+                  <div class="text-truncate" style="height: 10px; line-height: 10px; margin-bottom: 2px;">
+                    Tamb:${tamb}
+                  </div>
+                  
+                  <!-- Spacer Line -->
+                  <div style="height: 1px; margin-bottom: 2px;"></div>
+                  
+                  <!-- Specifications Grid - Fixed Heights -->
+                  <div style="height: 80px;">
+                    
+                    <!-- Row 1 -->
+                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                      <div class="text-truncate" style="width: 50%;">size:DN 300 (12")</div>
+                      <div class="text-truncate" style="width: 50%;">Fitting:${fitting}</div>
                     </div>
-
-                    <div class="flex items-center gap-[3.5rem]">
-                        <div>Qmax:${qmax}</div>
-                        <div class="whitespace-nowrap">Fexc:${fexc}</div>
+      
+                    <!-- Row 2 -->
+                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                      <div class="text-truncate" style="width: 50%;">Qmax:${qmax}</div>
+                      <div class="text-truncate" style="width: 50%;">Fexc:${fexc}</div>
                     </div>
-
-                    <div class="flex items-center gap-[1.8rem]">
-                        <div class="whitespace-nowrap">Liner mat: PTFE</div>
-                        <div class="whitespace-nowrap">Elect:${elect}</div>
+      
+                    <!-- Row 3 -->
+                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                      <div class="text-truncate" style="width: 50%;">Liner mat: PTFE</div>
+                      <div class="text-truncate" style="width: 50%;">Elect:${elect}</div>
                     </div>
-
-                    <div class="flex items-center gap-[1.2rem]">
-                        <div>Tmed:${tmed}</div>
-                        <div>PED:</div>
+      
+                    <!-- Row 4 -->
+                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
+                      <div class="text-truncate" style="width: 50%;">Tmed:${tmed}</div>
+                      <div class="text-truncate" style="width: 50%;">PED:</div>
                     </div>
-
-                    <div class="flex items-center gap-[4rem]">
-                        <div>Ss: ${ss}</div>
-                        <div>Sz: ${sz}</div>
+      
+                    <!-- Row 5 -->
+                    <div class="flex" style="height: 10px; line-height: 10px;">
+                      <div class="text-truncate" style="width: 50%;">Ss: ${ss}</div>
+                      <div class="text-truncate" style="width: 50%;">Sz: ${sz}</div>
                     </div>
+                    
+                  </div>
                 </div>
-            </div>
         </div>
-    </div>
 
-        
-                ${middleSectionContent}
-        
-                <!-- Footer -->
-                <div class="flex font-semibold justify-between items-start text-[8px]  w-full px-3">
-                  <div>
-                    <div>Made in:</div>
-                    <div>ABB India Limited, Bangalore</div>
-                    <div class="text-center">${date}</div>
-                  </div>
-                  <div>
-                    <div>Designed by ABB AG</div>
-                    <div>Goettingen, Germany</div>
-                  </div>
-                 <div class="flex mt-[-0.8rem] items-start justify-start">
-  <div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
-    <img src=${dispose} alt="Dispose Icon" class="w-full h-full object-contain"/>
-  </div><div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
-    <img src=${hot} alt="Hot Surface Icon" class="w-full h-full object-contain"/>
-  </div><div class="w-[3rem] -ml-3 h-[3rem] flex items-center justify-center">
-    <img src=${manual} alt="Manual Icon" class="w-full h-full object-contain"/>
+        <!-- Optional Middle Section -->
+        ${middleSectionContent}
+
+<!-- Footer -->
+<div class="flex font-semibold justify-between items-start text-[8px] px-2 h-[23mm]">
+  <div>
+    <div>Made in:</div>
+    <div>ABB India Limited, Bangalore</div>
+    <div class="text-center">${date}</div>
+  </div>
+  <div class="-mr-3">
+    <div class="w-full">Designed by ABB AG</div>
+    <div>Goettingen, Germany</div>
+  </div>
+  <div class="flex -mr-1">
+  <div class="w-10 h-10">
+    <img src=${dispose} alt="Dispose Icon" class="w-10 h-10" />
+  </div>
+  <div class="w-10 h-12">
+    <img src=${hot} alt="Hot Surface Icon" class="w-10 h-12 " />
+  </div>
+  <div class="w-12 h-12">
+    <img src=${manual} alt="Manual Icon" class="w-12 h-12 object-contain " />
   </div>
 </div>
+</div>
+      </div>
+    </body>
+  </html>
+`;
 
-                </div>
-              </div>
-            </div>
-          </body>
-        </html>
-        `;
       }
 
       if (labelRef.current) {
