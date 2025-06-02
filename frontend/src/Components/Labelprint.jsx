@@ -318,22 +318,24 @@ const LabelPrint = () => {
     if (!order) return collections;
 
     const orderedCollections = [];
-    const remainingCollections = [...collections];
+    const availableCollections = [...collections];
 
-    // Add collections in the specified order
+    // Add collections in the exact order specified in COLLECTION_ORDERS
     order.forEach((orderedName) => {
-      const index = remainingCollections.findIndex(
+      const matchingIndex = availableCollections.findIndex(
         (name) => name.trim().toLowerCase() === orderedName.trim().toLowerCase()
       );
-      if (index !== -1) {
-        orderedCollections.push(remainingCollections[index]);
-        remainingCollections.splice(index, 1);
+
+      if (matchingIndex !== -1) {
+        orderedCollections.push(availableCollections[matchingIndex]);
+        availableCollections.splice(matchingIndex, 1);
       }
     });
 
-    // Add any remaining collections that weren't in the order list
-    orderedCollections.push(...remainingCollections);
+    // Add any remaining collections that weren't in the order list at the end
+    orderedCollections.push(...availableCollections);
 
+    console.log(`Ordered collections for ${basicCode}:`, orderedCollections);
     return orderedCollections;
   };
 
@@ -410,7 +412,7 @@ const LabelPrint = () => {
     setSelectedCollections(updatedSelectedCollections);
 
     // Update label details with the filtered collections
-    updateLabelDetails(updatedSelectedCollections, ss, sz, basicCode);
+    updateLabelDetails(updatedSelectedCollections, basicCode);
   }, [basicCode, collectionNames]);
 
   // Handle model type change
@@ -451,6 +453,11 @@ const LabelPrint = () => {
       (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
       lowerName.includes("nominaldiameter");
 
+    const isLiner =
+      trimmedName === "Liner Material" ||
+      (lowerName.includes("liner") && lowerName.includes("material")) ||
+      lowerName.includes("linermaterial");
+
     // Process connection detection for Fitting
     const isProcessConnection =
       trimmedName === "Process connection" ||
@@ -473,6 +480,7 @@ const LabelPrint = () => {
       isAmbianceRangeTransmitter,
       isSize,
       isProcessConnection,
+      isLiner,
       isElect,
       lowerName,
       trimmedName,
@@ -485,6 +493,7 @@ const LabelPrint = () => {
       isTamb ||
       isAmbianceRangeTransmitter ||
       isSize ||
+      isLiner ||
       isProcessConnection ||
       isElect
     ) {
@@ -503,6 +512,9 @@ const LabelPrint = () => {
       } else if (isSize) {
         setStateFunction = setSize;
         fieldName = "Size/Nominal Diameter";
+      } else if (isLiner) {
+        setStateFunction = setLinerMaterial;
+        fieldName = "Liner Material";
       } else if (isProcessConnection) {
         setStateFunction = setFitting;
         fieldName = "Process Connection/Fitting";
@@ -530,7 +542,7 @@ const LabelPrint = () => {
               `${fieldName} selected - Code: ${codeValue} (stored as code)`
             );
           } else {
-            // For other fields, store the description as before
+            // For other fields (including Liner), store the description as before
             const description = matchingItem?.description || codeValue;
             setStateFunction(description);
             console.log(
@@ -557,7 +569,6 @@ const LabelPrint = () => {
     setSelectedCollections(updatedCollections);
     updateLabelDetails(updatedCollections, ss, sz, basicCode);
   };
-
   // Handle SS and SZ changes
   const handleSSChange = (value) => {
     setSS(value);
@@ -603,10 +614,7 @@ const LabelPrint = () => {
     }
 
     // Add SZ value to details if it exists (SS is excluded)
-    if (currentSZ) {
-      details += currentSZ;
-      console.log(`Added SZ ${currentSZ}, details now: ${details}`);
-    }
+   
 
     // Add Qmax and Tamb dropdown values to details if selected
     // if (selectedQmax) {
@@ -819,6 +827,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
+                        size="small"
                         label="Serial No"
                         placeholder="Enter Serial Number..."
                         variant="outlined"
@@ -838,6 +847,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
+                        size="small"
                         label="Tag No"
                         placeholder="Enter Tag Number..."
                         variant="outlined"
@@ -856,10 +866,25 @@ const LabelPrint = () => {
 
                     <Grid item>
                       <FormControl variant="outlined" required>
-                        <InputLabel>Label Type</InputLabel>
+                        <InputLabel
+                          sx={{
+                            textAlign: "center",
+                            width: "100%",
+                            left: 0,
+                            transformOrigin: "center",
+                          }}
+                        >
+                          Label Type
+                        </InputLabel>
                         <Select
-                          sx={{ width: "150px" }}
+                          sx={{
+                            width: "150px",
+                            "& .MuiSelect-select": {
+                              textAlign: "center",
+                            },
+                          }}
                           label="Label Type"
+                          size="small"
                           value={LabelType}
                           onChange={handleLabelTypeChange}
                           IconComponent={() => null}
@@ -869,25 +894,58 @@ const LabelPrint = () => {
                             </InputAdornment>
                           }
                         >
-                          <MenuItem value="">Select</MenuItem>
-                          <MenuItem value="Sensor(96x98)">
+                          <MenuItem value="" sx={{ justifyContent: "center" }}>
+                            Select
+                          </MenuItem>
+                          <MenuItem
+                            value="Sensor(96x98)"
+                            sx={{ justifyContent: "center" }}
+                          >
                             Sensor(96x98)
                           </MenuItem>
-                          <MenuItem value="Sensor(115x35)">
+                          <MenuItem
+                            value="Sensor(115x35)"
+                            sx={{ justifyContent: "center" }}
+                          >
                             Sensor(115x35)
                           </MenuItem>
-                          <MenuItem value="Sensor">Sensor</MenuItem>
-                          <MenuItem value="Transmitter">Transmitter</MenuItem>
+                          <MenuItem
+                            value="Sensor"
+                            sx={{ justifyContent: "center" }}
+                          >
+                            Sensor
+                          </MenuItem>
+                          <MenuItem
+                            value="Transmitter"
+                            sx={{ justifyContent: "center" }}
+                          >
+                            Transmitter
+                          </MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
 
                     <Grid item>
                       <FormControl variant="outlined">
-                        <InputLabel>Basic Code</InputLabel>
+                        <InputLabel
+                          sx={{
+                            textAlign: "center",
+                            width: "100%",
+                            left: 0,
+                            transformOrigin: "center",
+                          }}
+                        >
+                          Basic Code
+                        </InputLabel>
                         <Select
-                          sx={{ width: "150px" }}
+                          sx={{
+                            width: "150px",
+                            "& .MuiSelect-select": {
+                              textAlign: "center",
+                            },
+                          }}
                           label="Basic Code"
+                          size="small"
                           value={basicCode}
                           onChange={handleBasicCodeChange}
                           IconComponent={() => null}
@@ -897,10 +955,27 @@ const LabelPrint = () => {
                             </InputAdornment>
                           }
                         >
-                          <MenuItem value="">Select</MenuItem>
-                          <MenuItem value="FEP631">FEP631 </MenuItem>
-                          <MenuItem value="FEP632">FEP632</MenuItem>
-                          <MenuItem value="FET632">FET632</MenuItem>
+                          <MenuItem value="" sx={{ justifyContent: "center" }}>
+                            Select
+                          </MenuItem>
+                          <MenuItem
+                            value="FEP631"
+                            sx={{ justifyContent: "center" }}
+                          >
+                            FEP631{" "}
+                          </MenuItem>
+                          <MenuItem
+                            value="FEP632"
+                            sx={{ justifyContent: "center" }}
+                          >
+                            FEP632
+                          </MenuItem>
+                          <MenuItem
+                            value="FET632"
+                            sx={{ justifyContent: "center" }}
+                          >
+                            FET632
+                          </MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -908,9 +983,24 @@ const LabelPrint = () => {
                     {showLogoType && (
                       <Grid item>
                         <FormControl variant="outlined" required>
-                          <InputLabel>Logo Option</InputLabel>
+                          <InputLabel
+                            sx={{
+                              textAlign: "center",
+                              width: "100%",
+                              left: 0,
+                              transformOrigin: "center",
+                            }}
+                          >
+                            Logo Option
+                          </InputLabel>
                           <Select
-                            sx={{ width: "150px" }}
+                            sx={{
+                              width: "150px",
+                              "& .MuiSelect-select": {
+                                textAlign: "center",
+                              },
+                            }}
+                            size="small"
                             label="Logo Option"
                             value={LogoType}
                             onChange={(e) => setLogoType(e.target.value)}
@@ -921,10 +1011,30 @@ const LabelPrint = () => {
                               </InputAdornment>
                             }
                           >
-                            <MenuItem value="">Select</MenuItem>
-                            <MenuItem value="Logo_1">Logo 1 </MenuItem>
-                            <MenuItem value="Logo_2">Logo 2</MenuItem>
-                            <MenuItem value="Logo_3">Logo 3</MenuItem>
+                            <MenuItem
+                              value=""
+                              sx={{ justifyContent: "center" }}
+                            >
+                              Select
+                            </MenuItem>
+                            <MenuItem
+                              value="Logo_1"
+                              sx={{ justifyContent: "center" }}
+                            >
+                              Logo 1{" "}
+                            </MenuItem>
+                            <MenuItem
+                              value="Logo_2"
+                              sx={{ justifyContent: "center" }}
+                            >
+                              Logo 2
+                            </MenuItem>
+                            <MenuItem
+                              value="Logo_3"
+                              sx={{ justifyContent: "center" }}
+                            >
+                              Logo 3
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </Grid>
@@ -933,6 +1043,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
+                        size="small"
                         label="Manufacturing Date"
                         type="date"
                         variant="outlined"
@@ -947,6 +1058,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "120px" }}
+                        size="small"
                         label="Device Version"
                         placeholder="Enter Device Version..."
                         variant="outlined"
@@ -974,6 +1086,7 @@ const LabelPrint = () => {
                       <TextField
                         label="Model Type"
                         sx={{ width: "150px" }}
+                        size="small"
                         variant="outlined"
                         value={modelType}
                         InputProps={{
@@ -992,6 +1105,7 @@ const LabelPrint = () => {
                         <InputLabel>Status</InputLabel>
                         <Select
                           sx={{ width: "150px" }}
+                          size="small"
                           label="Status"
                           value={Status}
                           onChange={(e) => setStatus(e.target.value)}
@@ -1012,6 +1126,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
+                        size="small"
                         label="SS"
                         placeholder="Enter SS..."
                         variant="outlined"
@@ -1032,6 +1147,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
+                        size="small"
                         label="SZ"
                         placeholder="Enter SZ..."
                         variant="outlined"
@@ -1050,7 +1166,11 @@ const LabelPrint = () => {
 
                     {/* Qmax Dropdown */}
                     <Grid item>
-                      <FormControl sx={{ width: "150px" }} variant="outlined">
+                      <FormControl
+                        sx={{ width: "150px" }}
+                        size="small"
+                        variant="outlined"
+                      >
                         <InputLabel>Qmax</InputLabel>
                         <Select
                           label="Qmax"
@@ -1075,7 +1195,11 @@ const LabelPrint = () => {
 
                     {/* Tmed Dropdown */}
                     <Grid item>
-                      <FormControl sx={{ width: "200px" }} variant="outlined">
+                      <FormControl
+                        sx={{ width: "200px" }}
+                        size="small"
+                        variant="outlined"
+                      >
                         <InputLabel>Tmed</InputLabel>
                         <Select
                           label="Tmed"
@@ -1130,81 +1254,90 @@ const LabelPrint = () => {
 
                     {filteredCollectionNames.length > 0 && (
                       <Grid container spacing={2}>
-                        {chunkArray(filteredCollectionNames, 6).map(
-                          (chunk, chunkIndex) => (
-                            <Grid item xs={12} key={chunkIndex}>
-                              <Grid container spacing={2}>
-                                {chunk.map((collectionName) => (
-                                  <Grid item xs={4} key={collectionName}>
-                                    <FormControl
-                                      variant="outlined"
-                                      fullWidth={false} // set to false so width is not 100%
-                                      size="medium"
-                                      sx={{ width: "170px" }} // set your desired width here
-                                    >
-                                      <InputLabel>
-                                        {collectionName.length > 25
-                                          ? `${collectionName.substring(
-                                              0,
-                                              25
-                                            )}...`
-                                          : collectionName}
-                                      </InputLabel>
-                                      <Select
-                                        label={
-                                          collectionName.length > 25
-                                            ? `${collectionName.substring(
-                                                0,
-                                                25
-                                              )}...`
-                                            : collectionName
-                                        }
-                                        value={
-                                          selectedCollections[collectionName] ||
-                                          ""
-                                        }
-                                        onChange={(e) =>
-                                          handleCollectionCodeChange(
-                                            collectionName,
-                                            e.target.value
-                                          )
-                                        }
-                                        IconComponent={() => null}
-                                      >
-                                        <MenuItem value="">Select</MenuItem>
-                                        {collectionsWithCodes[
-                                          collectionName
-                                        ]?.map((item) => (
-                                          <MenuItem
-                                            key={item.code}
-                                            value={item.code}
+                        {/* Display collections in the exact order defined in COLLECTION_ORDERS */}
+                        {filteredCollectionNames.map(
+                          (collectionName, index) => {
+                            // Calculate row and column position to maintain consistent layout
+                            const rowIndex = Math.floor(index / 6);
+                            const colIndex = index % 6;
+
+                            return (
+                              <Grid
+                                item
+                                xs={2}
+                                key={collectionName}
+                                sx={{
+                                  // Ensure consistent spacing and alignment
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                <FormControl
+                                  variant="outlined"
+                                  size="small"
+                                  sx={{
+                                    width: "100%",
+                                    minWidth: "170px",
+                                    maxWidth: "200px",
+                                  }}
+                                >
+                                  <InputLabel>
+                                    {collectionName.length > 20
+                                      ? `${collectionName.substring(0, 20)}...`
+                                      : collectionName}
+                                  </InputLabel>
+                                  <Select
+                                    label={
+                                      collectionName.length > 20
+                                        ? `${collectionName.substring(
+                                            0,
+                                            20
+                                          )}...`
+                                        : collectionName
+                                    }
+                                    value={
+                                      selectedCollections[collectionName] || ""
+                                    }
+                                    onChange={(e) =>
+                                      handleCollectionCodeChange(
+                                        collectionName,
+                                        e.target.value
+                                      )
+                                    }
+                                    IconComponent={() => null}
+                                  >
+                                    <MenuItem value="">Select</MenuItem>
+                                    {collectionsWithCodes[collectionName]?.map(
+                                      (item) => (
+                                        <MenuItem
+                                          key={item.code}
+                                          value={item.code}
+                                        >
+                                          <Tooltip
+                                            title={item.description || ""}
+                                            placement="top"
                                           >
-                                            <Tooltip
-                                              title={item.description || ""}
-                                              placement="top"
-                                            >
-                                              <Box>
-                                                {item.code}
-                                                {item.description &&
-                                                  ` - ${item.description.substring(
-                                                    0,
-                                                    30
-                                                  )}${
-                                                    item.description.length > 30
-                                                      ? "..."
-                                                      : ""
-                                                  }`}
-                                              </Box>
-                                            </Tooltip>
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    </FormControl>
-                                  </Grid>
-                                ))}
+                                            <Box>
+                                              {item.code}
+                                              {item.description &&
+                                                ` - ${item.description.substring(
+                                                  0,
+                                                  30
+                                                )}${
+                                                  item.description.length > 30
+                                                    ? "..."
+                                                    : ""
+                                                }`}
+                                            </Box>
+                                          </Tooltip>
+                                        </MenuItem>
+                                      )
+                                    )}
+                                  </Select>
+                                </FormControl>
                               </Grid>
-                            </Grid>
-                          )
+                            );
+                          }
                         )}
                       </Grid>
                     )}

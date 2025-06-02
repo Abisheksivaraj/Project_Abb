@@ -409,6 +409,8 @@ const MainPageTable = () => {
       const fexc = label?.Fexc;
       const protection = label?.ProtectionClass;
 
+      const liner = label?.LinerMaterial;
+
       const getCurrentMonthYear = () => {
         const now = new Date();
         const month = now.toLocaleString("en-US", { month: "short" });
@@ -579,179 +581,114 @@ const MainPageTable = () => {
             line-height: 1.1;
             -webkit-print-color-adjust: exact;
         }
-        
-        .label-container {
-            width: 115mm;
-            height: 35mm;
-            border: 2px solid black;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .header {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid black;
-            padding: 2px 4px;
-            height: 20px;
-        }
-        
-        .abb-logo {
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            width: 35px;
-        }
-        
-        .title {
-            flex-grow: 1;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .dispose-icon {
-            width: 15px;
-            height: 15px;
-            border: 1px solid black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        }
-        
-        .main-content {
-            display: flex;
-            flex: 1;
-        }
-        
-        .left-section {
-            width: 50%;
-            border-right: 2px solid black;
-            padding: 3px;
-            display: flex;
-            position: relative;
-        }
-        
-        .left-text {
-            flex: 1;
-        }
-        
-        .qr-code {
-            position: absolute;
-            right: 3px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 35px;
-            height: 35px;
-            border: 1px solid black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 6px;
-        }
-        
-        .right-section {
-            width: 50%;
-            padding: 3px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1px;
-        }
-        
-        .info-item {
-            font-size: 7px;
-        }
-        
-        .bold {
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
-    <div class="label-container">
+    <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black">
         <!-- Header Section -->
-        <div class="header">
-            <div class="abb-logo">ABB</div>
-            <div class="title">ProcessMaster 630</div>
-            <div class="dispose-icon">🗑</div>
+          <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+        <!-- Logo aligned to left -->
+        <div class="h-6">
+          <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
         </div>
-        
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Left Section -->
-            <div class="left-section">
-                <div class="left-text font-bold text-[8px]">
-                    <div><span class="font-bold">Serial No :</span> ${serialNumber}</div>
-                    <div style="margin-top: 2px;"><span class="bold">Model number:</span> ${modelNumber.substring(
-                      0,
-                      30
-                    )}</div>
-                    <div style="margin-top: 2px;">${modelNumber.substring(
-                      30,
-                      65
-                    )}</div>
-                    <div style="margin-top: 2px;">${modelNumber.substring(
-                      65,
-                      90
-                    )}</div>
-                    <div style="margin-top: 8px;"><span class="bold">Dev. version:</span> ${deviceVersion}</div>
-                    <div style="margin-top: 2px;"><span class="bold">Update:</span></div>
-                </div>
-                
-                <!-- QR Code -->
-               <div class="w-[40px]  mt-[4rem] -ml-[3rem] flex-shrink-0">
-            <img src=${qrDataUrl} alt="QR" class="border w-[40px] h-[40px] object-contain" />
+
+        <!-- Absolutely centered title -->
+        <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
+          ProcessMaster 630
+        </div>
+
+      
+        <div class="w-5 h-6">
+    <img src=${dispose} alt="Dispose Icon" class="w-5 h-6" />
+  </div>
+      
+      </div>
+         <!-- Main Content -->
+        <div class="flex w-full font-semibold border-black flex-grow h-[7.5rem]">
+          
+          <!-- Left Section -->
+          <div class="w-[40%] font-bold flex flex-col gap-3 text-[8px] border-r-2 border-black p-1">
+            <div>Serial No: ${serialNumber}</div>
+            <div>
+            <div style="margin-top: 1px;">
+              <span class="font-bold">Model number: </span>${modelNumber.substring(
+                0,
+                20
+              )}
+            </div>
+            <div style="margin-top: 0px;">${modelNumber.substring(20, 50)}</div>
+            <div style="margin-top: 0px;">${modelNumber.substring(50, 80)}</div>
+            <div style="margin-top: 0px;">${modelNumber.substring(
+              80,
+              110
+            )}</div>
+            </div>
+           
+           
+           
+           <div> <div>Dev. version:${deviceVersion}</div>
+            <div>Update:</div></div>
+           
+            <div class="w-[33px] h-[33px] ml-[8rem] border text-center flex items-center justify-center mt-[-45px]">
+              <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+            </div>
           </div>
-            </div>
-            
-            <!-- Right Section -->
-            <div class="right-section"> 
-                <div class="info-row">
-                    <div class="info-item text-[8px] font-bold">24 V DC, 60 Hz</div>
-                    <div class="info-item text-[8px] font-bold">Smax>20VA</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Protection class : IP 67 / IP 67</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Tamb : -20.....+60°C (-4°.....140° F)</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Size : DN 150 (6")</div>
-                    <div class="info-item">Fitting: ASME C1150</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Qmax : 600 m³/h</div>
-                    <div class="info-item">Fexec: 15_12.5 HZ</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Liner mat : PTFE</div>
-                    <div class="info-item">Elect:Stainless steel 316Ti (1.4571)</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Tmed : 130°C (266°F)</div>
-                    <div class="info-item">PED:</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-item">Ss: 205.610</div>
-                    <div class="info-item">Sz: 0.34720</div>
-                </div>
-            </div>
+
+        
+                <!-- Right side full height -->
+                <div class="w-[60%]  pl-2 text-[8px] leading-3 h-full">
+<div class="flex flex-row  gap-[3rem]">
+<p>
+${power}    
+</p>
+</div>
+<p>
+Protection class : ${protection}
+</p>
+<p>
+Tamb : ${tamb}
+</p>
+<div class="flex flex-row gap-[4.4rem]">
+<p>
+Size :${size}
+</p>
+<p>
+ Fitting: ${fitting}
+</p>
+</div>
+<div class="flex flex-row gap-[4.1rem]">
+<p>
+Qmax : ${qmax}
+</p>
+<p>
+Fexec: ${fexc}
+</p>
+</div>
+<div class="flex flex-row gap-[2.8rem]">
+<p>
+Liner mat : ${liner}
+</p>
+<p>
+  Elect:${elect}
+</p>
+</div>
+<div class="flex flex-row gap-2">
+<p>
+ Tmed : ${tmed}
+</p>
+<p>
+ PED:
+</p>
+</div>
+<div class="flex flex-row gap-[4.6rem]">
+<p>
+ Ss: ${ss}
+</p>
+<p>
+ Sz:  ${sz}
+</p>
+</div>
+</div>
         </div>
     </div>
 </body>
@@ -760,187 +697,142 @@ const MainPageTable = () => {
       } else if (labelType === "transmitter") {
         printContainer.innerHTML = `
         <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Sensor Label Print</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            @page {
-              size: 115mm 35mm;
-              margin: 0;
-            }
-            body {
-              -webkit-print-color-adjust: exact;
-              margin: 0;
-              padding: 0;
-            }
-            * {
-              box-sizing: border-box;
-              color: black;
-            }
-            .label-border {
-              border: 2px solid black;
-              box-sizing: border-box;
-            }
-            .divider {
-              border-color: black;
-            }
-          </style>
-        </head>
-        <body class="m-0 p-0 font-sans text-black text-[7px]">
-          <!-- Single container with complete border -->
-          <div class="w-[115mm] h-[35mm] label-border">
-            <!-- Inner padding wrapper -->
-            <div class="flex flex-col h-full">
-              <!-- Header with bottom border -->
-            <div class="flex justify-between items-center border-b-2 border-black">
-
-                <!-- Left Logo -->
-                <div class="w-[2.5rem] flex-shrink-0">
-                  <img src=${black} alt="ABB Logo" class="w-full object-contain" />
-                </div>
-                <!-- Title -->
-                <div class="text-center text-[14px] font-bold flex-grow">ProcessMaster 630</div>
-                <!-- Dispose Icon -->
-                <div class="w-[6mm] h-[6mm] flex-shrink-0">
-                  <img src=${dispose} alt="Dispose" class="w-full h-full object-contain" />
-                </div>
-              </div>
-              <!-- Main content flex container -->
-              <div class="flex font-bold text-[8px] mt-1 leading-[0.8rem] flex-grow">
-                
-            <!-- Left side with fixed-width columns to ensure QR code doesn't resize -->
-      <div class="w-1/2 p-1 border-r-2 divider h-full flex flex-col justify-between">
-        <div class="flex">
-          <!-- Fixed width for the text column -->
-          <div class="flex flex-col space-y-[1px] w-[60%] overflow-hidden mr-1">
-            <div class="w-full whitespace-nowrap">Serial No: ${serialNumber}</div>
-            <div>Model number: <span class="break-words">${modelNumber}</span></div>
-            <div><strong>Dev. version:</strong>${deviceVersion}</div>
-            <div><strong>Update:</strong></div>
-          </div>
-          <!-- Fixed size for QR code -->
-          <div class="w-[40px]  mt-12 ml-[3rem] flex-shrink-0">
-            <img src=${qrDataUrl} alt="QR" class="border w-[40px] h-[40px] object-contain" />
-          </div>
-        </div>
-      </div>
-                <!-- Right side full height -->
-                <div class="w-[60%] pl-2 text-[8px] leading-[10px] h-full">
+ <html>
+ <head>
+     <title>ABB ProcessMaster 630 Label</title>
+     <style>
+         @page {
+             size: 115mm 35mm;
+             margin: 0;
+         }
+         
+         body {
+             margin: 0;
+             padding: 0;
+             font-family: Arial, sans-serif;
+             font-size: 7px;
+             line-height: 1.1;
+             -webkit-print-color-adjust: exact;
+         }
+     </style>
+ </head>
+ <body>
+     <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black">
+         <!-- Header Section -->
+           <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+         <!-- Logo aligned to left -->
+         <div class="h-6">
+           <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
+         </div>
+ 
+         <!-- Absolutely centered title -->
+         <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
+           ProcessMaster 630
+         </div>
+ 
+       
+         <div class="w-5 h-6">
+     <img src=${dispose} alt="Dispose Icon" class="w-5 h-6" />
+   </div>
+       
+       </div>
+          <!-- Main Content -->
+         <div class="flex w-full font-semibold border-black flex-grow h-[7.5rem]">
+           
+           <!-- Left Section -->
+           <div class="w-[40%] font-bold flex flex-col gap-3 text-[8px] border-r-2 border-black p-1">
+             <div>Serial No: ${serialNumber}</div>
+             <div>
+             <div style="margin-top: 1px;">
+               <span class="font-bold">Model number: </span>${modelNumber.substring(
+                 0,
+                18
+               )}
+             </div>
+             <div style="margin-top: 0px;">${modelNumber.substring(
+               18,
+               50
+             )}</div>
+             <div style="margin-top: 0px;">${modelNumber.substring(
+               50,
+               80
+             )}</div>
+             <div style="margin-top: 0px;">${modelNumber.substring(
+               80,
+               110
+             )}</div>
+             </div>
             
-
-<div class="flex flex-row  gap-[3rem]">
-<p>
-${power}    
-</p>
-
-
-</div>
-
-<p>
-
-Protection class : ${protection}
-</p>
-
-
-<p>
-Tamb : ${tamb}
-</p>
-
-
-<div class="flex flex-row gap-8">
-<p>
-
-Size :${size}
-</p>
-
-<p>
-
- Fitting: ${fitting}
-</p>
-
-
-</div>
-
-
-<div class="flex flex-row gap-[2.1rem]">
-<p>
-
-Qmax : ${qmax}
-</p>
-
-<p>
-
-
- Fexec: 15_12.5 HZ
-</p>
-
-
-</div>
-
-
-
-
-<div class="flex flex-row gap-12">
-<p>
-
-Liner mat : PTFE
-</p>
-
-<p>
-
-  Elect:${elect}
-</p>
-
-
-</div>
-
-
-<div class="flex flex-row gap-5">
-<p>
-
- Tmed : ${tmed}
-</p>
-
-<p>
-
- PED:
-
-</p>
-
-
-</div>
-
-
-
-<div class="flex flex-row gap-[4.2rem]">
-<p>
-
- Ss: ${ss}
-</p>
-
-<p>
- Sz:  ${sz}
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </body>
-      </html>
-      
-      `;
+            
+            
+            <div> <div>Dev. version:${deviceVersion}</div>
+             <div>Update:</div></div>
+            
+             <div class="w-[33px] h-[33px] ml-[8rem] border text-center flex items-center justify-center mt-[-30px]">
+               <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+             </div>
+           </div>
+ 
+         
+                 <!-- Right side full height -->
+                 <div class="w-[60%]  pl-2 text-[8px] leading-3 h-full">
+ <div class="flex flex-row  gap-[3rem]">
+ <p>
+ ${power}    
+ </p>
+ </div>
+ <p>
+ Protection class : ${protection}
+ </p>
+ <p>
+ Tamb : ${tamb}
+ </p>
+ <div class="flex flex-row gap-[5rem]">
+ <p>
+ Size:
+ </p>
+ <p>
+  Fitting:
+ </p>
+ </div>
+ <div class="flex flex-row gap-[4.6rem]">
+ <p>
+ Qmax:
+ </p>
+ <p>
+ Fexec:
+ </p>
+ </div>
+ <div class="flex flex-row gap-[3.7rem]">
+ <p>
+ Liner mat: 
+ </p>
+ <p>
+   Elect:
+ </p>
+ </div>
+ <div class="flex flex-row gap-[1.2rem]">
+ <p>
+  Tmed : ${tmed}
+ </p>
+ <p>
+  PED:
+ </p>
+ </div>
+ <div class="flex flex-row gap-[5.2rem]">
+ <p>
+  Ss:
+ </p>
+ <p>
+  Sz:
+ </p>
+ </div>
+ </div>
+         </div>
+     </div>
+ </body>
+ </html>
+       `;
       } else if (labelType === "sensor") {
         printContainer.innerHTML = `
        <!DOCTYPE html>
@@ -999,11 +891,22 @@ Liner mat : PTFE
         <!-- Upper Section -->
         <div class="flex w-full border-b-2 h-[5.8rem] border-black">
           <!-- Left Section -->
-          <div class="w-[42%] text-[7px] border-r-2 border-black p-1 relative font-bold">
+          <div class="w-[50%] text-[7px] border-r-2 border-black p-1 relative font-bold">
             <div>Serial No: ${serialNumber}</div>
-            <div>Model number: <span class="break-words">${modelNumber}</span></div>
+            <div style="margin-top: 1px;">
+              <span class="font-bold">Model number: </span>${modelNumber.substring(
+                0,
+                33
+              )}
+            </div>
+            <div style="margin-top: 0px;">${modelNumber.substring(33, 73)}</div>
+            <div style="margin-top: 0px;">${modelNumber.substring(
+              73,
+              120
+            )}</div>
+          
             <div class="h-[2px]"></div>
-            <div class="mt-7">Dev. version:${deviceVersion}</div>
+            <div class="mt-2">Dev. version: ${deviceVersion}</div>
             <!-- QR Code positioned with absolute positioning -->
             <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] border border-black">
               <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
@@ -1011,33 +914,33 @@ Liner mat : PTFE
           </div>
     
           <!-- Right Section -->
-          <div class="text-[7px] w-[60%] p-1 font-bold">
+          <div class="text-[7px] w-[50%] p-1 font-bold">
             <p>${power}</p>
             <p>Protection class: IP67/IP67</p>
             <p>Tamb: ${tamb}</p>
             
-            <div class="flex gap-9">
-              <p>Size :${size}</p>
-              <p>Fitting:${fitting}</p>
+            <div class="flex gap-12">
+              <p>Size: ${size}</p>
+              <p>Fitting: ${fitting}</p>
             </div>
 
-            <div class="flex gap-[1.5rem]">
-              <p>Qmax :${qmax}</p>
-              <p>Fexc:${fexc}</p>
+            <div class="flex gap-[3.2rem]">
+              <p>Qmax: ${qmax}</p>
+              <p>Fexc: ${fexc}</p>
             </div>
 
-            <div class="flex gap-[2.4rem]">
-              <p>Liner mat : PTFE</p>
-              <p>Elect:${elect}</p>
+            <div class="flex gap-[1.7rem]">
+            <p>Liner mat: ${liner}</p>
+              <p>Elect: ${elect}</p>
             </div>
 
-            <div class="flex gap-[1.4rem]">
-              <p>Tmed :${tmed}</p>
+            <div class="flex gap-[1.1rem]">
+              <p>Tmed: ${tmed}</p>
               <p>PED:</p>
             </div>
 
-            <div class="flex gap-[3.3rem]">
-              <p>Ss : ${ss}</p>
+            <div class="flex gap-[3.1rem]">
+              <p>Ss: ${ss}</p>
               <p>Sz: ${sz}</p>
             </div>
           </div>
@@ -1053,9 +956,9 @@ Liner mat : PTFE
                   <div>
                     <div>Made in:</div>
                     <div>ABB India Limited, Bangalore</div>
-                    <div class="text-center">${date}</div>
+                    <div class="text-center ml-15">${date}</div>
                   </div>
-                  <div>
+                  <div class="mt-1">
                     <div>Designed by ABB AG</div>
                     <div>Goettingen, Germany</div>
                   </div>
@@ -1066,9 +969,7 @@ Liner mat : PTFE
                     <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
                       <img src=${hot} alt="Hot Surface Icon" class="w-[25px] h-[25px]"/>
                     </div>
-                    // <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                    //   <img src=${warning} alt="Warning Icon" class="w-[25px] h-[25px]"/>
-                    // </div>
+                   
                     <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
                       <img src=${manual} alt="Manual Icon" class="w-[25px] h-[25px]"/>
                     </div>
@@ -1156,62 +1057,37 @@ Liner mat : PTFE
           </div>
 
         
-                <!-- Right Section - Fixed Layout -->
-                <div class="font-bold text-[8px] p-1 font-fam flex-1 fixed-height">
-                  
-                  <!-- Power Section - Fixed Height -->
-                  <div class="text-truncate" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                    ${power}
-                  </div>
-                  
-                  <!-- Protection Class - Fixed Height -->
-                  <div style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                    Protection class: IP67/IP67
-                  </div>
-                  
-                  <!-- Temperature - Fixed Height -->
-                  <div class="text-truncate" style="height: 10px; line-height: 10px; margin-bottom: 2px;">
-                    Tamb:${tamb}
-                  </div>
-                  
-                  <!-- Spacer Line -->
-                  <div style="height: 1px; margin-bottom: 2px;"></div>
-                  
-                  <!-- Specifications Grid - Fixed Heights -->
-                  <div style="height: 80px;">
-                    
-                    <!-- Row 1 -->
-                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                      <div class="text-truncate" style="width: 50%;">size:DN 300 (12")</div>
-                      <div class="text-truncate" style="width: 50%;">Fitting:${fitting}</div>
-                    </div>
-      
-                    <!-- Row 2 -->
-                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                      <div class="text-truncate" style="width: 50%;">Qmax:${qmax}</div>
-                      <div class="text-truncate" style="width: 50%;">Fexc:${fexc}</div>
-                    </div>
-      
-                    <!-- Row 3 -->
-                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                      <div class="text-truncate" style="width: 50%;">Liner mat: PTFE</div>
-                      <div class="text-truncate" style="width: 50%;">Elect:${elect}</div>
-                    </div>
-      
-                    <!-- Row 4 -->
-                    <div class="flex" style="height: 10px; line-height: 10px; margin-bottom: 1px;">
-                      <div class="text-truncate" style="width: 50%;">Tmed:${tmed}</div>
-                      <div class="text-truncate" style="width: 50%;">PED:</div>
-                    </div>
-      
-                    <!-- Row 5 -->
-                    <div class="flex" style="height: 10px; line-height: 10px;">
-                      <div class="text-truncate" style="width: 50%;">Ss: ${ss}</div>
-                      <div class="text-truncate" style="width: 50%;">Sz: ${sz}</div>
-                    </div>
-                    
-                  </div>
-                </div>
+                <!-- Right Section -->
+          <div class="text-[8px] w-[50%] leading-3 p-1 font-bold">
+            <p>${power}</p>
+            <p>Protection class: IP67/IP67</p>
+            <p>Tamb: ${tamb}</p>
+            
+            <div class="flex gap-12">
+              <p>Size: ${size}</p>
+              <p>Fitting: ${fitting}</p>
+            </div>
+
+            <div class="flex gap-[3.2rem]">
+              <p>Qmax: ${qmax}</p>
+              <p>Fexc: ${fexc}</p>
+            </div>
+
+            <div class="flex gap-[2.2rem]">
+              <p>Liner mat: ${liner}</p>
+              <p>Elect: ${elect}</p>
+            </div>
+
+            <div class="flex gap-[1rem]">
+              <p>Tmed: ${tmed}</p>
+              <p>PED:</p>
+            </div>
+
+            <div class="flex gap-[3.6rem]">
+              <p>Ss: ${ss}</p>
+              <p>Sz: ${sz}</p>
+            </div>
+          </div>
         </div>
 
         <!-- Optional Middle Section -->
@@ -1244,7 +1120,6 @@ Liner mat : PTFE
     </body>
   </html>
 `;
-
       }
 
       if (labelRef.current) {
@@ -1506,125 +1381,214 @@ Liner mat : PTFE
 
           {/* Table */}
           <TableContainer
-            sx={{ maxHeight: "calc(100vh - 350px)", minHeight: "300px" }}
+            sx={{
+              maxHeight: "calc(100vh - 400px)",
+              minHeight: "400px",
+              "&::-webkit-scrollbar": {
+                width: "8px",
+                height: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "#f1f5f9",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "linear-gradient(45deg, #667eea, #764ba2)",
+                borderRadius: "4px",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #5a67d8, #6b46c1)",
+                },
+              },
+            }}
           >
             {loading ? (
               <Box
                 sx={{
                   display: "flex",
+                  flexDirection: "column",
                   justifyContent: "center",
                   alignItems: "center",
-                  height: "300px",
+                  height: "400px",
+                  gap: 2,
                 }}
               >
-                <CircularProgress color="primary" />
+                <CircularProgress
+                  size={48}
+                  sx={{
+                    color: "#667eea",
+                  }}
+                />
+                <Typography color="#64748b" fontWeight={500}>
+                  Loading data...
+                </Typography>
               </Box>
             ) : error ? (
-              <Box sx={{ p: 4, textAlign: "center" }}>
-                <Typography color="error">{error}</Typography>
+              <Box sx={{ p: 6, textAlign: "center" }}>
+                <Typography color="error" variant="h6" gutterBottom>
+                  {error}
+                </Typography>
                 <Button
-                  variant="outlined"
-                  color="primary"
-                  sx={{ mt: 2 }}
+                  variant="contained"
+                  sx={{
+                    mt: 2,
+                    background: "linear-gradient(45deg, #667eea, #764ba2)",
+                    "&:hover": {
+                      background: "linear-gradient(45deg, #5a67d8, #6b46c1)",
+                    },
+                  }}
                   onClick={() => window.location.reload()}
                 >
                   Retry
                 </Button>
               </Box>
             ) : (
-              <Table stickyHeader aria-label="label print table">
+              <Table stickyHeader aria-label="enhanced label print table">
                 <TableHead>
                   <TableRow
                     sx={{
                       "& th": {
-                        bgcolor: "#f1f5f9",
-                        fontWeight: "600",
-                        color: "#334155",
+                        background:
+                          "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+                        fontWeight: "700",
+                        color: "#1e293b",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                        textTransform: "uppercase",
+                        borderBottom: "2px solid #e2e8f0",
+                        py: 2,
                       },
                     }}
                   >
                     {visibleColumns.sNo && (
                       <TableCell
-                        sx={{ cursor: "pointer" }}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("_id")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           S No {getSortDirection("_id")}
                         </Box>
                       </TableCell>
                     )}
-                    {visibleColumns.action && <TableCell>Action</TableCell>}
+                    {visibleColumns.action && (
+                      <TableCell sx={{ minWidth: 120 }}>Action</TableCell>
+                    )}
                     {visibleColumns.labelType && (
                       <TableCell
-                        sx={{ cursor: "pointer", minWidth: 150 }}
+                        sx={{
+                          cursor: "pointer",
+                          minWidth: 150,
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("LabelType")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Label Type {getSortDirection("LabelType")}
                         </Box>
                       </TableCell>
                     )}
                     {visibleColumns.serialNumber && (
                       <TableCell
-                        sx={{ cursor: "pointer", minWidth: 150 }}
+                        sx={{
+                          cursor: "pointer",
+                          minWidth: 150,
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("SerialNumber")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Serial Number {getSortDirection("SerialNumber")}
                         </Box>
                       </TableCell>
                     )}
                     {visibleColumns.tagNumber && (
                       <TableCell
-                        sx={{ cursor: "pointer" }}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("TagNumber")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Tag Number {getSortDirection("TagNumber")}
                         </Box>
                       </TableCell>
                     )}
                     {visibleColumns.labelDetails && (
-                      <TableCell sx={{ minWidth: 250 }}>
-                        Label Details
-                      </TableCell>
-                    )}
-                    {visibleColumns.logoType && (
-                      <TableCell
-                        sx={{ cursor: "pointer", minWidth: 120 }}
-                        onClick={() => handleSort("LogoType")}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          Logo Type {getSortDirection("LogoType")}
-                        </Box>
-                      </TableCell>
+                      <TableCell sx={{ minWidth: 250 }}>Model Number</TableCell>
                     )}
                     {visibleColumns.date && (
                       <TableCell
-                        sx={{ cursor: "pointer" }}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("Date")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Date {getSortDirection("Date")}
                         </Box>
                       </TableCell>
                     )}
                     {visibleColumns.addedBy && (
                       <TableCell
-                        sx={{ cursor: "pointer" }}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("AddedBy")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Added By {getSortDirection("AddedBy")}
                         </Box>
                       </TableCell>
                     )}
                     {visibleColumns.status && (
                       <TableCell
-                        sx={{ cursor: "pointer" }}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
                         onClick={() => handleSort("Status")}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           Status {getSortDirection("Status")}
                         </Box>
                       </TableCell>
@@ -1638,12 +1602,19 @@ Liner mat : PTFE
                         key={row._id || index}
                         hover
                         sx={{
-                          "&:nth-of-type(odd)": { bgcolor: "#fafafa" },
+                          "&:nth-of-type(odd)": { bgcolor: "#fbfcfd" },
+                          "&:hover": {
+                            bgcolor: "rgba(102, 126, 234, 0.03) !important",
+                            transform: "scale(1.001)",
+                            boxShadow: "0 4px 20px rgba(102, 126, 234, 0.1)",
+                          },
                           "&:last-child td, &:last-child th": { border: 0 },
+                          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          cursor: "pointer",
                         }}
                       >
                         {visibleColumns.sNo && (
-                          <TableCell>
+                          <TableCell sx={{ fontWeight: 600, color: "#64748b" }}>
                             {page * rowsPerPage + index + 1}
                           </TableCell>
                         )}
@@ -1651,22 +1622,43 @@ Liner mat : PTFE
                           <TableCell>
                             <Button
                               variant="contained"
-                              color="success"
                               onClick={() => handlePrintLabel(row)}
                               size="small"
+                              sx={{
+                                background:
+                                  "linear-gradient(45deg, #138086, #3c4cad)",
+                                "&:hover": {
+                                  background:
+                                    "linear-gradient(45deg, #138086, #56c596)",
+                                  transform: "translateY(-1px)",
+                                  boxShadow:
+                                    "0 4px 12px rgba(16, 185, 129, 0.4)",
+                                },
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                px: 2,
+                                transition: "all 0.2s ease",
+                              }}
                             >
                               Preview
                             </Button>
                           </TableCell>
                         )}
                         {visibleColumns.labelType && (
-                          <TableCell>{row.LabelType}</TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.LabelType}
+                          </TableCell>
                         )}
                         {visibleColumns.serialNumber && (
-                          <TableCell>{row.SerialNumber}</TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.SerialNumber}
+                          </TableCell>
                         )}
                         {visibleColumns.tagNumber && (
-                          <TableCell>{row.TagNumber}</TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.TagNumber}
+                          </TableCell>
                         )}
                         {visibleColumns.labelDetails && (
                           <TableCell
@@ -1683,6 +1675,16 @@ Liner mat : PTFE
                               arrow
                               enterDelay={500}
                               leaveDelay={200}
+                              sx={{
+                                "& .MuiTooltip-tooltip": {
+                                  bgcolor: "#1f2937",
+                                  borderRadius: 2,
+                                  fontSize: "0.875rem",
+                                },
+                                "& .MuiTooltip-arrow": {
+                                  color: "#1f2937",
+                                },
+                              }}
                             >
                               <Typography
                                 variant="body2"
@@ -1692,6 +1694,8 @@ Liner mat : PTFE
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap",
+                                  fontWeight: 500,
+                                  color: "#374151",
                                 }}
                               >
                                 {row.LabelDetails}
@@ -1699,28 +1703,48 @@ Liner mat : PTFE
                             </Tooltip>
                           </TableCell>
                         )}
-                        {visibleColumns.logoType && (
-                          <TableCell>{row.LogoType}</TableCell>
-                        )}
                         {visibleColumns.date && (
-                          <TableCell>{row.Date}</TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.Date}
+                          </TableCell>
                         )}
                         {visibleColumns.addedBy && (
-                          <TableCell>{row.AddedBy}</TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.AddedBy}
+                          </TableCell>
                         )}
                         {visibleColumns.status && (
                           <TableCell>
                             <Chip
                               label={row.Status}
                               size="small"
-                              color={
-                                row.Status === "Active"
-                                  ? "success"
+                              sx={{
+                                fontWeight: 600,
+                                borderRadius: 2,
+                                textTransform: "uppercase",
+                                fontSize: "0.75rem",
+                                letterSpacing: "0.025em",
+                                ...(row.Status === "Active"
+                                  ? {
+                                      background:
+                                        "linear-gradient(45deg, #10b981, #059669)",
+                                      color: "white",
+                                      boxShadow:
+                                        "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                    }
                                   : row.Status === "Inactive"
-                                  ? "error"
-                                  : "default"
-                              }
-                              sx={{ fontWeight: 500 }}
+                                  ? {
+                                      background:
+                                        "linear-gradient(45deg, #ef4444, #dc2626)",
+                                      color: "white",
+                                      boxShadow:
+                                        "0 2px 8px rgba(239, 68, 68, 0.3)",
+                                    }
+                                  : {
+                                      background: "#f3f4f6",
+                                      color: "#374151",
+                                    }),
+                              }}
                             />
                           </TableCell>
                         )}
@@ -1732,11 +1756,28 @@ Liner mat : PTFE
                         colSpan={
                           Object.values(visibleColumns).filter(Boolean).length
                         }
-                        sx={{ textAlign: "center", py: 3 }}
+                        sx={{ textAlign: "center", py: 6 }}
                       >
-                        <Typography variant="body1" color="text.secondary">
-                          No matching records found
-                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 2,
+                          }}
+                        >
+                          <SearchIcon sx={{ fontSize: 48, color: "#cbd5e1" }} />
+                          <Typography
+                            variant="h6"
+                            color="#64748b"
+                            fontWeight={500}
+                          >
+                            No matching records found
+                          </Typography>
+                          <Typography variant="body2" color="#94a3b8">
+                            Try adjusting your search criteria
+                          </Typography>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   )}
