@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// export const API_URL = "http://localhost:2222";
+export const API_URL = "http://localhost:2222";
 
-export const API_URL = "https://project-abb-scom.onrender.com";
+// export const API_URL = "https://project-abb-scom.onrender.com";
 
 
 export const api = axios.create({
