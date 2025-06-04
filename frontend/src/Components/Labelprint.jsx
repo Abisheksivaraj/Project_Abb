@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -20,13 +20,15 @@ import {
   Chip,
   Tooltip,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import TagIcon from "@mui/icons-material/LocalOffer";
 import BarcodeIcon from "@mui/icons-material/QrCode";
 import CodeIcon from "@mui/icons-material/Code";
-
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import StatusIcon from "@mui/icons-material/RadioButtonChecked";
 import DeviceHubIcon from "@mui/icons-material/DeviceHub";
 import FormatListNumberedRtlIcon from "@mui/icons-material/FormatListNumberedRtl";
@@ -159,7 +161,7 @@ const TMED_OPTIONS = [
   },
 ];
 
-// Static data for Qmax dropdown - you can replace this with your actual Qmax values
+// Static data for Qmax dropdown
 const QMAX_OPTIONS = [
   { code: "15", description: "100 l/min" },
   { code: "20", description: "150 l/min" },
@@ -182,8 +184,278 @@ const QMAX_OPTIONS = [
   { code: "600", description: "9600 m³/h" },
 ];
 
+const DEV_VERSION_OPTIONS = [
+  { value: "01.14.00", label: "01.14.00" },
+  { value: "01.15.00", label: "01.15.00" },
+  { value: "01.16.00", label: "01.16.00" },
+  { value: "01.17.00", label: "01.17.00" },
+  { value: "01.18.00", label: "01.18.00" },
+  { value: "01.19.00", label: "01.19.00" },
+  { value: "01.20.00", label: "01.20.00" },
+];
+
+// Ordered Collection Dropdowns Component
+const OrderedCollectionDropdowns = ({
+  basicCode,
+  collectionsWithCodes,
+  selectedCollections,
+  onCollectionCodeChange,
+  isLoading,
+}) => {
+  // Get ordered collection names based on basic code
+  const getOrderedCollections = () => {
+    const order = COLLECTION_ORDERS[basicCode];
+    if (!order) return [];
+
+    const orderedCollections = [];
+    const availableCollections = Object.keys(collectionsWithCodes);
+
+    // First, add collections in the specified order
+    order.forEach((orderedName) => {
+      const matchingCollection = availableCollections.find(
+        (name) => name.trim().toLowerCase() === orderedName.trim().toLowerCase()
+      );
+
+      if (matchingCollection && collectionsWithCodes[matchingCollection]) {
+        orderedCollections.push(matchingCollection);
+      }
+    });
+
+    // Then add any remaining collections that weren't in the order
+    availableCollections.forEach((collectionName) => {
+      if (!orderedCollections.includes(collectionName)) {
+        orderedCollections.push(collectionName);
+      }
+    });
+
+    return orderedCollections;
+  };
+
+  const orderedCollectionNames = getOrderedCollections();
+
+  // Helper function to truncate long collection names for display
+  const truncateCollectionName = (name, maxLength = 25) => {
+    return name.length > maxLength
+      ? `${name.substring(0, maxLength)}...`
+      : name;
+  };
+
+  // Helper function to get step number based on collection order
+  const getStepNumber = (collectionName) => {
+    const order = COLLECTION_ORDERS[basicCode];
+    if (!order) return null;
+
+    const index = order.findIndex(
+      (orderedName) =>
+        orderedName.trim().toLowerCase() === collectionName.trim().toLowerCase()
+    );
+
+    return index !== -1 ? index + 1 : null;
+  };
+
+  if (
+    !basicCode ||
+    !collectionsWithCodes ||
+    Object.keys(collectionsWithCodes).length === 0
+  ) {
+    return null;
+  }
+
+  return (
+    <Paper
+      elevation={2}
+      sx={{
+        p: 3,
+        background: (theme) =>
+          `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
+      }}
+    >
+      <Box display="flex" alignItems="center" mb={3}>
+        <DeviceHubIcon sx={{ mr: 1, color: "primary.main" }} />
+        <Typography variant="h6" fontWeight="bold">
+          Configuration Options - {basicCode}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+          ({orderedCollectionNames.length} options)
+        </Typography>
+        {isLoading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+      </Box>
+
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Select options in the recommended order for optimal configuration
+      </Typography>
+
+      <Grid container spacing={2}>
+        {orderedCollectionNames.map((collectionName, index) => {
+          const stepNumber = getStepNumber(collectionName);
+          const isSelected = selectedCollections[collectionName];
+
+          return (
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              xl={2}
+              key={`${collectionName}-${index}`}
+            >
+              <FormControl
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={{
+                  minWidth: "200px",
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: isSelected
+                      ? "rgba(76, 175, 80, 0.08)"
+                      : "white",
+                    "&:hover": {
+                      backgroundColor: isSelected
+                        ? "rgba(76, 175, 80, 0.12)"
+                        : "rgba(0, 0, 0, 0.04)",
+                    },
+                  },
+                }}
+              >
+                <InputLabel
+                  sx={{
+                    fontSize: "0.875rem",
+                    color: isSelected ? "success.main" : "text.secondary",
+                  }}
+                >
+                  {stepNumber && (
+                    <Box
+                      component="span"
+                      sx={{
+                        backgroundColor: "primary.main",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: 20,
+                        height: 20,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.75rem",
+                        mr: 1,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {stepNumber}
+                    </Box>
+                  )}
+                  {truncateCollectionName(collectionName, 20)}
+                </InputLabel>
+
+                <Tooltip
+                  title={collectionName.length > 20 ? collectionName : ""}
+                  placement="top"
+                  arrow
+                >
+                  <Select
+                    label={`${
+                      stepNumber ? `${stepNumber} ` : ""
+                    }${truncateCollectionName(collectionName, 20)}`}
+                    value={selectedCollections[collectionName] || ""}
+                    onChange={(e) =>
+                      onCollectionCodeChange(collectionName, e.target.value)
+                    }
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 300,
+                          width: 350,
+                        },
+                      },
+                    }}
+                    sx={{
+                      "& .MuiSelect-select": {
+                        fontSize: "0.875rem",
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      value=""
+                      sx={{ fontStyle: "italic", color: "text.secondary" }}
+                    >
+                      Select Option
+                    </MenuItem>
+                    {collectionsWithCodes[collectionName]?.map((item) => (
+                      <MenuItem
+                        key={`${item.code}-${index}`}
+                        value={item.code}
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          whiteSpace: "normal",
+                          py: 1.5,
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="primary"
+                        >
+                          {item.code}
+                        </Typography>
+                        {item.description && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              mt: 0.5,
+                              wordBreak: "break-word",
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {item.description.length > 60
+                              ? `${item.description.substring(0, 60)}...`
+                              : item.description}
+                          </Typography>
+                        )}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Tooltip>
+              </FormControl>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      {/* Progress indicator */}
+      <Box
+        sx={{
+          mt: 3,
+          p: 2,
+          backgroundColor: "rgba(0, 0, 0, 0.02)",
+          borderRadius: 1,
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Progress:{" "}
+          {
+            Object.keys(selectedCollections).filter(
+              (key) => selectedCollections[key]
+            ).length
+          }{" "}
+          / {orderedCollectionNames.length} options selected
+        </Typography>
+      </Box>
+    </Paper>
+  );
+};
+
 const LabelPrint = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if we're in edit mode
+  const editData = location.state?.editData;
+  const isEditMode = !!editData;
+  const [editId, setEditId] = useState(editData?._id || null);
+
   const [basicCode, setBasicCode] = useState("");
   const [collectionsWithCodes, setCollectionsWithCodes] = useState({});
   const [collectionNames, setCollectionNames] = useState([]);
@@ -193,8 +465,9 @@ const LabelPrint = () => {
   const [ss, setSS] = useState("");
   const [sz, setSZ] = useState("");
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
-  const [allSelectionsDone, setAllSelectionsDone] = useState(false);
   const [selectedDatabase, setSelectedDatabase] = useState("");
+  const [allSelectionsDone, setAllSelectionsDone] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -216,97 +489,31 @@ const LabelPrint = () => {
   const [LinerMaterial, setLinerMaterial] = useState("");
   const [Fitting, setFitting] = useState("");
   const [Elect, setElect] = useState("");
-  // New states for Qmax and Tamb dropdowns
+  const [Fexc, setFexc] = useState("");
+  const [power, setPower] = useState("");
   const [selectedQmax, setSelectedQmax] = useState("");
   const [selectedTmedDropdown, setSelectedTmedDropdown] = useState("");
+
+  // New state variables for storing descriptions
+  const [sizeDescription, setSizeDescription] = useState("");
+  const [qmaxDescription, setQmaxDescription] = useState("");
 
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
 
-  // Handle LabelType change with LogoType visibility logic
-  const handleLabelTypeChange = (event) => {
-    const value = event.target.value;
-    setLabelType(value);
+  // Control states for edit mode
+  const [isEditModeInitialized, setIsEditModeInitialized] = useState(false);
+  const [preserveLabelDetails, setPreserveLabelDetails] = useState(false);
 
-    // Check if we should hide the LogoType field
-    const shouldHideLogoType =
-      value === "Sensor(115x35)" || value === "Transmitter";
-    setShowLogoType(!shouldHideLogoType);
-
-    // Reset LogoType value when the field is hidden
-    if (shouldHideLogoType) {
-      setLogoType("");
-    }
-  };
-
-  // Handle Qmax dropdown change
-  const handleQmaxChange = (event) => {
-    const value = event.target.value;
-    setSelectedQmax(value);
-
-    // Update label details when Qmax changes
-    updateLabelDetails(selectedCollections, ss, sz, basicCode);
-  };
-
-  // Handle Tamb dropdown change
-  const handleTambDropdownChange = (event) => {
-    const value = event.target.value;
-    setSelectedTmedDropdown(value);
-
-    // Update label details when Tamb changes
-    updateLabelDetails(selectedCollections, ss, sz, basicCode);
-  };
-
-  // Fetch collections and codes from specific database based on basic code
-  const fetchCollectionsFromDatabase = async (dbName) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      console.log(`Fetching collections from database: ${dbName}`);
-      const response = await api.get(`/collections-by-database/${dbName}`);
-
-      if (response.data.success) {
-        const dbCollections = response.data.collectionsWithData;
-        console.log("API Response:", response.data);
-
-        // Filter out excluded collections
-        const filteredCollections = {};
-        Object.keys(dbCollections).forEach((collectionName) => {
-          if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
-            filteredCollections[collectionName] = dbCollections[collectionName];
-          }
-        });
-
-        // Log all collections and their item counts
-        Object.keys(filteredCollections).forEach((collName) => {
-          console.log(
-            `${collName}: ${filteredCollections[collName].length} items`
-          );
-        });
-
-        setCollectionsWithCodes(filteredCollections);
-        setCollectionNames(Object.keys(filteredCollections));
-        setFilteredCollectionNames(Object.keys(filteredCollections));
-      } else {
-        setError("Failed to fetch collections: " + response.data.message);
-      }
-    } catch (error) {
-      console.error(`Error fetching collections from ${dbName}:`, error);
-      setError(`Error fetching collections: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // CORRECTED function to determine which database to use based on basic code
+  // Function to determine which database to use based on basic code
   const getDatabaseForBasicCode = (code) => {
     switch (code) {
       case "FEP631":
-        return "Fep631"; // Maps to the Fep631 database
+        return "Fep631";
       case "FEP632":
-        return "Fep632"; // Maps to the Fep632 database
+        return "Fep632";
       case "FET632":
-        return "Transmitter"; // Maps to the Transmitter database
+        return "Transmitter";
       default:
         return "";
     }
@@ -320,7 +527,6 @@ const LabelPrint = () => {
     const orderedCollections = [];
     const availableCollections = [...collections];
 
-    // Add collections in the exact order specified in COLLECTION_ORDERS
     order.forEach((orderedName) => {
       const matchingIndex = availableCollections.findIndex(
         (name) => name.trim().toLowerCase() === orderedName.trim().toLowerCase()
@@ -332,11 +538,195 @@ const LabelPrint = () => {
       }
     });
 
-    // Add any remaining collections that weren't in the order list at the end
     orderedCollections.push(...availableCollections);
-
-    console.log(`Ordered collections for ${basicCode}:`, orderedCollections);
     return orderedCollections;
+  };
+
+  // Fetch collections and codes from specific database based on basic code
+  const fetchCollectionsFromDatabase = async (dbName) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log(`Fetching collections from database: ${dbName}`);
+      const response = await api.get(`/collections-by-database/${dbName}`);
+
+      if (response.data.success) {
+        const dbCollections = response.data.collectionsWithData;
+
+        // Filter out excluded collections
+        const filteredCollections = {};
+        Object.keys(dbCollections).forEach((collectionName) => {
+          if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
+            filteredCollections[collectionName] = dbCollections[collectionName];
+          }
+        });
+
+        setCollectionsWithCodes(filteredCollections);
+        setCollectionNames(Object.keys(filteredCollections));
+        setFilteredCollectionNames(Object.keys(filteredCollections));
+
+        console.log(
+          "Collections loaded successfully:",
+          Object.keys(filteredCollections).length,
+          "collections"
+        );
+        return true;
+      } else {
+        setError("Failed to fetch collections: " + response.data.message);
+        return false;
+      }
+    } catch (error) {
+      console.error(`Error fetching collections from ${dbName}:`, error);
+      setError(`Error fetching collections: ${error.message}`);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initialize edit mode - this runs once when component mounts in edit mode
+  useEffect(() => {
+    if (isEditMode && editData && !isEditModeInitialized) {
+      console.log("=== INITIALIZING EDIT MODE ===");
+      console.log("Edit data:", editData);
+
+      setIsEditModeInitialized(true);
+      setPreserveLabelDetails(true);
+
+      // Set all basic form fields immediately
+      setLabelType(editData.LabelType || "");
+      setLogoType(editData.LogoType || "");
+      setSerialNumber(editData.SerialNumber || "");
+      setTagNumber(editData.TagNumber || "");
+      setLabelDetails(editData.LabelDetails || "");
+      setDate(editData.Date || "");
+      setStatus(editData.Status || "Active");
+      setDevVersion(editData.DevVersion || "");
+
+      // Set additional fields
+      setPowerSupply(editData.powerSupply || "");
+      setPower(editData.power || "");
+      setProtectionClass(editData.ProtectionClass || "");
+      setTamb(editData.Tamb || "");
+      setSize(editData.Size || "");
+      setLinerMaterial(editData.LinerMaterial || "");
+      setFitting(editData.Fitting || "");
+      setElect(editData.Elect || "");
+      setFexc(editData.Fexc || "");
+      setSS(editData.ss || "");
+      setSZ(editData.sz || "");
+
+      // Handle Qmax
+      let qmaxValue = editData.selectedQmax || "";
+      const qmaxOptionByDescription = QMAX_OPTIONS.find(
+        (option) => option.description === qmaxValue
+      );
+      const qmaxOptionByCode = QMAX_OPTIONS.find(
+        (option) => option.code === qmaxValue
+      );
+
+      if (qmaxOptionByCode) {
+        setSelectedQmax(qmaxValue);
+        setQmaxDescription(qmaxOptionByCode.description);
+      } else if (qmaxOptionByDescription) {
+        setSelectedQmax(qmaxOptionByDescription.code);
+        setQmaxDescription(qmaxValue);
+      } else {
+        setSelectedQmax(qmaxValue);
+        setQmaxDescription("");
+      }
+
+      setSelectedTmedDropdown(editData.selectedTmedDropdown || "");
+
+      // Extract basic code and load collections
+      const modelNumber = editData.LabelDetails || "";
+      let extractedBasicCode = "";
+      if (modelNumber.startsWith("FEP631")) {
+        extractedBasicCode = "FEP631";
+      } else if (modelNumber.startsWith("FEP632")) {
+        extractedBasicCode = "FEP632";
+      } else if (modelNumber.startsWith("FET632")) {
+        extractedBasicCode = "FET632";
+      }
+
+      if (extractedBasicCode) {
+        console.log("Extracted basic code:", extractedBasicCode);
+        setBasicCode(extractedBasicCode);
+
+        // Set model type
+        let defaultModelType = "";
+        if (
+          extractedBasicCode === "FEP631" ||
+          extractedBasicCode === "FEP632"
+        ) {
+          defaultModelType = "Sensor";
+        } else if (extractedBasicCode === "FET632") {
+          defaultModelType = "Transmitter";
+        }
+        setModelType(defaultModelType);
+
+        // Load collections and show dropdown
+        const dbName = getDatabaseForBasicCode(extractedBasicCode);
+        setSelectedDatabase(dbName);
+        setShowCollectionDropdown(true);
+
+        if (dbName) {
+          console.log("Loading collections for database:", dbName);
+          fetchCollectionsFromDatabase(dbName);
+        }
+      }
+
+      // Handle LogoType visibility
+      const shouldHideLogoType =
+        editData.LabelType === "Sensor(115x35)" ||
+        editData.LabelType === "Transmitter";
+      setShowLogoType(!shouldHideLogoType);
+
+      console.log("=== EDIT MODE INITIALIZATION COMPLETE ===");
+    }
+  }, [isEditMode, editData, isEditModeInitialized]);
+
+  // Handle LabelType change with LogoType visibility logic
+  const handleLabelTypeChange = (event) => {
+    const value = event.target.value;
+    setLabelType(value);
+
+    const shouldHideLogoType =
+      value === "Sensor(115x35)" || value === "Transmitter";
+    setShowLogoType(!shouldHideLogoType);
+
+    if (shouldHideLogoType) {
+      setLogoType("");
+    }
+  };
+
+  // Handle Qmax dropdown change
+  const handleQmaxChange = (event) => {
+    const value = event.target.value;
+    setSelectedQmax(value);
+
+    const selectedQmaxOption = QMAX_OPTIONS.find(
+      (option) => option.code === value
+    );
+    if (selectedQmaxOption) {
+      setQmaxDescription(selectedQmaxOption.description);
+    } else {
+      setQmaxDescription("");
+    }
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails(selectedCollections, ss, sz, basicCode);
+    }
+  };
+
+  // Handle Tamb dropdown change
+  const handleTambDropdownChange = (event) => {
+    const value = event.target.value;
+    setSelectedTmedDropdown(value);
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails(selectedCollections, ss, sz, basicCode);
+    }
   };
 
   // Handle basic code selection with database selection
@@ -344,25 +734,30 @@ const LabelPrint = () => {
     const value = event.target.value;
     setBasicCode(value);
 
-    // Reset collections and selections first
-    setCollectionsWithCodes({});
-    setCollectionNames([]);
-    setFilteredCollectionNames([]);
-    setSelectedCollections({});
-    setShowCollectionDropdown(false);
+    // Don't reset if in edit mode
+    if (!isEditMode) {
+      // Reset collections and selections first
+      setCollectionsWithCodes({});
+      setCollectionNames([]);
+      setFilteredCollectionNames([]);
+      setSelectedCollections({});
+      setShowCollectionDropdown(false);
 
-    // Reset powerSupply when basic code changes
-    setPowerSupply("");
-    setLinerMaterial();
-    setProtectionClass("");
-    setTamb("");
-    setFitting();
-    setElect();
-    setSize("");
-    setSelectedQmax("");
-    setSelectedTmedDropdown("");
+      // Reset all states
+      setPowerSupply("");
+      setPower("");
+      setLinerMaterial("");
+      setProtectionClass("");
+      setTamb("");
+      setFitting("");
+      setElect("");
+      setSize("");
+      setSizeDescription("");
+      setSelectedQmax("");
+      setQmaxDescription("");
+      setSelectedTmedDropdown("");
+    }
 
-    // Determine which database to use based on the basic code
     const dbName = getDatabaseForBasicCode(value);
     setSelectedDatabase(dbName);
 
@@ -381,7 +776,10 @@ const LabelPrint = () => {
     }
 
     setModelType(defaultModelType);
-    updateLabelDetails({}, ss, sz, value);
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails({}, ss, sz, value);
+    }
   };
 
   // Filter collections based on basicCode and apply ordering
@@ -391,164 +789,97 @@ const LabelPrint = () => {
     let filtered = [...collectionNames];
 
     if (basicCode === "FET632") {
-      // Filter collections that end with "Transmitter"
       filtered = collectionNames.filter((name) =>
         name.toLowerCase().includes("transmitter")
       );
-      console.log("Filtered transmitter collections:", filtered);
     }
 
-    // Apply ordering based on basic code
     const orderedFiltered = orderCollections(filtered, basicCode);
     setFilteredCollectionNames(orderedFiltered);
 
-    // Clear previously selected collections that are no longer available
-    const updatedSelectedCollections = { ...selectedCollections };
-    Object.keys(updatedSelectedCollections).forEach((collectionName) => {
-      if (!orderedFiltered.includes(collectionName)) {
-        delete updatedSelectedCollections[collectionName];
+    console.log(
+      "Filtered and ordered collections:",
+      orderedFiltered.length,
+      "collections"
+    );
+
+    // In edit mode, don't clear selections when filtering
+    if (!isEditMode) {
+      const updatedSelectedCollections = { ...selectedCollections };
+      Object.keys(updatedSelectedCollections).forEach((collectionName) => {
+        if (!orderedFiltered.includes(collectionName)) {
+          delete updatedSelectedCollections[collectionName];
+        }
+      });
+      setSelectedCollections(updatedSelectedCollections);
+
+      if (!preserveLabelDetails) {
+        updateLabelDetails(updatedSelectedCollections, basicCode);
       }
-    });
-    setSelectedCollections(updatedSelectedCollections);
-
-    // Update label details with the filtered collections
-    updateLabelDetails(updatedSelectedCollections, basicCode);
-  }, [basicCode, collectionNames]);
-
-  // Handle model type change
-  const handleModelTypeChange = (event) => {
-    const value = event.target.value;
-    setModelType(value);
-    updateLabelDetails(selectedCollections, ss, sz, basicCode);
-  };
+    }
+  }, [basicCode, collectionNames, isEditMode, preserveLabelDetails]);
 
   // Handle collection code selection
-  // Handle collection code selection - FIXED VERSION
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
 
     const trimmedName = collectionName.trim();
     const lowerName = trimmedName.toLowerCase();
 
-    // Special collection detectors
+    // Update special field states
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
 
-    const isProtectionClass =
-      lowerName.includes("protection") &&
-      (lowerName.includes("transmitter") || lowerName.includes("sensor"));
-
-    const isTamb =
-      lowerName.includes("temperature") &&
-      (lowerName.includes("ambient") || lowerName.includes("range"));
-
-    const isAmbianceRangeTransmitter =
-      lowerName.includes("temperature") &&
-      lowerName.includes("ambiance") &&
-      lowerName.includes("transmitter");
-
-    // FIXED: More comprehensive Size detection
+    const isProtectionClass = lowerName.includes("protection");
+    const isTamb = lowerName.includes("temperature");
     const isSize =
       trimmedName === "Nominal Diameter" ||
-      (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
-      lowerName.includes("nominaldiameter");
-
+      lowerName.includes("nominal diameter");
+    const isPower =
+      trimmedName === "Power Supply Line Frequency" ||
+      lowerName.includes("power supply line frequency");
     const isLiner =
-      trimmedName === "Liner Material" ||
-      (lowerName.includes("liner") && lowerName.includes("material")) ||
-      lowerName.includes("linermaterial");
-
-    // Process connection detection for Fitting
-    const isProcessConnection =
-      trimmedName === "Process connection" ||
-      lowerName.includes("process connection") ||
-      lowerName.includes("processconnection");
-
-    // FIXED: Measuring electrode material detection for Elect
+      lowerName.includes("liner") && lowerName.includes("material");
+    const isProcessConnection = lowerName.includes("process connection");
     const isElect =
-      trimmedName === "Measuring electrode material" ||
-      lowerName.includes("measuring electrode material") ||
-      lowerName.includes("measuringelectrodematerial") ||
-      (lowerName.includes("measuring") &&
-        lowerName.includes("electrode") &&
-        lowerName.includes("material"));
+      lowerName.includes("measuring") && lowerName.includes("electrode");
 
-    console.log(`Collection "${collectionName}" detection:`, {
-      isPowerSupply,
-      isProtectionClass,
-      isTamb,
-      isAmbianceRangeTransmitter,
-      isSize,
-      isProcessConnection,
-      isLiner,
-      isElect,
-      lowerName,
-      trimmedName,
-    });
-
-    // Handle special collections
     if (
       isPowerSupply ||
+      isPower ||
       isProtectionClass ||
       isTamb ||
-      isAmbianceRangeTransmitter ||
       isSize ||
       isLiner ||
       isProcessConnection ||
       isElect
     ) {
-      let setStateFunction = null;
-      let fieldName = "";
+      if (codeValue === "") {
+        if (isPowerSupply) setPowerSupply("");
+        else if (isProtectionClass) setProtectionClass("");
+        else if (isTamb) setTamb("");
+        else if (isSize) {
+          setSize("");
+          setSizeDescription("");
+        } else if (isLiner) setLinerMaterial("");
+        else if (isProcessConnection) setFitting("");
+        else if (isElect) setElect("");
+      } else {
+        const codeItems = collectionsWithCodes[collectionName] || [];
+        const matchingItem = codeItems.find((item) => item.code === codeValue);
 
-      if (isPowerSupply) {
-        setStateFunction = setPowerSupply;
-        fieldName = "Power Supply";
-      } else if (isProtectionClass) {
-        setStateFunction = setProtectionClass;
-        fieldName = "Protection Class";
-      } else if (isTamb || isAmbianceRangeTransmitter) {
-        setStateFunction = setTamb;
-        fieldName = "Temperature Range";
-      } else if (isSize) {
-        setStateFunction = setSize;
-        fieldName = "Size/Nominal Diameter";
-      } else if (isLiner) {
-        setStateFunction = setLinerMaterial;
-        fieldName = "Liner Material";
-      } else if (isProcessConnection) {
-        setStateFunction = setFitting;
-        fieldName = "Process Connection/Fitting";
-      } else if (isElect) {
-        setStateFunction = setElect;
-        fieldName = "Measuring electrode material/Elect";
-      }
-
-      if (setStateFunction) {
-        if (codeValue === "") {
-          setStateFunction("");
-          console.log(`${fieldName} cleared`);
+        if (isSize) {
+          setSize(codeValue);
+          setSizeDescription(matchingItem?.description || "");
         } else {
-          const codeItems = collectionsWithCodes[collectionName] || [];
-          const matchingItem = codeItems.find(
-            (item) => item.code === codeValue
-          );
-
-          // FIXED: Store the code value instead of description for Size
-          // This ensures the actual code gets sent to the backend
-          if (isSize) {
-            // For Size, store the code value (which contains the actual size info)
-            setStateFunction(codeValue);
-            console.log(
-              `${fieldName} selected - Code: ${codeValue} (stored as code)`
-            );
-          } else {
-            // For other fields (including Liner), store the description as before
-            const description = matchingItem?.description || codeValue;
-            setStateFunction(description);
-            console.log(
-              `${fieldName} selected - Code: ${codeValue}, Description: ${description}`
-            );
-          }
+          const description = matchingItem?.description || codeValue;
+          if (isPowerSupply) setPowerSupply(description);
+          else if (isProtectionClass) setProtectionClass(description);
+          else if (isTamb) setTamb(description);
+          else if (isLiner) setLinerMaterial(description);
+          else if (isProcessConnection) setFitting(description);
+          else if (isElect) setElect(description);
+          else if (isPower) setPower(description);
         }
       }
     }
@@ -564,28 +895,42 @@ const LabelPrint = () => {
       [collectionName]: code,
     };
 
-    console.log("Updated collections:", updatedCollections);
-
     setSelectedCollections(updatedCollections);
-    updateLabelDetails(updatedCollections, ss, sz, basicCode);
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails(updatedCollections, ss, sz, basicCode);
+    }
   };
+
   // Handle SS and SZ changes
   const handleSSChange = (value) => {
     setSS(value);
-    updateLabelDetails(selectedCollections, value, sz, basicCode);
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails(selectedCollections, value, sz, basicCode);
+    }
   };
 
   const handleSZChange = (value) => {
     setSZ(value);
-    updateLabelDetails(selectedCollections, ss, value, basicCode);
+
+    if (!preserveLabelDetails) {
+      updateLabelDetails(selectedCollections, ss, value, basicCode);
+    }
   };
 
   const updateLabelDetails = (
     selections,
-    currentSS, // This parameter is still received but won't be used
+    currentSS,
     currentSZ,
     currentBasicCode
   ) => {
+    // Don't update if we're preserving label details (edit mode)
+    if (preserveLabelDetails) {
+      console.log("Preserving original label details in edit mode");
+      return;
+    }
+
     let details = currentBasicCode || "";
 
     const collectionKeys = Object.keys(selections);
@@ -594,39 +939,14 @@ const LabelPrint = () => {
       collectionKeys.forEach((collectionName) => {
         const code = selections[collectionName];
 
-        console.log(
-          `Collection: ${collectionName}, Value: "${code}", Type: ${typeof code}`
-        );
-
         if (code === "") {
           details += "-";
-          console.log(
-            `Added hyphen for ${collectionName}, details now: ${details}`
-          );
         } else if (code) {
-          // Add the selected code if it exists and isn't empty
           details += code;
-          console.log(
-            `Added code ${code} for ${collectionName}, details now: ${details}`
-          );
         }
       });
     }
 
-    // Add SZ value to details if it exists (SS is excluded)
-   
-
-    // Add Qmax and Tamb dropdown values to details if selected
-    // if (selectedQmax) {
-    //   details += selectedQmax;
-    // }
-    // if (selectedTmedDropdown) {
-    //   details += selectedTmedDropdown;
-    // }
-
-    console.log(`Final label details: ${details}`);
-
-    // Only update states if we have some actual details
     if (details) {
       setAllSelectionsDone(true);
       setLabelDetails(details);
@@ -636,60 +956,12 @@ const LabelPrint = () => {
     }
   };
 
-  // Function to remove a collection selection
-  const handleRemoveCollection = (collectionName) => {
-    const updatedCollections = { ...selectedCollections };
-    delete updatedCollections[collectionName];
-    setSelectedCollections(updatedCollections);
-
-    const lowerName = collectionName.toLowerCase();
-    const trimmedName = collectionName.trim();
-
-    // Clear the appropriate state based on collection type
-    if (lowerName.includes("power") && lowerName.includes("supply")) {
-      setPowerSupply("");
-    } else if (lowerName.includes("protection")) {
-      setProtectionClass("");
-    } else if (lowerName.includes("temperature")) {
-      setTamb("");
-    } else if (
-      trimmedName === "Nominal Diameter" ||
-      (lowerName.includes("nominal") && lowerName.includes("diameter")) ||
-      lowerName.includes("nominaldiameter") ||
-      (lowerName.includes("size") && lowerName.includes("diameter"))
-    ) {
-      setSize(""); // This should clear the Size state
-      console.log("Size field cleared due to collection removal");
-    }
-
-    updateLabelDetails(updatedCollections, ss, sz, basicCode);
-  };
-
-  // Function to get display text for selected collection value
-  const getSelectedDisplayText = (collectionName) => {
-    if (!selectedCollections[collectionName]) {
-      return "Null";
-    }
-
-    const code = selectedCollections[collectionName];
-    const codeItems = collectionsWithCodes[collectionName] || [];
-    const matchingItem = codeItems.find((item) => item.code === code);
-
-    if (matchingItem && matchingItem.description) {
-      return `${code} - ${matchingItem.description}`;
-    }
-
-    return code;
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Validate all required fields are present
     const requiredFields = [
       LabelType,
       SerialNumber,
-      TagNumber,
       LabelDetails,
       Date,
       Status,
@@ -697,7 +969,6 @@ const LabelPrint = () => {
       sz,
     ];
 
-    // Only validate LogoType if it's visible
     if (showLogoType && !LogoType) {
       alert("Please fill in all required fields");
       return;
@@ -726,42 +997,23 @@ const LabelPrint = () => {
         Tamb,
         Fitting,
         Elect,
-        Size,
-        selectedQmax,
+        Fexc,
+        Size: sizeDescription || Size,
+        selectedQmax: qmaxDescription || selectedQmax,
         selectedTmedDropdown,
       };
 
-      console.log("Submitting form data:", formData);
-
-      const response = await api.post("/table", formData);
-
-      if (response.status === 201) {
-        console.log("Label saved successfully:", response.data);
+      let response;
+      if (isEditMode) {
+        response = await api.put(`/table/${editId}`, formData);
+        alert("Label updated successfully!");
+      } else {
+        response = await api.post("/table", formData);
         alert("Label saved successfully!");
+      }
 
-        // Reset form fields
-        setLabelType("");
-        setSerialNumber("");
-        setTagNumber("");
-        setLabelDetails("");
-        setDate("");
-        setLogoType("");
-        setStatus("Active");
-        setDevVersion("");
-        setPowerSupply("");
-        setTamb("");
-        setSize("");
-        setProtectionClass("");
-        setBasicCode("");
-        setModelType("");
-        setSS("");
-        setSZ("");
-        setSelectedQmax("");
-        setSelectedTmedDropdown("");
-        setSelectedCollections({});
-        setShowCollectionDropdown(false);
-        setAllSelectionsDone(false);
-        setShowLogoType(true);
+      if (response.status === 200 || response.status === 201) {
+        navigate("/mainTable");
       }
     } catch (error) {
       console.error("Error saving label:", error);
@@ -772,16 +1024,8 @@ const LabelPrint = () => {
     }
   };
 
-  const groupedCollections = [];
-  for (let i = 0; i < filteredCollectionNames.length; i += 5) {
-    groupedCollections.push(filteredCollectionNames.slice(i, i + 5));
-  }
-  const chunkArray = (arr, size) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size) {
-      result.push(arr.slice(i, i + size));
-    }
-    return result;
+  const handleDevVersionChange = (event) => {
+    setDevVersion(event.target.value);
   };
 
   return (
@@ -793,9 +1037,20 @@ const LabelPrint = () => {
         alignItems="center"
         mb={3}
       >
-        <Typography variant="h4" fontWeight="bold" color="text.primary">
-          Label Print
-        </Typography>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Typography variant="h4" fontWeight="bold" color="text.primary">
+            {isEditMode ? "Edit Label" : "Label Print"}
+          </Typography>
+          {isEditMode && (
+            <Chip
+              icon={<EditIcon />}
+              label="Edit Mode"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: "bold" }}
+            />
+          )}
+        </Box>
         <Button
           variant="contained"
           color="error"
@@ -806,13 +1061,25 @@ const LabelPrint = () => {
         </Button>
       </Box>
 
+      {/* Alert for edit mode */}
+      {isEditMode && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            You are editing an existing label. Make your changes and click
+            "Update Label" to save.
+          </Typography>
+        </Alert>
+      )}
+
       {/* Form Card */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
         <CardHeader
-          title="Master Form"
+          title={isEditMode ? "Edit Label Form" : "Master Form"}
           sx={{
             background: (theme) =>
-              `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+              isEditMode
+                ? `linear-gradient(90deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.dark} 100%)`
+                : `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
             color: "white",
             py: 2,
           }}
@@ -843,7 +1110,6 @@ const LabelPrint = () => {
                         }}
                       />
                     </Grid>
-
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
@@ -853,7 +1119,6 @@ const LabelPrint = () => {
                         variant="outlined"
                         value={TagNumber}
                         onChange={(e) => setTagNumber(e.target.value)}
-                        required
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -863,7 +1128,6 @@ const LabelPrint = () => {
                         }}
                       />
                     </Grid>
-
                     <Grid item>
                       <FormControl variant="outlined" required>
                         <InputLabel
@@ -924,7 +1188,6 @@ const LabelPrint = () => {
                         </Select>
                       </FormControl>
                     </Grid>
-
                     <Grid item>
                       <FormControl variant="outlined">
                         <InputLabel
@@ -962,7 +1225,7 @@ const LabelPrint = () => {
                             value="FEP631"
                             sx={{ justifyContent: "center" }}
                           >
-                            FEP631{" "}
+                            FEP631
                           </MenuItem>
                           <MenuItem
                             value="FEP632"
@@ -979,7 +1242,6 @@ const LabelPrint = () => {
                         </Select>
                       </FormControl>
                     </Grid>
-
                     {showLogoType && (
                       <Grid item>
                         <FormControl variant="outlined" required>
@@ -1021,7 +1283,7 @@ const LabelPrint = () => {
                               value="Logo_1"
                               sx={{ justifyContent: "center" }}
                             >
-                              Logo 1{" "}
+                              Logo 1
                             </MenuItem>
                             <MenuItem
                               value="Logo_2"
@@ -1039,7 +1301,6 @@ const LabelPrint = () => {
                         </FormControl>
                       </Grid>
                     )}
-
                     <Grid item>
                       <TextField
                         sx={{ width: "150px" }}
@@ -1056,22 +1317,24 @@ const LabelPrint = () => {
                       />
                     </Grid>
                     <Grid item>
-                      <TextField
-                        sx={{ width: "120px" }}
-                        size="small"
-                        label="Device Version"
-                        placeholder="Enter Device Version..."
-                        variant="outlined"
-                        value={DevVersion}
-                        onChange={(e) => setDevVersion(e.target.value)}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <VersionIcon color="action" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                      <FormControl sx={{ width: "150px" }} size="small">
+                        <InputLabel>Device Version</InputLabel>
+                        <Select
+                          value={DevVersion}
+                          onChange={handleDevVersionChange}
+                          label="Device Version"
+                        >
+                          <MenuItem value="">
+                            <em>Select Version</em>
+                          </MenuItem>
+                          {DEV_VERSION_OPTIONS.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              <DeviceHubIcon sx={{ mr: 1 }} />
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </Grid>
                   </Grid>
                 </Paper>
@@ -1225,123 +1488,16 @@ const LabelPrint = () => {
                 </Paper>
               </Grid>
 
-              {/* Collections Section */}
+              {/* Collections Section - Updated with Ordered Dropdowns */}
               {showCollectionDropdown && (
                 <Grid item xs={12}>
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: 3,
-                      background: (theme) =>
-                        `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" mb={2}>
-                      <DeviceHubIcon sx={{ mr: 1, color: "primary.main" }} />
-                      <Typography variant="h6" fontWeight="bold">
-                        Configuration Options
-                      </Typography>
-                      {isLoading && (
-                        <CircularProgress size={20} sx={{ ml: 2 }} />
-                      )}
-                    </Box>
-
-                    {error && (
-                      <Typography color="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Typography>
-                    )}
-
-                    {filteredCollectionNames.length > 0 && (
-                      <Grid container spacing={2}>
-                        {/* Display collections in the exact order defined in COLLECTION_ORDERS */}
-                        {filteredCollectionNames.map(
-                          (collectionName, index) => {
-                            // Calculate row and column position to maintain consistent layout
-                            const rowIndex = Math.floor(index / 6);
-                            const colIndex = index % 6;
-
-                            return (
-                              <Grid
-                                item
-                                xs={2}
-                                key={collectionName}
-                                sx={{
-                                  // Ensure consistent spacing and alignment
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }}
-                              >
-                                <FormControl
-                                  variant="outlined"
-                                  size="small"
-                                  sx={{
-                                    width: "100%",
-                                    minWidth: "170px",
-                                    maxWidth: "200px",
-                                  }}
-                                >
-                                  <InputLabel>
-                                    {collectionName.length > 20
-                                      ? `${collectionName.substring(0, 20)}...`
-                                      : collectionName}
-                                  </InputLabel>
-                                  <Select
-                                    label={
-                                      collectionName.length > 20
-                                        ? `${collectionName.substring(
-                                            0,
-                                            20
-                                          )}...`
-                                        : collectionName
-                                    }
-                                    value={
-                                      selectedCollections[collectionName] || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleCollectionCodeChange(
-                                        collectionName,
-                                        e.target.value
-                                      )
-                                    }
-                                    IconComponent={() => null}
-                                  >
-                                    <MenuItem value="">Select</MenuItem>
-                                    {collectionsWithCodes[collectionName]?.map(
-                                      (item) => (
-                                        <MenuItem
-                                          key={item.code}
-                                          value={item.code}
-                                        >
-                                          <Tooltip
-                                            title={item.description || ""}
-                                            placement="top"
-                                          >
-                                            <Box>
-                                              {item.code}
-                                              {item.description &&
-                                                ` - ${item.description.substring(
-                                                  0,
-                                                  30
-                                                )}${
-                                                  item.description.length > 30
-                                                    ? "..."
-                                                    : ""
-                                                }`}
-                                            </Box>
-                                          </Tooltip>
-                                        </MenuItem>
-                                      )
-                                    )}
-                                  </Select>
-                                </FormControl>
-                              </Grid>
-                            );
-                          }
-                        )}
-                      </Grid>
-                    )}
-                  </Paper>
+                  <OrderedCollectionDropdowns
+                    basicCode={basicCode}
+                    collectionsWithCodes={collectionsWithCodes}
+                    selectedCollections={selectedCollections}
+                    onCollectionCodeChange={handleCollectionCodeChange}
+                    isLoading={isLoading}
+                  />
                 </Grid>
               )}
 
@@ -1394,23 +1550,27 @@ const LabelPrint = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  color="primary"
+                  color={isEditMode ? "warning" : "primary"}
                   size="large"
-                  endIcon={<ArrowForwardIcon />}
+                  endIcon={isEditMode ? <SaveIcon /> : <ArrowForwardIcon />}
                   sx={{
                     px: 4,
                     py: 1.5,
                     borderRadius: 2,
                     fontWeight: "bold",
                     background: (theme) =>
-                      `linear-gradient(45deg, ${theme.palette.success.main} 30%, ${theme.palette.success.dark} 90%)`,
+                      isEditMode
+                        ? `linear-gradient(45deg, ${theme.palette.warning.main} 30%, ${theme.palette.warning.dark} 90%)`
+                        : `linear-gradient(45deg, ${theme.palette.success.main} 30%, ${theme.palette.success.dark} 90%)`,
                     "&:hover": {
                       background: (theme) =>
-                        `linear-gradient(45deg, ${theme.palette.success.dark} 30%, ${theme.palette.success.main} 90%)`,
+                        isEditMode
+                          ? `linear-gradient(45deg, ${theme.palette.warning.dark} 30%, ${theme.palette.warning.main} 90%)`
+                          : `linear-gradient(45deg, ${theme.palette.success.dark} 30%, ${theme.palette.success.main} 90%)`,
                     },
                   }}
                 >
-                  Save Label
+                  {isEditMode ? "Update Label" : "Save Label"}
                 </Button>
               </Box>
             </Grid>

@@ -48,15 +48,14 @@ import {
   Close as CloseIcon,
   FileDownload as FileDownloadIcon,
   ContentCopy as ContentCopyIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
 
 import { api } from "../apiConfig";
 import fm from "../assets/fm.png";
 import black from "../assets/black.png";
-import dispose from "../assets/bin3.png";
-import manual from "../assets/book.png";
-import hot from "../assets/fire3.png";
-
+import dispose from "../assets/dispose.png";
+import bin from "../assets/bin3.png";
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -230,6 +229,12 @@ const MainPageTable = () => {
     setAlertOpen(false);
   };
 
+  // Handle edit button click
+  const handleEditLabel = (row) => {
+    // Navigate to label print page with the label data
+    navigate("/Labelprint", { state: { editData: row } });
+  };
+
   // Export functions
   const handleCopyToClipboard = () => {
     // Create a string representation of the table data
@@ -387,6 +392,7 @@ const MainPageTable = () => {
     if (visibleColumns.status) csvRow["Status"] = row.Status || "";
     return csvRow;
   });
+
   const handlePrintLabel = async (label) => {
     try {
       openPreviewModal(label);
@@ -438,14 +444,33 @@ const MainPageTable = () => {
       if (labelType === "sensor(96x98)") {
         if (logoType === "logo_1") {
           middleSectionContent = `
-          <!-- Black Middle Section for logo 1 (96x98) -->
-          <div class="flex-1 border-b-2 border-black w-full p-1">
-            <!-- Black space -->
+          <!-- Black Middle Section for logo 1 (96x98) with consistent spacing -->
+          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b-2 border-black w-full p-1">
+            <div class="mr-2">
+              <!-- Empty space where logo would be -->
+              <div class="h-[7rem] w-[9rem]"></div>
+            </div>
+            <div>
+              <!-- Empty lines with same spacing structure as logo_2 and logo_3 -->
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <br />
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div>&nbsp;</div>
+              <div class="h-[2px]"></div>
+              <div>&nbsp;</div>
+            </div>
           </div>`;
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[6px] border-b-2 border-black w-full p-1 h-[10rem]">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -468,7 +493,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[6px] border-b-2 border-black w-full p-1">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -507,7 +532,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (sensor) -->
-          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[6px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -526,7 +551,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (sensor) -->
-         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[6px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -563,563 +588,516 @@ const MainPageTable = () => {
 
       if (labelType === "sensor(115x35)") {
         printContainer.innerHTML = `
-       <!DOCTYPE html>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>ABB ProcessMaster 630 Label</title>
+        <style>
+            @page {
+                size: 115mm 35mm;
+                margin: 0;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                font-size: 7px;
+                line-height: 1.1;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            @media print {
+                body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                .print-container {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+            }
+        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body>
+        <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black print-container">
+            <!-- Header Section -->
+            <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+                <!-- Logo aligned to left -->
+                <div class="h-6">
+                    <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
+                </div>
+    
+                <!-- Absolutely centered title -->
+                <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
+                    ProcessMaster 630
+                </div>
+    
+                <div class="w-5 h-6">
+                    <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex w-full font-semibold border-black flex-grow">
+                <!-- Left Section -->
+                <div class="w-2/5 font-bold flex flex-col text-[7px] border-r-2 border-black p-1 relative">
+                    <div class="mb-1">Serial No: ${serialNumber}</div>
+                    
+                    <div class="mb-2">
+                        <div class="mb-0">
+                            <span class="font-bold">Model number: </span>${modelNumber.substring(
+                              0,
+                              25
+                            )}
+                        </div>
+                        <div class="leading-tight">${modelNumber.substring(
+                          25,
+                          58
+                        )}</div>
+                        <div class="leading-tight">${modelNumber.substring(
+                          58,
+                          97
+                        )}</div>
+                        <div class="leading-tight">${modelNumber.substring(
+                          97,
+                          110
+                        )}</div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <div>Dev. version: ${deviceVersion}</div>
+                        <div>Update:</div>
+                    </div>
+                    
+                    <div class="absolute right-1 bottom-1 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                        <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                    </div>
+                </div>
+    
+                <!-- Right Section -->
+                <div class="text-[7px] w-3/5 p-1 font-bold">
+                    <div class="mb-1">${power}</div>
+                    <div class="mb-1">Protection class: IP67/IP67</div>
+                    <div class="mb-2">Tamb: ${tamb}</div>
+                    
+                    <!-- Specifications Grid -->
+                    <div class="grid grid-cols-2 gap-x-2 text-[7px] leading-tight">
+                        <div>Size: ${size}</div>
+                        <div>Fitting: ${fitting}</div>
+                        
+                        <div>Qmax: ${qmax}</div>
+                        <div>Fexc: ${fexc}</div>
+                        
+                        <div>Liner mat: ${liner}</div>
+                        <div>Elect: ${elect}</div>
+                        
+                        <div>Tmed: ${tmed}</div>
+                        <div>PED:</div>
+                        
+                        <div>Ss: ${ss}</div>
+                        <div>Sz: ${sz}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+      } else if (labelType === "transmitter") {
+        printContainer.innerHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>ABB ProcessMaster 630 Label</title>
+        <style>
+            @page {
+                size: 115mm 35mm;
+                margin: 0;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                font-size: 7px;
+                line-height: 1.1;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            @media print {
+                body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                .print-container {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+            }
+        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body>
+        <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black print-container">
+            <!-- Header Section -->
+            <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+                <!-- Logo aligned to left -->
+                <div class="h-6">
+                    <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
+                </div>
+    
+                <!-- Absolutely centered title -->
+                <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
+                    ProcessMaster 630
+                </div>
+    
+                <div class="w-5 h-6">
+                    <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex w-full font-semibold border-black flex-grow">
+                <!-- Left Section -->
+                <div class="w-2/5 font-bold flex flex-col text-[7px] border-r-2 border-black p-1 relative">
+                    <div class="mb-1">Serial No: ${serialNumber}</div>
+                    
+                    <div class="mb-2">
+                        <div class="mb-0">
+                            <span class="font-bold">Model number: </span>${modelNumber.substring(
+                              0,
+                              23
+                            )}
+                        </div>
+                        <div class="leading-tight">${modelNumber.substring(
+                          25,
+                          70
+                        )}</div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <div>Dev. version: ${deviceVersion}</div>
+                        <div>Update:</div>
+                    </div>
+                    
+                    <div class="absolute right-1 bottom-1 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                        <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                    </div>
+                </div>
+    
+                <!-- Right Section -->
+                <div class="text-[7px] w-3/5 p-1 font-bold">
+                    <div class="mb-1">${power}</div>
+                    <div class="mb-1">Protection class: IP67/IP67</div>
+                    <div class="mb-2">Tamb: ${tamb}</div>
+                    
+                    <!-- Specifications Grid -->
+                    <div class="grid grid-cols-2 gap-x-2 text-[7px] leading-tight">
+                        <div>Size:</div>
+                        <div>Fitting:</div>
+                        
+                        <div>Qmax:</div>
+                        <div>Fexc:</div>
+                        
+                        <div>Liner mat:</div>
+                        <div>Elect:</div>
+                        
+                        <div>Tmed:</div>
+                        <div>PED:</div>
+                        
+                        <div>Ss:</div>
+                        <div>Sz:</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+      } else if (labelType === "sensor") {
+        printContainer.innerHTML = `
+     <!DOCTYPE html>
 <html>
 <head>
-    <title>ABB ProcessMaster 630 Label</title>
-    <style>
-        @page {
-            size: 115mm 35mm;
-            margin: 0;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            font-size: 7px;
-            line-height: 1.1;
-            -webkit-print-color-adjust: exact;
-        }
-    </style>
+  <title>Sensor Label Print</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @page {
+      size: 113.50mm 58.50mm;
+      margin: 0;
+    }
+    body {
+      -webkit-print-color-adjust: exact;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    * {
+      color: black;
+      box-sizing: border-box;
+    }
+    div, img, hr {
+      border-color: black !important;
+    }
+    /* Ensure consistent border rendering */
+    .label-container {
+      width: 113.50mm;
+      height: 58.50mm;
+      border: 2px solid black;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  </style>
 </head>
-<body>
-    <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black">
-        <!-- Header Section -->
-          <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
-        <!-- Logo aligned to left -->
-        <div class="h-6">
-          <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
-        </div>
-
-        <!-- Absolutely centered title -->
-        <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
-          ProcessMaster 630
-        </div>
-
-      
-        <div class="w-5 h-6">
-    <img src=${dispose} alt="Dispose Icon" class="w-5 h-6" />
-  </div>
-      
+<body class="m-0 p-0 font-sans text-black">
+  <div class="label-container flex flex-col text-black">
+    <!-- Header -->
+    <div class="relative flex items-center border-b-2 border-black w-full px-1 py-1 rounded-t-lg">
+      <!-- Logo aligned to left -->
+      <div class="h-8">
+        <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
       </div>
-         <!-- Main Content -->
-        <div class="flex w-full font-semibold border-black flex-grow h-[7.5rem]">
-          
-          <!-- Left Section -->
-          <div class="w-[40%] font-bold flex flex-col gap-3 text-[8px] border-r-2 border-black p-1">
-            <div>Serial No: ${serialNumber}</div>
-            <div>
-            <div style="margin-top: 1px;">
-              <span class="font-bold">Model number: </span>${modelNumber.substring(
-                0,
-                20
-              )}
-            </div>
-            <div style="margin-top: 0px;">${modelNumber.substring(20, 50)}</div>
-            <div style="margin-top: 0px;">${modelNumber.substring(50, 80)}</div>
-            <div style="margin-top: 0px;">${modelNumber.substring(
-              80,
-              110
-            )}</div>
-            </div>
-           
-           
-           
-           <div> <div>Dev. version:${deviceVersion}</div>
-            <div>Update:</div></div>
-           
-            <div class="w-[33px] h-[33px] ml-[8rem] border text-center flex items-center justify-center mt-[-45px]">
-              <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-            </div>
-          </div>
 
-        
-                <!-- Right side full height -->
-                <div class="w-[60%]  pl-2 text-[8px] leading-3 h-full">
-<div class="flex flex-row  gap-[3rem]">
-<p>
-${power}    
-</p>
-</div>
-<p>
-Protection class : ${protection}
-</p>
-<p>
-Tamb : ${tamb}
-</p>
-<div class="flex flex-row gap-[4.4rem]">
-<p>
-Size :${size}
-</p>
-<p>
- Fitting: ${fitting}
-</p>
-</div>
-<div class="flex flex-row gap-[4.1rem]">
-<p>
-Qmax : ${qmax}
-</p>
-<p>
-Fexec: ${fexc}
-</p>
-</div>
-<div class="flex flex-row gap-[2.8rem]">
-<p>
-Liner mat : ${liner}
-</p>
-<p>
-  Elect:${elect}
-</p>
-</div>
-<div class="flex flex-row gap-2">
-<p>
- Tmed : ${tmed}
-</p>
-<p>
- PED:
-</p>
-</div>
-<div class="flex flex-row gap-[4.6rem]">
-<p>
- Ss: ${ss}
-</p>
-<p>
- Sz:  ${sz}
-</p>
-</div>
-</div>
-        </div>
+      <!-- Absolutely centered title -->
+      <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
+        ProcessMaster 630
+      </div>
     </div>
+  
+    <!-- Main Content -->
+    <div class="flex flex-col flex-1 w-full">
+      <!-- Upper Section -->
+      <div class="flex w-full border-b-2 h-[5.8rem] border-black">
+        <!-- Left Section -->
+        <div class="w-[50%] text-[6px] border-r-2 border-black p-1 relative font-bold">
+          <div>Serial No: ${serialNumber}</div>
+          <div class="h-[5px]"></div>
+          <div style="margin-top: 1px;">
+            <span class="font-bold">Model number: </span>${modelNumber.substring(
+              0,
+              33
+            )}
+          </div>
+          <div style="margin-top: 0px;">${modelNumber.substring(33, 73)}</div>
+          <div style="margin-top: 0px;">${modelNumber.substring(73, 120)}</div>
+        
+          <div class="h-[2px]"></div>
+          <div class="mt-2">Dev. version: ${deviceVersion}</div>
+          <!-- QR Code positioned with absolute positioning -->
+          <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] border border-black">
+            <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+          </div>
+        </div>
+  
+                    <!-- Right Section with no gaps between headings and values -->
+<div class="text-[6px] w-[60%] leading-[11px] p-1 font-bold">
+  <p>${power}</p>
+  <p>Protection class:${protection}</p>
+  <p>Tamb: ${tamb}</p>
+  
+  <!-- Using table display for perfect alignment without gaps -->
+  <div style="display: table; width: 100%;">
+    <div style="display: table-row;">
+      <div style="display: table-cell; width: 50%;">Size:${size}</div>
+      <div style="display: table-cell; width: 50%;">Fitting:${fitting}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Qmax:${qmax}</div>
+      <div style="display: table-cell;">Fexc:${fexc}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Liner mat:${liner}</div>
+      <div style="display: table-cell;">Elect:${elect}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Tmed:${tmed}</div>
+      <div style="display: table-cell;">PED:</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Ss:${ss}</div>
+      <div style="display: table-cell;">Sz:${sz}</div>
+    </div>
+  </div>
+</div>
+      </div>
+  
+     
+         ${middleSectionContent}
+      
+   
+  
+      <!-- Footer -->
+       <div class="flex font-bold justify-between items-start text-[7px] w-full px-2">
+                <div>
+                  <div>Made in:</div>
+                  <div>ABB India Limited, Bangalore</div>
+                  <div class="text-center ml-15">${date}</div>
+                </div>
+                <div class="mt-1">
+                  <div>Designed by ABB AG</div>
+                  <div>Goettingen, Germany</div>
+                </div>
+                
+                  <div class="w-[80px] h-[29px]">
+                  <img src=${dispose} alt="Dispose Icon" class="w-[80px] h-[29px]"/>
+                  </div>
+                  
+              </div>
+    </div>
+  </div>
 </body>
 </html>
       `;
-      } else if (labelType === "transmitter") {
-        printContainer.innerHTML = `
-        <!DOCTYPE html>
- <html>
- <head>
-     <title>ABB ProcessMaster 630 Label</title>
-     <style>
-         @page {
-             size: 115mm 35mm;
-             margin: 0;
-         }
-         
-         body {
-             margin: 0;
-             padding: 0;
-             font-family: Arial, sans-serif;
-             font-size: 7px;
-             line-height: 1.1;
-             -webkit-print-color-adjust: exact;
-         }
-     </style>
- </head>
- <body>
-     <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black">
-         <!-- Header Section -->
-           <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
-         <!-- Logo aligned to left -->
-         <div class="h-6">
-           <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
-         </div>
- 
-         <!-- Absolutely centered title -->
-         <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
-           ProcessMaster 630
-         </div>
- 
-       
-         <div class="w-5 h-6">
-     <img src=${dispose} alt="Dispose Icon" class="w-5 h-6" />
-   </div>
-       
-       </div>
-          <!-- Main Content -->
-         <div class="flex w-full font-semibold border-black flex-grow h-[7.5rem]">
-           
-           <!-- Left Section -->
-           <div class="w-[40%] font-bold flex flex-col gap-3 text-[8px] border-r-2 border-black p-1">
-             <div>Serial No: ${serialNumber}</div>
-             <div>
-             <div style="margin-top: 1px;">
-               <span class="font-bold">Model number: </span>${modelNumber.substring(
-                 0,
-                18
-               )}
-             </div>
-             <div style="margin-top: 0px;">${modelNumber.substring(
-               18,
-               50
-             )}</div>
-             <div style="margin-top: 0px;">${modelNumber.substring(
-               50,
-               80
-             )}</div>
-             <div style="margin-top: 0px;">${modelNumber.substring(
-               80,
-               110
-             )}</div>
-             </div>
-            
-            
-            
-            <div> <div>Dev. version:${deviceVersion}</div>
-             <div>Update:</div></div>
-            
-             <div class="w-[33px] h-[33px] ml-[8rem] border text-center flex items-center justify-center mt-[-30px]">
-               <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-             </div>
-           </div>
- 
-         
-                 <!-- Right side full height -->
-                 <div class="w-[60%]  pl-2 text-[8px] leading-3 h-full">
- <div class="flex flex-row  gap-[3rem]">
- <p>
- ${power}    
- </p>
- </div>
- <p>
- Protection class : ${protection}
- </p>
- <p>
- Tamb : ${tamb}
- </p>
- <div class="flex flex-row gap-[5rem]">
- <p>
- Size:
- </p>
- <p>
-  Fitting:
- </p>
- </div>
- <div class="flex flex-row gap-[4.6rem]">
- <p>
- Qmax:
- </p>
- <p>
- Fexec:
- </p>
- </div>
- <div class="flex flex-row gap-[3.7rem]">
- <p>
- Liner mat: 
- </p>
- <p>
-   Elect:
- </p>
- </div>
- <div class="flex flex-row gap-[1.2rem]">
- <p>
-  Tmed : ${tmed}
- </p>
- <p>
-  PED:
- </p>
- </div>
- <div class="flex flex-row gap-[5.2rem]">
- <p>
-  Ss:
- </p>
- <p>
-  Sz:
- </p>
- </div>
- </div>
-         </div>
-     </div>
- </body>
- </html>
-       `;
-      } else if (labelType === "sensor") {
-        printContainer.innerHTML = `
-       <!DOCTYPE html>
-<html>
-  <head>
-    <title>Sensor Label Print</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      @page {
-        size: 113.50mm 58.50mm;
-        margin: 0;
-      }
-      body {
-        -webkit-print-color-adjust: exact;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-      }
-      * {
-        color: black;
-        box-sizing: border-box;
-      }
-      div, img, hr {
-        border-color: black !important;
-      }
-      /* Ensure consistent border rendering */
-      .label-container {
-        width: 113.50mm;
-        height: 58.50mm;
-        border: 2px solid black;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-    </style>
-  </head>
-  <body class="m-0 p-0 font-sans text-black">
-    <div class="label-container flex flex-col text-black">
-      <!-- Header -->
-      <div class="relative flex items-center border-b-2 border-black w-full px-1 py-1 rounded-t-lg">
-        <!-- Logo aligned to left -->
-        <div class="h-8">
-          <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[2rem] object-contain" />
-        </div>
-
-        <!-- Absolutely centered title -->
-        <div class="absolute left-1/2 transform -translate-x-1/2 text-[18px] font-bold">
-          ProcessMaster 630
-        </div>
-      </div>
-    
-      <!-- Main Content -->
-      <div class="flex flex-col flex-1 w-full">
-        <!-- Upper Section -->
-        <div class="flex w-full border-b-2 h-[5.8rem] border-black">
-          <!-- Left Section -->
-          <div class="w-[50%] text-[7px] border-r-2 border-black p-1 relative font-bold">
-            <div>Serial No: ${serialNumber}</div>
-            <div style="margin-top: 1px;">
-              <span class="font-bold">Model number: </span>${modelNumber.substring(
-                0,
-                33
-              )}
-            </div>
-            <div style="margin-top: 0px;">${modelNumber.substring(33, 73)}</div>
-            <div style="margin-top: 0px;">${modelNumber.substring(
-              73,
-              120
-            )}</div>
-          
-            <div class="h-[2px]"></div>
-            <div class="mt-2">Dev. version: ${deviceVersion}</div>
-            <!-- QR Code positioned with absolute positioning -->
-            <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] border border-black">
-              <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-            </div>
-          </div>
-    
-          <!-- Right Section -->
-          <div class="text-[7px] w-[50%] p-1 font-bold">
-            <p>${power}</p>
-            <p>Protection class: IP67/IP67</p>
-            <p>Tamb: ${tamb}</p>
-            
-            <div class="flex gap-12">
-              <p>Size: ${size}</p>
-              <p>Fitting: ${fitting}</p>
-            </div>
-
-            <div class="flex gap-[3.2rem]">
-              <p>Qmax: ${qmax}</p>
-              <p>Fexc: ${fexc}</p>
-            </div>
-
-            <div class="flex gap-[1.7rem]">
-            <p>Liner mat: ${liner}</p>
-              <p>Elect: ${elect}</p>
-            </div>
-
-            <div class="flex gap-[1.1rem]">
-              <p>Tmed: ${tmed}</p>
-              <p>PED:</p>
-            </div>
-
-            <div class="flex gap-[3.1rem]">
-              <p>Ss: ${ss}</p>
-              <p>Sz: ${sz}</p>
-            </div>
-          </div>
-        </div>
-    
-       
-           ${middleSectionContent}
-        
-     
-    
-        <!-- Footer -->
-         <div class="flex font-bold justify-between items-start text-[7px] w-full px-2">
-                  <div>
-                    <div>Made in:</div>
-                    <div>ABB India Limited, Bangalore</div>
-                    <div class="text-center ml-15">${date}</div>
-                  </div>
-                  <div class="mt-1">
-                    <div>Designed by ABB AG</div>
-                    <div>Goettingen, Germany</div>
-                  </div>
-                  <div class="flex mt-1 gap-[6px] font-bold items-center justify-center">
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                    <img src=${dispose} alt="Dispose Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${hot} alt="Hot Surface Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                   
-                    <div class="w-[25px] h-[25px] flex items-center justify-center text-[8px]">
-                      <img src=${manual} alt="Manual Icon" class="w-[25px] h-[25px]"/>
-                    </div>
-                  </div>
-                </div>
-      </div>
-    </div>
-  </body>
-</html>
-        `;
       } else {
         console.log("Creating standard label with logoType:", logoType);
         console.log("Using middleSectionContent:", middleSectionContent);
 
         printContainer.innerHTML = `
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <title>Label Print</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <style>
-        @page {
-          size: 96mm 98mm;
-          margin: 3mm;
-        }
-        body {
-          -webkit-print-color-adjust: exact;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          font-family: Arial;
-        }
-        * {
-          color: black;
-          box-sizing: border-box;
-        }
-        div, img, hr {
-          border-color: black !important;
-        }
-      </style>
-    </head>
-    <body class="m-0 p-0 font-sans text-black">
-      <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Label Print</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @page {
+                size: 96mm 98mm;
+                margin: 3mm;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                font-family: Arial;
+              }
+              * {
+                color: black;
+                box-sizing: border-box;
+              }
+              div, img, hr {
+                border-color: black !important;
+              }
+            </style>
+          </head>
+          <body class="m-0 p-0 font-sans text-black">
+            <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
+              
+              <!-- Header -->
+              <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
+                <div class="h-full flex items-center">
+                  <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
+                </div>
+                <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
+                  ProcessMaster 630
+                </div>
+              </div>
         
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
-          <div class="h-full flex items-center">
-            <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
-          </div>
-          <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
-            ProcessMaster 630
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex w-full border-b-2 font-semibold border-black flex-grow h-[7.5rem]">
-          
-          <!-- Left Section -->
-          <div class="w-[10rem] font-bold text-[8px] border-r-2 border-black p-1">
-            <div>Serial No: ${serialNumber}</div>
-            <div style="margin-top: 1px;">
-              <span class="font-bold">Model number: </span>${modelNumber.substring(
-                0,
-                18
-              )}
-            </div>
-            <div style="margin-top: 0px;">${modelNumber.substring(18, 46)}</div>
-            <div style="margin-top: 0px;">${modelNumber.substring(46, 72)}</div>
-            <div style="margin-top: 0px;">${modelNumber.substring(
-              72,
-              100
-            )}</div>
-            <div class="h-[1px]"></div>
-            <div>OPTIONS 1 ></div>
-            <div>OPTIONS 2 ></div>
-            <div class="h-[1px]"></div>
-            <div>Dev. version:${deviceVersion}</div>
-            <div>Update:</div>
-            <div class="w-[33px] h-[33px] ml-[7.4rem] border text-center flex items-center justify-center mt-[-33px]">
-              <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-            </div>
-          </div>
-
+              <!-- Main Content -->
+              <div class="flex w-full border-b-2 font-semibold border-black  h-[7.6rem] relative">
+                
+                <!-- Left Section -->
+                <div class="w-[40%] font-bold text-[6px] border-r-2 border-black p-1">
+                  <div>Serial No: ${serialNumber}</div>
+                  <div style="margin-top: 4px;">
+                    <span class="font-bold">Model number: </span>${modelNumber.substring(
+                      0,
+                      23
+                    )}
+                  </div>
+                  <div style="margin-top: 0px;">${modelNumber.substring(
+                    23,
+                    55
+                  )}</div>
+                  <div style="margin-top: 0px;">${modelNumber.substring(
+                    55,
+                    88
+                  )}</div>
+                  <div style="margin-top: 0px;">${modelNumber.substring(
+                    88,
+                    110
+                  )}</div>
         
-                <!-- Right Section -->
-          <div class="text-[8px] w-[50%] leading-3 p-1 font-bold">
-            <p>${power}</p>
-            <p>Protection class: IP67/IP67</p>
-            <p>Tamb: ${tamb}</p>
-            
-            <div class="flex gap-12">
-              <p>Size: ${size}</p>
-              <p>Fitting: ${fitting}</p>
-            </div>
-
-            <div class="flex gap-[3.2rem]">
-              <p>Qmax: ${qmax}</p>
-              <p>Fexc: ${fexc}</p>
-            </div>
-
-            <div class="flex gap-[2.2rem]">
-              <p>Liner mat: ${liner}</p>
-              <p>Elect: ${elect}</p>
-            </div>
-
-            <div class="flex gap-[1rem]">
-              <p>Tmed: ${tmed}</p>
-              <p>PED:</p>
-            </div>
-
-            <div class="flex gap-[3.6rem]">
-              <p>Ss: ${ss}</p>
-              <p>Sz: ${sz}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Optional Middle Section -->
-        ${middleSectionContent}
-
-<!-- Footer -->
-<div class="flex font-semibold justify-between items-start text-[8px] px-2 h-[23mm]">
-  <div>
-    <div>Made in:</div>
-    <div>ABB India Limited, Bangalore</div>
-    <div class="text-center">${date}</div>
-  </div>
-  <div class="-mr-3">
-    <div class="w-full">Designed by ABB AG</div>
-    <div>Goettingen, Germany</div>
-  </div>
-  <div class="flex -mr-1">
-  <div class="w-10 h-10">
-    <img src=${dispose} alt="Dispose Icon" class="w-10 h-10" />
-  </div>
-  <div class="w-10 h-12">
-    <img src=${hot} alt="Hot Surface Icon" class="w-10 h-12 " />
-  </div>
-  <div class="w-12 h-12">
-    <img src=${manual} alt="Manual Icon" class="w-12 h-12 object-contain " />
+                  <div class="h-[5px]"></div>
+                  <div>OPTIONS 1 ></div>
+                  <div>OPTIONS 2 ></div>
+                  <div class="h-[5px]"></div>
+                  <div>Dev. version:${deviceVersion}</div>
+                  <div>Update:</div>
+                </div>
+        
+                <!-- QR Code positioned 10px from bottom border -->
+                <div class="absolute bottom-[2px] left-[6.6rem] w-[33px] h-[33px] border text-center flex items-center justify-center">
+                  <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+                </div>
+              
+                <!-- Right Section with no gaps between headings and values -->
+<div class="text-[6px] w-[60%] leading-[0.9rem] p-1 font-bold">
+  <p>${power}</p>
+  <p>Protection class: IP67/IP67</p>
+  <p>Tamb: ${tamb}</p>
+  
+  <!-- Using table display for perfect alignment without gaps -->
+  <div style="display: table; width: 100%;">
+    <div style="display: table-row;">
+      <div style="display: table-cell; width: 50%;">Size:${size}</div>
+      <div style="display: table-cell; width: 50%;">Fitting:${fitting}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Qmax:${qmax}</div>
+      <div style="display: table-cell;">Fexc:${fexc}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Liner mat:${liner}</div>
+      <div style="display: table-cell;">Elect:${elect}</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Tmed:${tmed}</div>
+      <div style="display: table-cell;">PED:</div>
+    </div>
+    <div style="display: table-row;">
+      <div style="display: table-cell;">Ss:${ss}</div>
+      <div style="display: table-cell;">Sz:${sz}</div>
+    </div>
   </div>
 </div>
-</div>
-      </div>
-    </body>
-  </html>
-`;
+              </div>
+        
+              <!-- Optional Middle Section -->
+              ${middleSectionContent}
+        
+              <!-- Footer -->
+              <div class="flex font-semibold justify-between items-start mt-1 text-[7px] px-2">
+                <div>
+                  <div>Made in:</div>
+                  <div>ABB India Limited, Bangalore</div>
+                  <div class="text-center">${date}</div>
+                </div>
+                <div class="-mr-10">
+                  <div class="w-full">Designed by ABB AG</div>
+                  <div>Goettingen, Germany</div>
+                </div>
+                <div class="flex mr-6 mt-3">
+                  <div class="w-30 h-10">
+                    <img src=${dispose} alt="Dispose Icon" class="w-30 h-10" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+        `;
       }
 
       if (labelRef.current) {
@@ -1325,7 +1303,7 @@ Liner mat : ${liner}
               data={csvData}
               filename="label_data.csv"
               ref={csvLinkRef}
-              style={{ textDecoration: "none" }} // optional: remove underline
+              style={{ textDecoration: "none" }}
             >
               <Button
                 size="small"
@@ -1478,7 +1456,7 @@ Liner mat : ${liner}
                       </TableCell>
                     )}
                     {visibleColumns.action && (
-                      <TableCell sx={{ minWidth: 120 }}>Action</TableCell>
+                      <TableCell sx={{ minWidth: 160 }}>Action</TableCell>
                     )}
                     {visibleColumns.labelType && (
                       <TableCell
@@ -1538,6 +1516,24 @@ Liner mat : ${liner}
                     )}
                     {visibleColumns.labelDetails && (
                       <TableCell sx={{ minWidth: 250 }}>Model Number</TableCell>
+                    )}
+                    {visibleColumns.logoType && (
+                      <TableCell
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: "rgba(102, 126, 234, 0.05)",
+                          },
+                        }}
+                        onClick={() => handleSort("LogoType")}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          Logo Type {getSortDirection("LogoType")}
+                        </Box>
+                      </TableCell>
                     )}
                     {visibleColumns.date && (
                       <TableCell
@@ -1620,29 +1616,57 @@ Liner mat : ${liner}
                         )}
                         {visibleColumns.action && (
                           <TableCell>
-                            <Button
-                              variant="contained"
-                              onClick={() => handlePrintLabel(row)}
-                              size="small"
-                              sx={{
-                                background:
-                                  "linear-gradient(45deg, #138086, #3c4cad)",
-                                "&:hover": {
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <Button
+                                variant="contained"
+                                onClick={() => handlePrintLabel(row)}
+                                size="small"
+                                sx={{
                                   background:
-                                    "linear-gradient(45deg, #138086, #56c596)",
-                                  transform: "translateY(-1px)",
-                                  boxShadow:
-                                    "0 4px 12px rgba(16, 185, 129, 0.4)",
-                                },
-                                borderRadius: 2,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                px: 2,
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              Preview
-                            </Button>
+                                    "linear-gradient(45deg, #138086, #3c4cad)",
+                                  "&:hover": {
+                                    background:
+                                      "linear-gradient(45deg, #138086, #56c596)",
+                                    transform: "translateY(-1px)",
+                                    boxShadow:
+                                      "0 4px 12px rgba(16, 185, 129, 0.4)",
+                                  },
+                                  borderRadius: 2,
+                                  textTransform: "none",
+                                  fontWeight: 600,
+                                  px: 2,
+                                  transition: "all 0.2s ease",
+                                  minWidth: "80px",
+                                }}
+                              >
+                                Preview
+                              </Button>
+                              <Button
+                                variant="contained"
+                                onClick={() => handleEditLabel(row)}
+                                size="small"
+                                sx={{
+                                  background:
+                                    "linear-gradient(45deg, #f59e0b, #d97706)",
+                                  "&:hover": {
+                                    background:
+                                      "linear-gradient(45deg, #d97706, #f59e0b)",
+                                    transform: "translateY(-1px)",
+                                    boxShadow:
+                                      "0 4px 12px rgba(245, 158, 11, 0.4)",
+                                  },
+                                  borderRadius: 2,
+                                  textTransform: "none",
+                                  fontWeight: 600,
+                                  px: 2,
+                                  transition: "all 0.2s ease",
+                                  minWidth: "70px",
+                                }}
+                                startIcon={<EditIcon fontSize="small" />}
+                              >
+                                Edit
+                              </Button>
+                            </Box>
                           </TableCell>
                         )}
                         {visibleColumns.labelType && (
@@ -1701,6 +1725,11 @@ Liner mat : ${liner}
                                 {row.LabelDetails}
                               </Typography>
                             </Tooltip>
+                          </TableCell>
+                        )}
+                        {visibleColumns.logoType && (
+                          <TableCell sx={{ fontWeight: 500, color: "#374151" }}>
+                            {row.LogoType}
                           </TableCell>
                         )}
                         {visibleColumns.date && (

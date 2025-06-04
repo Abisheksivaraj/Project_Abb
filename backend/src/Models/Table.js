@@ -11,7 +11,6 @@ const tableSchema = new mongoose.Schema({
   },
   TagNumber: {
     type: String,
-    required: true,
   },
   LabelDetails: {
     type: String,
