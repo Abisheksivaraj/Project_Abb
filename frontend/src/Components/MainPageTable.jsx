@@ -1145,26 +1145,7 @@ const MainPageTable = () => {
         bgcolor: "#f8fafc",
       }}
     >
-      <Toolbar>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{
-            flexGrow: 1,
-            fontWeight: 600,
-            fontSize: "2rem",
-            color: "black",
-          }}
-        >
-          Label Print
-        </Typography>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ color: "black" }}>
-          <Link underline="hover" color="inherit" href="/">
-            Home
-          </Link>
-          <Typography color="black">Label Print</Typography>
-        </Breadcrumbs>
-      </Toolbar>
+      
 
       {/* Main content */}
       <Box sx={{ p: { xs: 2, md: 4 }, flexGrow: 1 }}>
@@ -1191,22 +1172,52 @@ const MainPageTable = () => {
             <Typography variant="h6" sx={{ fontWeight: 600, color: "white" }}>
               Label Print Data
             </Typography>
-            <Button
-              onClick={() => navigate("/Labelprint")}
-              variant="contained"
+
+            <Box
               sx={{
-                background: (theme) =>
-                  `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
-                color: "white",
-                "&:hover": { bgcolor: "#1e3a8a" },
-                textTransform: "none",
-                fontWeight: 500,
-                boxShadow: 1,
+                
+                p: 2,
+                display: "flex",
+                justifyContent: "space-between",
+                gap:"15px",
+                alignItems: "center",
+                
               }}
-              startIcon={<PrintIcon />}
             >
-              Add New Label
-            </Button>
+              <Button
+                onClick={() => navigate("/Labelprint")}
+                variant="contained"
+                sx={{
+                  background: (theme) =>
+                    `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+                  color: "white",
+                  "&:hover": { bgcolor: "#1e3a8a" },
+                  textTransform: "none",
+                  fontWeight: 500,
+                  boxShadow: 1,
+                }}
+                startIcon={<PrintIcon />}
+              >
+                Add Dynamic Label
+              </Button>
+
+              <Button
+                onClick={() => navigate("/Static")}
+                variant="contained"
+                sx={{
+                  background: (theme) =>
+                    `linear-gradient(90deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+                  color: "white",
+                  "&:hover": { bgcolor: "#1e3a8a" },
+                  textTransform: "none",
+                  fontWeight: 500,
+                  boxShadow: 1,
+                }}
+                startIcon={<PrintIcon />}
+              >
+                Add Static Label
+              </Button>
+            </Box>
           </Box>
 
           {/* Search and Filters */}
