@@ -5,6 +5,7 @@ import MainPage from "./Components/MainPage";
 import MainPageTable from "./Components/MainPageTable";
 import Labelprint from "./Components/Labelprint";
 import Footer from "./Components/Footer";
+import StaticLabel from "./Components/StaticLabel";
 
 const App = () => {
   const location = useLocation();
@@ -30,6 +31,16 @@ const App = () => {
               <>
                 <MainPage />
                 <Labelprint />
+              </>
+            }
+          />
+
+          <Route
+            path="/Static"
+            element={
+              <>
+                <MainPage />
+                <StaticLabel />
               </>
             }
           />
