@@ -2,8 +2,8 @@ import axios from "axios";
 
 
 
-export const API_URL = "https://project-abb-36kd.onrender.com";
-
+// export const API_URL = "https://project-abb-36kd.onrender.com";
+export const API_URL = "http://localhost:2222";
 
 export const api = axios.create({
   baseURL: API_URL,

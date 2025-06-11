@@ -883,11 +883,11 @@ const MainPageTable = () => {
       const ss = label?.ss;
       const modelNumber =
         label?.LabelDetails || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
-
+        
       const power = label?.powerSupply;
       const qmax = label?.selectedQmax;
       const tmed = label?.selectedTmedDropdown;
-      const tamb = label?.Tamb;
+      const tamb = "-20.....+60°C (-4°....140° F)";
       const fitting = label?.Fitting;
       const elect = label?.Elect;
       const size = label?.Size;
@@ -1645,8 +1645,8 @@ const MainPageTable = () => {
               borderBottom: "1px solid #e2e8f0",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600, color: "white" }}>
-              Label Print Data
+            <Typography variant="h4" sx={{ fontWeight: 600, color: "white" }}>
+              Dynamic Labels
             </Typography>
 
             <Box

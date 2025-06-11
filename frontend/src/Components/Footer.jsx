@@ -13,7 +13,7 @@ const Footer = () => {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        Copyright © 2025 ABB :: Label Printing. All rights reserved.
+        Copyright © 2025 <span className="text-[#ed4337] font-bold">ABB :: Label Printing.</span> All rights reserved.
       </Typography>
     </Box>
   );

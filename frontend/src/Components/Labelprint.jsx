@@ -21,6 +21,8 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -219,6 +221,207 @@ const getCacheData = (key) => {
   }
 
   return cached.data;
+};
+
+// Enhanced Model Number Parser that handles all basic codes
+const parseModelNumberForAllCollections = (
+  modelNumber,
+  basicCode,
+  collectionsWithCodes
+) => {
+  if (!modelNumber || !basicCode || !collectionsWithCodes) {
+    console.log("Missing required parameters for parsing");
+    return {};
+  }
+
+  console.log("=== ENHANCED MODEL NUMBER PARSING ===");
+  console.log("Model Number:", modelNumber);
+  console.log("Basic Code:", basicCode);
+  console.log("Available Collections:", Object.keys(collectionsWithCodes));
+
+  // Remove the basic code from the beginning
+  let remainingCode = modelNumber.replace(basicCode, "");
+  console.log("Code to parse (after removing basic code):", remainingCode);
+
+  const parsedCollections = {};
+  const order = COLLECTION_ORDERS[basicCode];
+
+  if (!order) {
+    console.log("No collection order found for basic code:", basicCode);
+    return {};
+  }
+
+  console.log("Collection order for", basicCode, ":", order);
+
+  // Get ordered collection names that exist in collectionsWithCodes
+  const orderedCollectionNames = [];
+  order.forEach((orderedName) => {
+    const matchingCollection = Object.keys(collectionsWithCodes).find(
+      (collectionName) =>
+        collectionName.trim().toLowerCase() === orderedName.trim().toLowerCase()
+    );
+    if (matchingCollection) {
+      orderedCollectionNames.push(matchingCollection);
+    }
+  });
+
+  console.log("Available ordered collections:", orderedCollectionNames);
+
+  let currentPosition = 0;
+
+  // Process each collection in order
+  for (let i = 0; i < orderedCollectionNames.length; i++) {
+    const collectionName = orderedCollectionNames[i];
+    const collectionCodes = collectionsWithCodes[collectionName] || [];
+
+    console.log(
+      `\n--- Processing Collection ${i + 1}/${
+        orderedCollectionNames.length
+      }: ${collectionName} ---`
+    );
+    console.log(
+      `Current position: ${currentPosition}, Remaining: "${remainingCode.substring(
+        currentPosition
+      )}"`
+    );
+    console.log(
+      `Available codes for this collection: ${collectionCodes.length}`
+    );
+
+    if (currentPosition >= remainingCode.length) {
+      console.log("Reached end of string");
+      break;
+    }
+
+    // Check if current position is a dash (empty selection)
+    if (remainingCode.charAt(currentPosition) === "-") {
+      console.log("Found dash - empty selection");
+      parsedCollections[collectionName] = "";
+      currentPosition += 1;
+      continue;
+    }
+
+    // Find the longest matching code for this collection
+    let bestMatch = null;
+    let bestMatchLength = 0;
+
+    // Sort codes by length (longest first) to find the best match
+    const sortedCodes = collectionCodes
+      .map((item) => item.code)
+      .sort((a, b) => b.length - a.length);
+
+    for (const code of sortedCodes) {
+      const remainingSubstring = remainingCode.substring(currentPosition);
+
+      if (remainingSubstring.startsWith(code)) {
+        console.log(
+          `Found potential match: "${code}" (length: ${code.length})`
+        );
+        bestMatch = code;
+        bestMatchLength = code.length;
+        break; // Take the first (longest) match
+      }
+    }
+
+    if (bestMatch) {
+      parsedCollections[collectionName] = bestMatch;
+      currentPosition += bestMatchLength;
+      console.log(`✓ Matched "${bestMatch}" for ${collectionName}`);
+      console.log(`New position: ${currentPosition}`);
+    } else {
+      console.log(`✗ No match found for ${collectionName}`);
+      // Try to find any single character or skip this collection
+      // This handles cases where the format might be different
+      if (currentPosition < remainingCode.length) {
+        const nextChar = remainingCode.charAt(currentPosition);
+        if (nextChar !== "-") {
+          // Look for single character codes
+          const singleCharMatch = collectionCodes.find(
+            (item) => item.code === nextChar
+          );
+          if (singleCharMatch) {
+            parsedCollections[collectionName] = nextChar;
+            currentPosition += 1;
+            console.log(`✓ Found single char match: "${nextChar}"`);
+          } else {
+            console.log(`Skipping unmatched character: "${nextChar}"`);
+            // Don't increment position, let next collection try
+          }
+        }
+      }
+    }
+  }
+
+  console.log("\n=== PARSING RESULTS ===");
+  console.log(
+    "Total collections parsed:",
+    Object.keys(parsedCollections).length
+  );
+  console.log("Parsed collections:", parsedCollections);
+  console.log("Final position:", currentPosition, "of", remainingCode.length);
+
+  return parsedCollections;
+};
+
+// Helper function to update special fields from parsed collections
+const updateSpecialFieldsFromCollections = (
+  parsedCollections,
+  collectionsWithCodes,
+  setters
+) => {
+  console.log("=== UPDATING SPECIAL FIELDS ===");
+
+  Object.entries(parsedCollections).forEach(([collectionName, codeValue]) => {
+    if (!codeValue) return; // Skip empty values
+
+    const trimmedName = collectionName.trim();
+    const lowerName = trimmedName.toLowerCase();
+
+    // Field type detection
+    const isPowerSupply =
+      lowerName.includes("power") && lowerName.includes("supply");
+    const isProtectionClass = lowerName.includes("protection");
+    const isTamb = lowerName.includes("temperature");
+    const isSize =
+      trimmedName === "Nominal Diameter" ||
+      lowerName.includes("nominal diameter");
+    const isPower =
+      trimmedName === "Power Supply Line Frequency" ||
+      lowerName.includes("power supply line frequency");
+    const isLiner =
+      lowerName.includes("liner") && lowerName.includes("material");
+    const isProcessConnection = lowerName.includes("process connection");
+    const isElect =
+      lowerName.includes("measuring") && lowerName.includes("electrode");
+
+    // Find the matching item in the collection
+    const codeItems = collectionsWithCodes[collectionName] || [];
+    const matchingItem = codeItems.find((item) => item.code === codeValue);
+
+    if (matchingItem) {
+      console.log(
+        `Updating field for ${collectionName}: ${codeValue} -> ${matchingItem.description}`
+      );
+
+      if (isSize) {
+        setters.setSize(codeValue);
+        setters.setSizeDescription(matchingItem.description || "");
+      } else {
+        const description = matchingItem.description || codeValue;
+        if (isPowerSupply) setters.setPowerSupply(description);
+        else if (isProtectionClass) setters.setProtectionClass(description);
+        else if (isTamb) setters.setTamb(description);
+        else if (isLiner) setters.setLinerMaterial(description);
+        else if (isProcessConnection) setters.setFitting(description);
+        else if (isElect) setters.setElect(description);
+        else if (isPower) setters.setPower(description);
+      }
+    } else {
+      console.log(`No matching item found for ${collectionName}: ${codeValue}`);
+    }
+  });
+
+  console.log("=== SPECIAL FIELDS UPDATE COMPLETE ===");
 };
 
 // Fast Loading Dropdown Component with Virtual Scrolling
@@ -573,6 +776,7 @@ const LabelPrint = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [allowEditModeUpdates, setAllowEditModeUpdates] = useState(false);
 
   // Form fields that match the schema
   const [LabelType, setLabelType] = useState("");
@@ -604,9 +808,10 @@ const LabelPrint = () => {
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
 
-  // Control states for edit mode
+  // FIXED: Control states for edit mode
   const [isEditModeInitialized, setIsEditModeInitialized] = useState(false);
-  const [preserveLabelDetails, setPreserveLabelDetails] = useState(false);
+  const [isInEditMode, setIsInEditMode] = useState(false); // NEW: Persistent edit mode flag
+  const [originalLabelDetails, setOriginalLabelDetails] = useState(""); // NEW: Store original value
 
   // Preload all databases on component mount for instant access
   useEffect(() => {
@@ -699,6 +904,69 @@ const LabelPrint = () => {
     return orderedCollections;
   };
 
+  // Enhanced collections loading specifically for edit mode
+  const loadCollectionsForEditMode = async (dbName) => {
+    console.log(`=== LOADING COLLECTIONS FOR EDIT MODE: ${dbName} ===`);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // First try cache
+      const cachedData = getCacheData(dbName);
+
+      if (cachedData) {
+        console.log(
+          `✓ Using cached data for ${dbName} (${
+            Object.keys(cachedData).length
+          } collections)`
+        );
+        setCollectionsWithCodes(cachedData);
+        setCollectionNames(Object.keys(cachedData));
+        setFilteredCollectionNames(Object.keys(cachedData));
+        setIsLoading(false);
+        return true;
+      }
+
+      // Fallback to API
+      console.log(`Cache miss for ${dbName}, fetching from API...`);
+      const response = await api.get(`/collections-by-database/${dbName}`);
+
+      if (response.data.success) {
+        const dbCollections = response.data.collectionsWithData;
+
+        // Filter out excluded collections
+        const filteredCollections = {};
+        Object.keys(dbCollections).forEach((collectionName) => {
+          if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
+            filteredCollections[collectionName] = dbCollections[collectionName];
+          }
+        });
+
+        console.log(
+          `✓ Loaded ${
+            Object.keys(filteredCollections).length
+          } collections from API`
+        );
+
+        // Cache the data
+        setCacheData(dbName, filteredCollections);
+
+        setCollectionsWithCodes(filteredCollections);
+        setCollectionNames(Object.keys(filteredCollections));
+        setFilteredCollectionNames(Object.keys(filteredCollections));
+        setIsLoading(false);
+        return true;
+      } else {
+        throw new Error(response.data.message || "Failed to fetch collections");
+      }
+    } catch (error) {
+      console.error(`✗ Error loading collections for ${dbName}:`, error);
+      setError(`Error loading collections: ${error.message}`);
+      setIsLoading(false);
+      return false;
+    }
+  };
+
   // Ultra-fast collections loading from cache
   const loadCollectionsFromCache = (dbName) => {
     setIsLoading(true);
@@ -777,14 +1045,16 @@ const LabelPrint = () => {
     }
   };
 
-  // Initialize edit mode - this runs once when component mounts in edit mode
+  // FIXED: Initialize edit mode - this runs once when component mounts in edit mode
   useEffect(() => {
     if (isEditMode && editData && !isEditModeInitialized) {
       console.log("=== INITIALIZING EDIT MODE ===");
       console.log("Edit data:", editData);
 
+      // FIXED: Set persistent edit mode flags
       setIsEditModeInitialized(true);
-      setPreserveLabelDetails(true);
+      setIsInEditMode(true);
+      setOriginalLabelDetails(editData.LabelDetails || "");
 
       // Set all basic form fields immediately
       setLabelType(editData.LabelType || "");
@@ -865,7 +1135,7 @@ const LabelPrint = () => {
 
         if (dbName) {
           console.log("Loading collections for database:", dbName);
-          loadCollectionsFromCache(dbName);
+          loadCollectionsForEditMode(dbName);
         }
       }
 
@@ -878,6 +1148,81 @@ const LabelPrint = () => {
       console.log("=== EDIT MODE INITIALIZATION COMPLETE ===");
     }
   }, [isEditMode, editData, isEditModeInitialized]);
+
+  // Enhanced effect to handle collection parsing with better error handling
+  useEffect(() => {
+    if (
+      isEditMode &&
+      editData &&
+      isEditModeInitialized &&
+      basicCode &&
+      collectionsWithCodes &&
+      Object.keys(collectionsWithCodes).length > 0
+    ) {
+      console.log("=== INITIALIZING EDIT MODE COLLECTIONS ===");
+      console.log(
+        "Current selectedCollections:",
+        Object.keys(selectedCollections).length
+      );
+
+      // Only parse if we haven't already populated the collections
+      if (Object.keys(selectedCollections).length === 0) {
+        const modelNumber = editData.LabelDetails || "";
+
+        if (modelNumber && modelNumber.length > basicCode.length) {
+          console.log("Starting model number parsing...");
+
+          const parsedCollections = parseModelNumberForAllCollections(
+            modelNumber,
+            basicCode,
+            collectionsWithCodes
+          );
+
+          if (Object.keys(parsedCollections).length > 0) {
+            console.log(
+              `Successfully parsed ${
+                Object.keys(parsedCollections).length
+              } collections`
+            );
+            setSelectedCollections(parsedCollections);
+
+            // Update special fields based on parsed collections
+            const setters = {
+              setPowerSupply,
+              setProtectionClass,
+              setTamb,
+              setSize,
+              setSizeDescription,
+              setLinerMaterial,
+              setFitting,
+              setElect,
+              setPower,
+            };
+
+            updateSpecialFieldsFromCollections(
+              parsedCollections,
+              collectionsWithCodes,
+              setters
+            );
+
+            console.log("✓ Edit mode collections initialized successfully");
+          } else {
+            console.log("⚠ No collections could be parsed from model number");
+          }
+        } else {
+          console.log("⚠ Model number too short or missing");
+        }
+      } else {
+        console.log("Collections already populated, skipping parsing");
+      }
+    }
+  }, [
+    isEditMode,
+    editData,
+    isEditModeInitialized,
+    basicCode,
+    collectionsWithCodes,
+  ]);
 
   // Handle LabelType change with LogoType visibility logic
   const handleLabelTypeChange = (event) => {
@@ -893,7 +1238,7 @@ const LabelPrint = () => {
     }
   };
 
-  // Handle Qmax dropdown change
+  // FIXED: Handle Qmax dropdown change - don't auto-update model number in edit mode
   const handleQmaxChange = (event) => {
     const value = event.target.value;
     setSelectedQmax(value);
@@ -907,28 +1252,39 @@ const LabelPrint = () => {
       setQmaxDescription("");
     }
 
-    if (!preserveLabelDetails) {
+    // FIXED: Don't auto-update model number in edit mode
+    if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, sz, basicCode);
     }
   };
 
-  // Handle Tamb dropdown change
   const handleTambDropdownChange = (event) => {
     const value = event.target.value;
     setSelectedTmedDropdown(value);
 
-    if (!preserveLabelDetails) {
+    // UPDATED: Use the new logic for edit mode updates
+    if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, sz, basicCode);
     }
   };
 
-  // Handle basic code selection with instant cache loading
+  // Update handleSSChange:
+  const handleSZChange = (value) => {
+    setSZ(value);
+
+    // UPDATED: Use the new logic for edit mode updates
+    if (!isInEditMode || allowEditModeUpdates) {
+      updateLabelDetails(selectedCollections, ss, value, basicCode);
+    }
+  };
+
+  // FIXED: Handle basic code selection with instant cache loading
   const handleBasicCodeChange = (event) => {
     const value = event.target.value;
     setBasicCode(value);
 
-    // Don't reset if in edit mode
-    if (!isEditMode) {
+    // FIXED: Don't reset if in edit mode
+    if (!isInEditMode) {
       // Reset collections and selections first
       setCollectionsWithCodes({});
       setCollectionNames([]);
@@ -973,7 +1329,8 @@ const LabelPrint = () => {
 
     setModelType(defaultModelType);
 
-    if (!preserveLabelDetails) {
+    // FIXED: Don't auto-update model number in edit mode
+    if (!isInEditMode) {
       updateLabelDetails({}, ss, sz, value);
     }
   };
@@ -999,8 +1356,8 @@ const LabelPrint = () => {
       "collections"
     );
 
-    // In edit mode, don't clear selections when filtering
-    if (!isEditMode) {
+    // FIXED: In edit mode, don't clear selections when filtering
+    if (!isInEditMode) {
       const updatedSelectedCollections = { ...selectedCollections };
       Object.keys(updatedSelectedCollections).forEach((collectionName) => {
         if (!orderedFiltered.includes(collectionName)) {
@@ -1009,16 +1366,13 @@ const LabelPrint = () => {
       });
       setSelectedCollections(updatedSelectedCollections);
 
-      if (!preserveLabelDetails) {
-        updateLabelDetails(updatedSelectedCollections, basicCode);
-      }
+      updateLabelDetails(updatedSelectedCollections, ss, sz, basicCode);
     }
-  }, [basicCode, collectionNames, isEditMode, preserveLabelDetails]);
+  }, [basicCode, collectionNames, isInEditMode]);
 
-  // Handle collection code selection
+  // FIXED: Handle collection code selection - don't auto-update model number in edit mode
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
-
     const trimmedName = collectionName.trim();
     const lowerName = trimmedName.toLowerCase();
 
@@ -1093,54 +1447,70 @@ const LabelPrint = () => {
 
     setSelectedCollections(updatedCollections);
 
-    if (!preserveLabelDetails) {
+    // UPDATED: Use the new logic for edit mode updates
+    if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(updatedCollections, ss, sz, basicCode);
     }
   };
 
-  // Handle SS and SZ changes
+  // FIXED: Handle SS and SZ changes - don't auto-update model number in edit mode
   const handleSSChange = (value) => {
     setSS(value);
 
-    if (!preserveLabelDetails) {
+    // FIXED: Don't auto-update model number in edit mode
+    if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, value, sz, basicCode);
     }
   };
 
-  const handleSZChange = (value) => {
-    setSZ(value);
-
-    if (!preserveLabelDetails) {
-      updateLabelDetails(selectedCollections, ss, value, basicCode);
-    }
-  };
-
+  // FIXED: Updated function to respect edit mode and exclude SS/SZ in edit mode
   const updateLabelDetails = (
     selections,
     currentSS,
     currentSZ,
     currentBasicCode
   ) => {
-    // Don't update if we're preserving label details (edit mode)
-    if (preserveLabelDetails) {
-      console.log("Preserving original label details in edit mode");
+    // UPDATED: Check both edit mode status and the allow updates flag
+    if (isInEditMode && !allowEditModeUpdates) {
+      console.log("Preserving original label details in edit mode (auto-update disabled)");
       return;
     }
-
+  
     let details = currentBasicCode || "";
-
-    const collectionKeys = Object.keys(selections);
-
-    if (collectionKeys.length > 0) {
-      collectionKeys.forEach((collectionName) => {
-        const code = selections[collectionName];
-
-        if (code === "") {
-          details += "-";
-        } else if (code) {
-          details += code;
+  
+    // Get the collection order for the current basic code
+    const order = COLLECTION_ORDERS[currentBasicCode];
+    if (order) {
+      // Process collections in the specified order
+      order.forEach((orderedName) => {
+        const matchingCollection = Object.keys(selections).find(
+          (collectionName) =>
+            collectionName.trim().toLowerCase() === orderedName.trim().toLowerCase()
+        );
+  
+        if (matchingCollection) {
+          const code = selections[matchingCollection];
+          // FIXED: In edit mode, don't add hyphens for empty values
+          if (code === "" || code === null || code === undefined) {
+            if (!isInEditMode) {
+              details += "-";
+            }
+          } else if (code) {
+            details += code;
+          }
+        } else {
+          // If this ordered collection is not in selections, add a dash only if not in edit mode
+          if (!isInEditMode) {
+            details += "-";
+          }
         }
       });
+    } 
+    
+    // FIXED: Don't add SS and SZ in edit mode
+    if (!isInEditMode) {
+      if (currentSS) details += currentSS;
+      if (currentSZ) details += currentSZ;
     }
 
     if (details) {
@@ -1260,13 +1630,30 @@ const LabelPrint = () => {
       {/* Alert for edit mode */}
       {isEditMode && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          <Typography variant="body2">
-            You are editing an existing label. Make your changes and click
-            "Update Label" to save.
-          </Typography>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="body2">
+              <strong>Edit Mode:</strong> Model number changes are controlled by
+              the toggle below. SS and SZ values are excluded from the generated model number.
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={allowEditModeUpdates}
+                  onChange={(e) => setAllowEditModeUpdates(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Auto-update model number"
+              sx={{ ml: 2 }}
+            />
+          </Box>
         </Alert>
       )}
-
+      
       {/* Performance indicator */}
       {!isLoading &&
         collectionsWithCodes &&
@@ -1274,6 +1661,13 @@ const LabelPrint = () => {
           <Alert severity="success" sx={{ mb: 3 }}>
             <Typography variant="body2">
               ⚡ Fast loading enabled - Collections loaded instantly from cache!
+              {isEditMode && Object.keys(selectedCollections).length > 0 && (
+                <span>
+                  {" "}
+                  | {Object.keys(selectedCollections).length} dropdown
+                  selections loaded
+                </span>
+              )}
             </Typography>
           </Alert>
         )}
@@ -1349,61 +1743,6 @@ const LabelPrint = () => {
                           endAdornment={
                             <InputAdornment position="end">
                               <BarcodeIcon color="action" />
-                            </InputAdornment>
-                          }
-                        >
-                          <MenuItem value="" sx={{ justifyContent: "center" }}>
-                            Select
-                          </MenuItem>
-                          <MenuItem
-                            value="Sensor(96x98)"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            Sensor(96x98)
-                          </MenuItem>
-                          <MenuItem
-                            value="Sensor(115x35)"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            Sensor(115x35)
-                          </MenuItem>
-                          <MenuItem
-                            value="Sensor"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            Sensor
-                          </MenuItem>
-                          <MenuItem
-                            value="Transmitter"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            Transmitter
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item>
-                      <FormControl
-                        sx={{ width: "140px" }}
-                        size="small"
-                        variant="outlined"
-                      >
-                        <InputLabel>Basic Code</InputLabel>
-                        <Select
-                          sx={{
-                            width: "140px",
-                            "& .MuiSelect-select": {
-                              textAlign: "center",
-                            },
-                          }}
-                          label="Basic Code"
-                          size="small"
-                          value={basicCode}
-                          onChange={handleBasicCodeChange}
-                          IconComponent={() => null}
-                          endAdornment={
-                            <InputAdornment position="end">
-                              <CodeIcon color="action" />
                             </InputAdornment>
                           }
                         >
@@ -1719,11 +2058,18 @@ const LabelPrint = () => {
                     }}
                     sx={{
                       "& .MuiOutlinedInput-root": {
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
+                        backgroundColor: isInEditMode
+                          ? "rgba(255, 193, 7, 0.1)"
+                          : "rgba(255, 255, 255, 0.8)",
                         width: "70rem",
                         height: "50px",
                       },
                     }}
+                    helperText={
+                      isInEditMode
+                        ? "Edit mode: Model number can be manually edited (SS and SZ excluded from auto-generation)"
+                        : "Auto-generated based on selections"
+                    }
                   />
                 </Paper>
               </Grid>
@@ -1766,4 +2112,4 @@ const LabelPrint = () => {
   );
 };
 
-export default LabelPrint;
+export default LabelPrint; 
