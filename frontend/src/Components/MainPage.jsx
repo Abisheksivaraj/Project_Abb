@@ -174,7 +174,7 @@ function MainPage() {
             <Box sx={{ flexGrow: 0, ml: 2 }}>
               <Tooltip title="User settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="User" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt="O" src="/static/images/avatar/2.jpg" />
                 </IconButton>
               </Tooltip>
               <Menu
