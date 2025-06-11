@@ -16,7 +16,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 import logo from "../abb.svg";
-
+import setting from "../assets/setting.png";
 function MainPage() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [logoLoaded, setLogoLoaded] = useState(false);
@@ -174,7 +174,7 @@ function MainPage() {
             <Box sx={{ flexGrow: 0, ml: 2 }}>
               <Tooltip title="User settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="O" src="/static/images/avatar/2.jpg" />
+                  <img src={setting} alt="" className="h-10 w-10" />
                 </IconButton>
               </Tooltip>
               <Menu
