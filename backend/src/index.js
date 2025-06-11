@@ -14,8 +14,8 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(
   cors({
-    // origin: "https://label-printing.onrender.com",
-   origin:"http://localhost:",
+    origin: "https://label-printing.onrender.com",
+  //  origin:"http://localhost:",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

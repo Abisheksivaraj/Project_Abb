@@ -11,7 +11,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import EmailIcon from "@mui/icons-material/Email";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LockIcon from "@mui/icons-material/Lock";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -104,7 +104,7 @@ const LoginPage = () => {
   const [userData, setUserData] = useState(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [formData, setFormData] = useState({
-    email: "",
+    userName: "",
     password: "",
   });
 
@@ -174,7 +174,7 @@ const LoginPage = () => {
 
     try {
       const response = await api.post("/login", {
-        email: formData.email,
+        userName: formData.userName,
         password: formData.password,
       });
 
@@ -485,14 +485,14 @@ const LoginPage = () => {
             <TextField
               fullWidth
               margin="normal"
-              name="email"
-              label="Email"
-              value={formData.email}
+              name="userName"
+              label="UserName"
+              value={formData.userName}
               onChange={handleChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailIcon color="action" />
+                    <AccountCircleIcon color="action" />
                   </InputAdornment>
                 ),
               }}

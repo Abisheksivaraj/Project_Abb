@@ -1629,15 +1629,15 @@ const LabelPrint = () => {
 
       {/* Alert for edit mode */}
       {isEditMode && (
-        <Alert severity="info" sx={{ mb: 3 }}>
+        <Alert severity="info" sx={{ mb: 1 }}>
           <Box
             display="flex"
+        
             justifyContent="space-between"
             alignItems="center"
           >
             <Typography variant="body2">
-              <strong>Edit Mode:</strong> Model number changes are controlled by
-              the toggle below. SS and SZ values are excluded from the generated model number.
+              <strong>Edit Mode:</strong>Toggle the button to edit
             </Typography>
             <FormControlLabel
               control={
@@ -1647,7 +1647,7 @@ const LabelPrint = () => {
                   color="primary"
                 />
               }
-              label="Auto-update model number"
+              
               sx={{ ml: 2 }}
             />
           </Box>
@@ -1655,22 +1655,7 @@ const LabelPrint = () => {
       )}
       
       {/* Performance indicator */}
-      {!isLoading &&
-        collectionsWithCodes &&
-        Object.keys(collectionsWithCodes).length > 0 && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            <Typography variant="body2">
-              ⚡ Fast loading enabled - Collections loaded instantly from cache!
-              {isEditMode && Object.keys(selectedCollections).length > 0 && (
-                <span>
-                  {" "}
-                  | {Object.keys(selectedCollections).length} dropdown
-                  selections loaded
-                </span>
-              )}
-            </Typography>
-          </Alert>
-        )}
+     
 
       {/* Form Card */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
@@ -2065,11 +2050,7 @@ const LabelPrint = () => {
                         height: "50px",
                       },
                     }}
-                    helperText={
-                      isInEditMode
-                        ? "Edit mode: Model number can be manually edited (SS and SZ excluded from auto-generation)"
-                        : "Auto-generated based on selections"
-                    }
+                    
                   />
                 </Paper>
               </Grid>

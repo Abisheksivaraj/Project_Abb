@@ -7,15 +7,15 @@ require("dotenv").config();
 
 route.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { userName, password } = req.body;
 
-    if (!email || !password) {
+    if (!userName || !password) {
       return res
         .status(400)
-        .json({ message: "Email and password are required" });
+        .json({ message: "userName and password are required" });
     }
 
-    const existingAdmin = await Admin.findOne({ email });
+    const existingAdmin = await Admin.findOne({ userName });
     if (existingAdmin) {
       return res.status(400).json({ message: "Admin already exists" });
     }
@@ -23,7 +23,7 @@ route.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = new Admin({
-      email,
+      userName,
       password: hashedPassword,
     });
 
@@ -38,22 +38,22 @@ route.post("/register", async (req, res) => {
 
 route.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { userName, password } = req.body;
 
-    if (!email || !password) {
+    if (!userName || !password) {
       return res
         .status(400)
-        .json({ message: "Please provide email and password" });
+        .json({ message: "Please provide userName and password" });
     }
 
-    const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({ userName });
     if (!admin) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid userName or password" });
     }
 
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid userName or password" });
     }
 
     const token = jwt.sign(
@@ -67,7 +67,7 @@ route.post("/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      admin: { id: admin._id, email: admin.email, role: admin.role },
+      admin: { id: admin._id, userName: admin.userName, role: admin.role },
     });
   } catch (error) {
     console.error("Login Error:", error);
