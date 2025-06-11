@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -63,7 +63,7 @@ const COLLECTION_ORDERS = {
     "Option Card 1",
     "Option Card 2",
     "Usage Certifications",
-    "SIL certficate",
+    "SIL certificate",
     "Shipping Register Certificate",
     "Calibration Certifications",
     "Other Usage Certifications",
@@ -72,7 +72,8 @@ const COLLECTION_ORDERS = {
     "Other Explosion Protection Certifications and other Approvals",
     "Other Options",
     "Documentation Language",
-    "Pressure Bearing parts Material Source Tests & Reports",
+    "Pressure Bearing parts Material Source",
+    "Tests & Reports",
     "Sensor Housing Material",
     "Configuration Type",
     "Transmitter Software Function Package",
@@ -112,7 +113,8 @@ const COLLECTION_ORDERS = {
     "Other Explosion Protection Certifications and other Approvals",
     "Other Options",
     "Documentation Language",
-    "Pressure Bearing parts Material Source Tests & Reports",
+    "Pressure Bearing parts Material Source",
+    "Tests & Reports",
     "Sensor Housing Material",
     "Configuration Type",
     "Transmitter Software Function Package",
@@ -124,24 +126,24 @@ const COLLECTION_ORDERS = {
     "Verification Capability",
   ],
   FET632: [
-    "Explosion protection Certification Transmitter",
-    "Housing Type / Housing Material / Cable Glands Transmitter",
-    "Protection Class Transmitter / Protection Class Sensor Transmitter",
-    "Power supply Transmitter",
-    "Display Transmitter",
-    "Outputs Transmitter",
-    "Option Card 1 Transmitter",
-    "Option Card 2 Transmitter",
-    "SIL certificate Transmitter",
-    "Shipping Register Certificate Transmitter",
-    "Potable Water and Food & Beverage Approvals Transmitter",
-    "Other Explosion Protection Certifications and other Approvals Transmitter",
-    "Other Options Transmitter",
-    "Documentation Language Transmitter",
-    "Device Identification Label Transmitter",
-    "Temperature Range of Installation / Ambient Temperature Range Transmitter",
-    "Remote Transmitter Mounting Kit Transmitter",
-    "Transmitter Software Function Package Transmitter",
+    "Explosion protection Certification transmitter",
+    "Housing Type / Housing Material / Cable Glands transmitter",
+    "Protection Class Transmitter / Protection Class Sensor transmitter",
+    "Power supply transmitter",
+    "Display transmitter",
+    "Outputs transmitter",
+    "Option Card 1 transmitter",
+    "Option Card 2 transmitter",
+    "SIL certificate transmitter",
+    "Shipping Register Certificate transmitter",
+    "Potable Water and Food & Beverage Approvals transmitter",
+    "Other Explosion Protection Certifications and other Approvals transmitter",
+    "Other Options transmitter",
+    "Documentation Language transmitter",
+    "Device Identification Label transmitter",
+    "Temperature Range of Installation / Ambient Temperature Range transmitter",
+    "Remote Transmitter Mounting Kit transmitter",
+    "Transmitter Software Function Package transmitter",
   ],
 };
 
@@ -194,16 +196,231 @@ const DEV_VERSION_OPTIONS = [
   { value: "01.20.00", label: "01.20.00" },
 ];
 
-// Ordered Collection Dropdowns Component
-const OrderedCollectionDropdowns = ({
+// Cache for storing fetched collections data
+const collectionsCache = new Map();
+const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Cache management functions
+const setCacheData = (key, data) => {
+  collectionsCache.set(key, {
+    data,
+    timestamp: Date.now(),
+  });
+};
+
+const getCacheData = (key) => {
+  const cached = collectionsCache.get(key);
+  if (!cached) return null;
+
+  const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY_TIME;
+  if (isExpired) {
+    collectionsCache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+};
+
+// Fast Loading Dropdown Component with Virtual Scrolling
+const FastDropdown = ({
+  label,
+  value,
+  onChange,
+  options = [],
+  stepNumber,
+  collectionName,
+  isSelected,
+  ...props
+}) => {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Memoized filtered options for performance
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options;
+    return options.filter(
+      (option) =>
+        option.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (option.description &&
+          option.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [options, searchTerm]);
+
+  // Truncate collection name for display
+  const truncateCollectionName = (name, maxLength = 25) => {
+    return name.length > maxLength
+      ? `${name.substring(0, maxLength)}...`
+      : name;
+  };
+
+  return (
+    <FormControl
+      variant="outlined"
+      size="small"
+      fullWidth
+      sx={{
+        minWidth: "200px",
+        "& .MuiOutlinedInput-root": {
+          backgroundColor: isSelected ? "rgba(76, 175, 80, 0.08)" : "white",
+          "&:hover": {
+            backgroundColor: isSelected
+              ? "rgba(76, 175, 80, 0.12)"
+              : "rgba(0, 0, 0, 0.04)",
+          },
+        },
+      }}
+      {...props}
+    >
+      <InputLabel
+        sx={{
+          fontSize: "0.875rem",
+          color: isSelected ? "success.main" : "text.secondary",
+        }}
+      >
+        {stepNumber && (
+          <Box
+            component="span"
+            sx={{
+              backgroundColor: "primary.main",
+              color: "white",
+              borderRadius: "50%",
+              width: 20,
+              height: 20,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.75rem",
+              mr: 1,
+              fontWeight: "bold",
+            }}
+          >
+            {stepNumber}
+          </Box>
+        )}
+        {truncateCollectionName(label, 20)}
+      </InputLabel>
+
+      <Tooltip title={label.length > 20 ? label : ""} placement="top" arrow>
+        <Select
+          label={`${stepNumber ? `${stepNumber} ` : ""}${truncateCollectionName(
+            label,
+            20
+          )}`}
+          value={value || ""}
+          onChange={onChange}
+          open={open}
+          onOpen={() => setOpen(true)}
+          onClose={() => {
+            setOpen(false);
+            setSearchTerm("");
+          }}
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 300,
+                width: 350,
+              },
+            },
+            // Disable auto focus to improve performance
+            autoFocus: false,
+            // Add search functionality
+            MenuListProps: {
+              onKeyDown: (e) => {
+                if (e.key.length === 1) {
+                  setSearchTerm((prev) => prev + e.key);
+                } else if (e.key === "Backspace") {
+                  setSearchTerm((prev) => prev.slice(0, -1));
+                }
+              },
+            },
+          }}
+          sx={{
+            "& .MuiSelect-select": {
+              fontSize: "0.875rem",
+            },
+          }}
+        >
+          {/* Search field for large option lists */}
+          {options.length > 10 && (
+            <MenuItem
+              disabled
+              sx={{
+                position: "sticky",
+                top: 0,
+                backgroundColor: "white",
+                zIndex: 1,
+              }}
+            >
+              <TextField
+                size="small"
+                placeholder="Search options..."
+                value={searchTerm}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setSearchTerm(e.target.value);
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                fullWidth
+                autoFocus
+              />
+            </MenuItem>
+          )}
+
+          <MenuItem
+            value=""
+            sx={{ fontStyle: "italic", color: "text.secondary" }}
+          >
+            Select Option
+          </MenuItem>
+
+          {filteredOptions.map((item, index) => (
+            <MenuItem
+              key={`${item.code}-${index}`}
+              value={item.code}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                whiteSpace: "normal",
+                py: 1.5,
+              }}
+            >
+              <Typography variant="body2" fontWeight="bold" color="primary">
+                {item.code}
+              </Typography>
+              {item.description && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    mt: 0.5,
+                    wordBreak: "break-word",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {item.description.length > 60
+                    ? `${item.description.substring(0, 60)}...`
+                    : item.description}
+                </Typography>
+              )}
+            </MenuItem>
+          ))}
+        </Select>
+      </Tooltip>
+    </FormControl>
+  );
+};
+
+// Optimized Collection Dropdowns Component
+const OptimizedCollectionDropdowns = ({
   basicCode,
   collectionsWithCodes,
   selectedCollections,
   onCollectionCodeChange,
   isLoading,
 }) => {
-  // Get ordered collection names based on basic code
-  const getOrderedCollections = () => {
+  // Memoized ordered collections to prevent recalculation
+  const orderedCollectionNames = useMemo(() => {
     const order = COLLECTION_ORDERS[basicCode];
     if (!order) return [];
 
@@ -229,29 +446,23 @@ const OrderedCollectionDropdowns = ({
     });
 
     return orderedCollections;
-  };
+  }, [basicCode, collectionsWithCodes]);
 
-  const orderedCollectionNames = getOrderedCollections();
+  // Memoized step number calculation
+  const getStepNumber = useMemo(() => {
+    return (collectionName) => {
+      const order = COLLECTION_ORDERS[basicCode];
+      if (!order) return null;
 
-  // Helper function to truncate long collection names for display
-  const truncateCollectionName = (name, maxLength = 25) => {
-    return name.length > maxLength
-      ? `${name.substring(0, maxLength)}...`
-      : name;
-  };
+      const index = order.findIndex(
+        (orderedName) =>
+          orderedName.trim().toLowerCase() ===
+          collectionName.trim().toLowerCase()
+      );
 
-  // Helper function to get step number based on collection order
-  const getStepNumber = (collectionName) => {
-    const order = COLLECTION_ORDERS[basicCode];
-    if (!order) return null;
-
-    const index = order.findIndex(
-      (orderedName) =>
-        orderedName.trim().toLowerCase() === collectionName.trim().toLowerCase()
-    );
-
-    return index !== -1 ? index + 1 : null;
-  };
+      return index !== -1 ? index + 1 : null;
+    };
+  }, [basicCode]);
 
   if (
     !basicCode ||
@@ -300,125 +511,17 @@ const OrderedCollectionDropdowns = ({
               xl={2}
               key={`${collectionName}-${index}`}
             >
-              <FormControl
-                variant="outlined"
-                size="small"
-                fullWidth
-                sx={{
-                  minWidth: "200px",
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: isSelected
-                      ? "rgba(76, 175, 80, 0.08)"
-                      : "white",
-                    "&:hover": {
-                      backgroundColor: isSelected
-                        ? "rgba(76, 175, 80, 0.12)"
-                        : "rgba(0, 0, 0, 0.04)",
-                    },
-                  },
-                }}
-              >
-                <InputLabel
-                  sx={{
-                    fontSize: "0.875rem",
-                    color: isSelected ? "success.main" : "text.secondary",
-                  }}
-                >
-                  {stepNumber && (
-                    <Box
-                      component="span"
-                      sx={{
-                        backgroundColor: "primary.main",
-                        color: "white",
-                        borderRadius: "50%",
-                        width: 20,
-                        height: 20,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.75rem",
-                        mr: 1,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {stepNumber}
-                    </Box>
-                  )}
-                  {truncateCollectionName(collectionName, 20)}
-                </InputLabel>
-
-                <Tooltip
-                  title={collectionName.length > 20 ? collectionName : ""}
-                  placement="top"
-                  arrow
-                >
-                  <Select
-                    label={`${
-                      stepNumber ? `${stepNumber} ` : ""
-                    }${truncateCollectionName(collectionName, 20)}`}
-                    value={selectedCollections[collectionName] || ""}
-                    onChange={(e) =>
-                      onCollectionCodeChange(collectionName, e.target.value)
-                    }
-                    MenuProps={{
-                      PaperProps: {
-                        style: {
-                          maxHeight: 300,
-                          width: 350,
-                        },
-                      },
-                    }}
-                    sx={{
-                      "& .MuiSelect-select": {
-                        fontSize: "0.875rem",
-                      },
-                    }}
-                  >
-                    <MenuItem
-                      value=""
-                      sx={{ fontStyle: "italic", color: "text.secondary" }}
-                    >
-                      Select Option
-                    </MenuItem>
-                    {collectionsWithCodes[collectionName]?.map((item) => (
-                      <MenuItem
-                        key={`${item.code}-${index}`}
-                        value={item.code}
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          whiteSpace: "normal",
-                          py: 1.5,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight="bold"
-                          color="primary"
-                        >
-                          {item.code}
-                        </Typography>
-                        {item.description && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                              mt: 0.5,
-                              wordBreak: "break-word",
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            {item.description.length > 60
-                              ? `${item.description.substring(0, 60)}...`
-                              : item.description}
-                          </Typography>
-                        )}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Tooltip>
-              </FormControl>
+              <FastDropdown
+                label={collectionName}
+                value={selectedCollections[collectionName]}
+                onChange={(e) =>
+                  onCollectionCodeChange(collectionName, e.target.value)
+                }
+                options={collectionsWithCodes[collectionName] || []}
+                stepNumber={stepNumber}
+                collectionName={collectionName}
+                isSelected={isSelected}
+              />
             </Grid>
           );
         })}
@@ -505,6 +608,60 @@ const LabelPrint = () => {
   const [isEditModeInitialized, setIsEditModeInitialized] = useState(false);
   const [preserveLabelDetails, setPreserveLabelDetails] = useState(false);
 
+  // Preload all databases on component mount for instant access
+  useEffect(() => {
+    const preloadAllDatabases = async () => {
+      const databases = ["Fep631", "Fep632", "Transmitter"];
+
+      // Check cache first
+      const cachedPromises = databases.map(async (dbName) => {
+        const cached = getCacheData(dbName);
+        if (cached) {
+          console.log(`Using cached data for ${dbName}`);
+          return { dbName, data: cached };
+        }
+
+        try {
+          console.log(`Preloading collections from database: ${dbName}`);
+          const response = await api.get(`/collections-by-database/${dbName}`);
+
+          if (response.data.success) {
+            const dbCollections = response.data.collectionsWithData;
+
+            // Filter out excluded collections
+            const filteredCollections = {};
+            Object.keys(dbCollections).forEach((collectionName) => {
+              if (!EXCLUDED_COLLECTIONS.includes(collectionName)) {
+                filteredCollections[collectionName] =
+                  dbCollections[collectionName];
+              }
+            });
+
+            // Cache the data
+            setCacheData(dbName, filteredCollections);
+            console.log(
+              `Preloaded and cached ${dbName}: ${
+                Object.keys(filteredCollections).length
+              } collections`
+            );
+
+            return { dbName, data: filteredCollections };
+          }
+        } catch (error) {
+          console.error(`Error preloading ${dbName}:`, error);
+          return { dbName, data: null };
+        }
+
+        return { dbName, data: null };
+      });
+
+      await Promise.all(cachedPromises);
+      console.log("All databases preloaded successfully");
+    };
+
+    preloadAllDatabases();
+  }, []);
+
   // Function to determine which database to use based on basic code
   const getDatabaseForBasicCode = (code) => {
     switch (code) {
@@ -542,7 +699,40 @@ const LabelPrint = () => {
     return orderedCollections;
   };
 
-  // Fetch collections and codes from specific database based on basic code
+  // Ultra-fast collections loading from cache
+  const loadCollectionsFromCache = (dbName) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const cachedData = getCacheData(dbName);
+
+      if (cachedData) {
+        console.log(`Loading collections from cache for: ${dbName}`);
+        setCollectionsWithCodes(cachedData);
+        setCollectionNames(Object.keys(cachedData));
+        setFilteredCollectionNames(Object.keys(cachedData));
+
+        console.log(
+          `Collections loaded from cache: ${
+            Object.keys(cachedData).length
+          } collections`
+        );
+        setIsLoading(false);
+        return true;
+      } else {
+        console.log(`No cache found for ${dbName}, falling back to API call`);
+        return fetchCollectionsFromDatabase(dbName);
+      }
+    } catch (error) {
+      console.error(`Error loading from cache for ${dbName}:`, error);
+      setError(`Error loading collections: ${error.message}`);
+      setIsLoading(false);
+      return false;
+    }
+  };
+
+  // Fallback function for API calls (only used if cache miss)
   const fetchCollectionsFromDatabase = async (dbName) => {
     setIsLoading(true);
     setError(null);
@@ -560,6 +750,9 @@ const LabelPrint = () => {
             filteredCollections[collectionName] = dbCollections[collectionName];
           }
         });
+
+        // Cache the data for future use
+        setCacheData(dbName, filteredCollections);
 
         setCollectionsWithCodes(filteredCollections);
         setCollectionNames(Object.keys(filteredCollections));
@@ -665,14 +858,14 @@ const LabelPrint = () => {
         }
         setModelType(defaultModelType);
 
-        // Load collections and show dropdown
+        // Load collections and show dropdown using cache
         const dbName = getDatabaseForBasicCode(extractedBasicCode);
         setSelectedDatabase(dbName);
         setShowCollectionDropdown(true);
 
         if (dbName) {
           console.log("Loading collections for database:", dbName);
-          fetchCollectionsFromDatabase(dbName);
+          loadCollectionsFromCache(dbName);
         }
       }
 
@@ -729,7 +922,7 @@ const LabelPrint = () => {
     }
   };
 
-  // Handle basic code selection with database selection
+  // Handle basic code selection with instant cache loading
   const handleBasicCodeChange = (event) => {
     const value = event.target.value;
     setBasicCode(value);
@@ -762,8 +955,11 @@ const LabelPrint = () => {
     setSelectedDatabase(dbName);
 
     if (dbName) {
-      fetchCollectionsFromDatabase(dbName);
-      setShowCollectionDropdown(true);
+      // Try to load from cache first for instant response
+      const success = loadCollectionsFromCache(dbName);
+      if (success) {
+        setShowCollectionDropdown(true);
+      }
     }
 
     let defaultModelType = "";
@@ -1071,6 +1267,17 @@ const LabelPrint = () => {
         </Alert>
       )}
 
+      {/* Performance indicator */}
+      {!isLoading &&
+        collectionsWithCodes &&
+        Object.keys(collectionsWithCodes).length > 0 && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            <Typography variant="body2">
+              ⚡ Fast loading enabled - Collections loaded instantly from cache!
+            </Typography>
+          </Alert>
+        )}
+
       {/* Form Card */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
         <CardHeader
@@ -1093,7 +1300,7 @@ const LabelPrint = () => {
                   <Grid container spacing={2} alignItems="center">
                     <Grid item>
                       <TextField
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         label="Serial No"
                         placeholder="Enter Serial Number..."
@@ -1112,7 +1319,7 @@ const LabelPrint = () => {
                     </Grid>
                     <Grid item>
                       <TextField
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         label="Tag No"
                         placeholder="Enter Tag Number..."
@@ -1129,26 +1336,13 @@ const LabelPrint = () => {
                       />
                     </Grid>
                     <Grid item>
-                      <FormControl variant="outlined" required>
-                        <InputLabel
-                          sx={{
-                            textAlign: "center",
-                            width: "100%",
-                            left: 0,
-                            transformOrigin: "center",
-                          }}
-                        >
-                          Label Type
-                        </InputLabel>
+                      <FormControl
+                        sx={{ width: "140px" }}
+                        size="small"
+                        required
+                      >
+                        <InputLabel>Label Type</InputLabel>
                         <Select
-                          sx={{
-                            width: "150px",
-                            "& .MuiSelect-select": {
-                              textAlign: "center",
-                            },
-                          }}
-                          label="Label Type"
-                          size="small"
                           value={LabelType}
                           onChange={handleLabelTypeChange}
                           IconComponent={() => null}
@@ -1189,20 +1383,15 @@ const LabelPrint = () => {
                       </FormControl>
                     </Grid>
                     <Grid item>
-                      <FormControl variant="outlined">
-                        <InputLabel
-                          sx={{
-                            textAlign: "center",
-                            width: "100%",
-                            left: 0,
-                            transformOrigin: "center",
-                          }}
-                        >
-                          Basic Code
-                        </InputLabel>
+                      <FormControl
+                        sx={{ width: "140px" }}
+                        size="small"
+                        variant="outlined"
+                      >
+                        <InputLabel>Basic Code</InputLabel>
                         <Select
                           sx={{
-                            width: "150px",
+                            width: "140px",
                             "& .MuiSelect-select": {
                               textAlign: "center",
                             },
@@ -1244,20 +1433,16 @@ const LabelPrint = () => {
                     </Grid>
                     {showLogoType && (
                       <Grid item>
-                        <FormControl variant="outlined" required>
-                          <InputLabel
-                            sx={{
-                              textAlign: "center",
-                              width: "100%",
-                              left: 0,
-                              transformOrigin: "center",
-                            }}
-                          >
-                            Logo Option
-                          </InputLabel>
+                        <FormControl
+                          sx={{ width: "140px" }}
+                          size="small"
+                          variant="outlined"
+                          required
+                        >
+                          <InputLabel>Logo Option</InputLabel>
                           <Select
                             sx={{
-                              width: "150px",
+                              width: "140px",
                               "& .MuiSelect-select": {
                                 textAlign: "center",
                               },
@@ -1303,7 +1488,7 @@ const LabelPrint = () => {
                     )}
                     <Grid item>
                       <TextField
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         label="Manufacturing Date"
                         type="date"
@@ -1317,7 +1502,7 @@ const LabelPrint = () => {
                       />
                     </Grid>
                     <Grid item>
-                      <FormControl sx={{ width: "150px" }} size="small">
+                      <FormControl sx={{ width: "140px" }} size="small">
                         <InputLabel>Device Version</InputLabel>
                         <Select
                           value={DevVersion}
@@ -1348,7 +1533,7 @@ const LabelPrint = () => {
                     <Grid item>
                       <TextField
                         label="Model Type"
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         variant="outlined"
                         value={modelType}
@@ -1367,7 +1552,7 @@ const LabelPrint = () => {
                       <FormControl variant="outlined" required>
                         <InputLabel>Status</InputLabel>
                         <Select
-                          sx={{ width: "150px" }}
+                          sx={{ width: "140px" }}
                           size="small"
                           label="Status"
                           value={Status}
@@ -1388,7 +1573,7 @@ const LabelPrint = () => {
                     {/* SS Field */}
                     <Grid item>
                       <TextField
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         label="SS"
                         placeholder="Enter SS..."
@@ -1409,7 +1594,7 @@ const LabelPrint = () => {
                     {/* SZ Field */}
                     <Grid item>
                       <TextField
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         label="SZ"
                         placeholder="Enter SZ..."
@@ -1430,7 +1615,7 @@ const LabelPrint = () => {
                     {/* Qmax Dropdown */}
                     <Grid item>
                       <FormControl
-                        sx={{ width: "150px" }}
+                        sx={{ width: "140px" }}
                         size="small"
                         variant="outlined"
                       >
@@ -1488,10 +1673,10 @@ const LabelPrint = () => {
                 </Paper>
               </Grid>
 
-              {/* Collections Section - Updated with Ordered Dropdowns */}
+              {/* Collections Section - Updated with Optimized Dropdowns */}
               {showCollectionDropdown && (
                 <Grid item xs={12}>
-                  <OrderedCollectionDropdowns
+                  <OptimizedCollectionDropdowns
                     basicCode={basicCode}
                     collectionsWithCodes={collectionsWithCodes}
                     selectedCollections={selectedCollections}

@@ -318,63 +318,543 @@ const MainPageTable = () => {
     }
   };
 
+  // Enhanced PDF Export with Professional Design
   const handlePDFExport = () => {
     try {
-      const doc = new jsPDF();
+      // Create new PDF document with better margins
+      const doc = new jsPDF("landscape", "mm", "a4");
 
-      doc.setFontSize(16);
-      doc.text("Label Print Data", 14, 15);
-      doc.setFontSize(10);
-      doc.text("Generated on: " + new Date().toLocaleString(), 14, 22);
+      // Define colors
+      const primaryColor = [51, 65, 85]; // slate-700
+      const secondaryColor = [100, 116, 139]; // slate-500
+      const accentColor = [239, 68, 68]; // red-500
+      const lightGray = [248, 250, 252]; // slate-50
 
-      // Header
-      const tableColumn = [];
-      if (visibleColumns.sNo) tableColumn.push("S No");
-      columnVisibilityOptions.forEach((col) => {
-        if (visibleColumns[col.id] && col.id !== "action") {
-          tableColumn.push(col.label);
-        }
-      });
+      // PDF Header Section
+      const addHeader = () => {
+        // Add company/header background
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.rect(0, 0, 297, 25, "F");
 
-      // Body
+        // Main title
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(20);
+        doc.setFont("helvetica", "bold");
+        doc.text("Label Print Data Report", 15, 12);
+
+        // Subtitle
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text("ProcessMaster 630 Manufacturing Labels", 15, 19);
+
+        // Date and time on the right
+        const currentDate = new Date();
+        const dateStr = currentDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const timeStr = currentDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        doc.setFontSize(10);
+        doc.text(`Generated: ${dateStr} at ${timeStr}`, 200, 12);
+        doc.text(`Total Records: ${filteredData.length}`, 200, 18);
+      };
+
+      // Add footer
+      const addFooter = (pageNumber, totalPages) => {
+        doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+        doc.rect(0, 185, 297, 25, "F");
+
+        doc.setTextColor(
+          secondaryColor[0],
+          secondaryColor[1],
+          secondaryColor[2]
+        );
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+
+        // Company info
+        doc.text(
+          "ABB India Limited - ProcessMaster 630 Label Management System",
+          15,
+          195
+        );
+
+        // Page number
+        doc.text(`Page ${pageNumber} of ${totalPages}`, 250, 195);
+
+        // Confidentiality notice
+        doc.setFontSize(8);
+        doc.text("Confidential - Internal Use Only", 15, 201);
+      };
+
+      // Summary section
+      const addSummary = () => {
+        let yPosition = 35;
+
+        // Summary background
+        doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+        doc.rect(15, yPosition, 267, 20, "F");
+
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Report Summary", 20, yPosition + 8);
+
+        // Calculate statistics
+        const totalRecords = filteredData.length;
+        const activeRecords = filteredData.filter(
+          (row) => row.Status === "Active"
+        ).length;
+        const inactiveRecords = totalRecords - activeRecords;
+        const uniqueSerialNumbers = new Set(
+          filteredData.map((row) => row.SerialNumber)
+        ).size;
+        const labelTypes = new Set(filteredData.map((row) => row.LabelType))
+          .size;
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+
+        // Summary statistics in columns
+        doc.text(`Total Labels: ${totalRecords}`, 20, yPosition + 15);
+        doc.text(`Active: ${activeRecords}`, 80, yPosition + 15);
+        doc.text(`Inactive: ${inactiveRecords}`, 120, yPosition + 15);
+        doc.text(`Unique Serials: ${uniqueSerialNumbers}`, 170, yPosition + 15);
+        doc.text(`Label Types: ${labelTypes}`, 230, yPosition + 15);
+
+        return yPosition + 25;
+      };
+
+      // Add the header and summary
+      addHeader();
+      const tableStartY = addSummary();
+
+      // Prepare table headers (excluding action column)
+      const tableColumns = [];
+      const columnWidths = [];
+
+      if (visibleColumns.sNo) {
+        tableColumns.push("S.No");
+        columnWidths.push(15);
+      }
+      if (visibleColumns.labelType) {
+        tableColumns.push("Label Type");
+        columnWidths.push(25);
+      }
+      if (visibleColumns.serialNumber) {
+        tableColumns.push("Serial Number");
+        columnWidths.push(30);
+      }
+      if (visibleColumns.tagNumber) {
+        tableColumns.push("Tag Number");
+        columnWidths.push(25);
+      }
+      if (visibleColumns.labelDetails) {
+        tableColumns.push("Model Number");
+        columnWidths.push(70);
+      }
+      if (visibleColumns.logoType) {
+        tableColumns.push("Logo Type");
+        columnWidths.push(20);
+      }
+      if (visibleColumns.date) {
+        tableColumns.push("Date");
+        columnWidths.push(25);
+      }
+      if (visibleColumns.addedBy) {
+        tableColumns.push("Added By");
+        columnWidths.push(25);
+      }
+      if (visibleColumns.status) {
+        tableColumns.push("Status");
+        columnWidths.push(20);
+      }
+
+      // Prepare table data
       const tableRows = filteredData.map((row, index) => {
         const rowData = [];
-        if (visibleColumns.sNo) rowData.push(index + 1);
-        if (visibleColumns.labelType) rowData.push(row.LabelType || "");
-        if (visibleColumns.serialNumber) rowData.push(row.SerialNumber || "");
-        if (visibleColumns.tagNumber) rowData.push(row.TagNumber || "");
-        if (visibleColumns.labelDetails) rowData.push(row.LabelDetails || "");
-        if (visibleColumns.logoType) rowData.push(row.LogoType || "");
-        if (visibleColumns.date) rowData.push(row.Date || "");
-        if (visibleColumns.addedBy) rowData.push(row.AddedBy || "");
-        if (visibleColumns.status) rowData.push(row.Status || "");
+        if (visibleColumns.sNo) rowData.push((index + 1).toString());
+        if (visibleColumns.labelType) rowData.push(row.LabelType || "-");
+        if (visibleColumns.serialNumber) rowData.push(row.SerialNumber || "-");
+        if (visibleColumns.tagNumber) rowData.push(row.TagNumber || "-");
+        if (visibleColumns.labelDetails) {
+          // Truncate long model numbers for better fit
+          const modelNumber = row.LabelDetails || "-";
+          rowData.push(
+            modelNumber.length > 50
+              ? modelNumber.substring(0, 47) + "..."
+              : modelNumber
+          );
+        }
+        if (visibleColumns.logoType) rowData.push(row.LogoType || "-");
+        if (visibleColumns.date) rowData.push(row.Date || "-");
+        if (visibleColumns.addedBy) rowData.push(row.AddedBy || "-");
+        if (visibleColumns.status) rowData.push(row.Status || "-");
         return rowData;
       });
 
+      // Generate the table with enhanced styling
       autoTable(doc, {
-        head: [tableColumn],
+        head: [tableColumns],
         body: tableRows,
-        startY: 30,
-        headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        styles: { fontSize: 8 },
+        startY: tableStartY + 5,
+        margin: { left: 15, right: 15 },
+
+        // Enhanced table styling
+        theme: "grid",
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontSize: 9,
+          fontStyle: "bold",
+          halign: "center",
+          valign: "middle",
+          lineWidth: 0.5,
+          lineColor: [255, 255, 255],
+        },
+
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: 3,
+          valign: "middle",
+          lineWidth: 0.3,
+          lineColor: [200, 200, 200],
+        },
+
+        alternateRowStyles: {
+          fillColor: lightGray,
+        },
+
+        columnStyles: {
+          // S.No column
+          0: { halign: "center", cellWidth: columnWidths[0] || "auto" },
+          // Status column with conditional formatting
+          [tableColumns.length - 1]: {
+            halign: "center",
+            cellWidth: columnWidths[columnWidths.length - 1] || "auto",
+          },
+        },
+
+        // Custom cell rendering for status colors
+        didParseCell: function (data) {
+          if (
+            data.column.index === tableColumns.indexOf("Status") &&
+            data.cell.text[0]
+          ) {
+            const status = data.cell.text[0];
+            if (status === "Active") {
+              data.cell.styles.fillColor = [16, 185, 129]; // green-500
+              data.cell.styles.textColor = [255, 255, 255];
+              data.cell.styles.fontStyle = "bold";
+            } else if (status === "Inactive") {
+              data.cell.styles.fillColor = [239, 68, 68]; // red-500
+              data.cell.styles.textColor = [255, 255, 255];
+              data.cell.styles.fontStyle = "bold";
+            }
+          }
+        },
+
+        // Handle page breaks
+        didDrawPage: function (data) {
+          const pageCount = doc.internal.getNumberOfPages();
+          const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+
+          // Add header and footer to each page
+          if (currentPage > 1) {
+            addHeader();
+          }
+          addFooter(currentPage, pageCount);
+        },
+
+        // Ensure table fits properly
+        tableWidth: "auto",
+        styles: {
+          overflow: "linebreak",
+          cellWidth: "wrap",
+        },
       });
 
-      doc.save("label_data.pdf");
-      showAlert("PDF file downloaded successfully");
+      // Add final page count
+      const finalPageCount = doc.internal.getNumberOfPages();
+
+      // Go to first page to update footer with correct page count
+      for (let i = 1; i <= finalPageCount; i++) {
+        doc.setPage(i);
+        addFooter(i, finalPageCount);
+      }
+
+      // Generate filename with timestamp
+      const timestamp = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace(/[-:]/g, "");
+      const filename = `Label_Print_Report_${timestamp}.pdf`;
+
+      // Save the PDF
+      doc.save(filename);
+
+      showAlert("Professional PDF report generated successfully!");
     } catch (error) {
       console.error("PDF export error:", error);
       showAlert("Failed to export to PDF", "error");
     }
   };
 
+  // Enhanced Print Function for Table
   const handlePrintTable = () => {
-    setPrintView(true);
-    setTimeout(() => {
-      window.print();
-      setPrintView(false);
-    }, 500);
+    const printWindow = window.open("", "_blank");
+
+    // Prepare visible columns for print
+    const visibleColumnsList = columnVisibilityOptions.filter(
+      (col) => visibleColumns[col.id] && col.id !== "action"
+    );
+
+    // Generate print HTML
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Label Print Data - ${new Date().toLocaleDateString()}</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 15mm;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+          }
+          
+          .print-header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+          }
+          
+          .print-header h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: bold;
+          }
+          
+          .print-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+          }
+          
+          .print-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+          }
+          
+          .print-info div {
+            font-weight: 600;
+          }
+          
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          }
+          
+          .print-table th {
+            background: #334155;
+            color: white;
+            font-weight: bold;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          .print-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9px;
+            vertical-align: top;
+          }
+          
+          .print-table tr:nth-child(even) {
+            background: #f8fafc;
+          }
+          
+          .print-table tr:hover {
+            background: #e0f2fe;
+          }
+          
+          .status-active {
+            background: #10b981 !important;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+          }
+          
+          .status-inactive {
+            background: #ef4444 !important;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+          }
+          
+          .print-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 10px;
+          }
+          
+          .model-number {
+            word-break: break-all;
+            max-width: 150px;
+            font-size: 8px;
+            line-height: 1.2;
+          }
+          
+          @media print {
+            body { print-color-adjust: exact; }
+            .print-table { page-break-inside: auto; }
+            .print-table tr { page-break-inside: avoid; page-break-after: auto; }
+            .print-table thead { display: table-header-group; }
+            .print-table tfoot { display: table-footer-group; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="print-header">
+          <h1>Label Print Data Report</h1>
+          <p>ProcessMaster 630 Manufacturing Labels - Complete Data Export</p>
+        </div>
+        
+        <div class="print-info">
+          <div>Total Records: ${filteredData.length}</div>
+          <div>Generated: ${new Date().toLocaleString()}</div>
+          <div>Active Labels: ${
+            filteredData.filter((row) => row.Status === "Active").length
+          }</div>
+        </div>
+        
+        <table class="print-table">
+          <thead>
+            <tr>
+              ${visibleColumnsList
+                .map((col) => `<th>${col.label}</th>`)
+                .join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredData
+              .map(
+                (row, index) => `
+              <tr>
+                ${visibleColumnsList
+                  .map((col) => {
+                    let cellValue = "";
+                    let cellClass = "";
+
+                    switch (col.id) {
+                      case "sNo":
+                        cellValue = index + 1;
+                        break;
+                      case "labelType":
+                        cellValue = row.LabelType || "-";
+                        break;
+                      case "serialNumber":
+                        cellValue = row.SerialNumber || "-";
+                        break;
+                      case "tagNumber":
+                        cellValue = row.TagNumber || "-";
+                        break;
+                      case "labelDetails":
+                        cellValue = row.LabelDetails || "-";
+                        cellClass = "model-number";
+                        break;
+                      case "logoType":
+                        cellValue = row.LogoType || "-";
+                        break;
+                      case "date":
+                        cellValue = row.Date || "-";
+                        break;
+                      case "addedBy":
+                        cellValue = row.AddedBy || "-";
+                        break;
+                      case "status":
+                        cellValue = row.Status || "-";
+                        cellClass =
+                          row.Status === "Active"
+                            ? "status-active"
+                            : "status-inactive";
+                        break;
+                      default:
+                        cellValue = "-";
+                    }
+
+                    return `<td class="${cellClass}">${cellValue}</td>`;
+                  })
+                  .join("")}
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+        
+        <div class="print-footer">
+          <p><strong>ABB India Limited</strong> - ProcessMaster 630 Label Management System</p>
+          <p>This document contains confidential information. Distribution restricted to authorized personnel only.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+
+      // Close print window after printing
+      printWindow.onafterprint = () => {
+        printWindow.close();
+      };
+    };
+
+    showAlert("Print dialog opened successfully");
   };
+
+  // Rest of your existing component code remains the same...
 
   // Prepare data for CSV export
   const csvData = filteredData.map((row, index) => {
@@ -405,7 +885,6 @@ const MainPageTable = () => {
         label?.LabelDetails || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
 
       const power = label?.powerSupply;
-
       const qmax = label?.selectedQmax;
       const tmed = label?.selectedTmedDropdown;
       const tamb = label?.Tamb;
@@ -414,7 +893,6 @@ const MainPageTable = () => {
       const size = label?.Size;
       const fexc = label?.Fexc;
       const protection = label?.ProtectionClass;
-
       const liner = label?.LinerMaterial;
 
       const getCurrentMonthYear = () => {
@@ -1084,7 +1562,7 @@ const MainPageTable = () => {
                   <div>ABB India Limited, Bangalore</div>
                   <div class="text-center">${date}</div>
                 </div>
-                <div class="-mr-10">
+                                  <div class="-mr-10">
                   <div class="w-full">Designed by ABB AG</div>
                   <div>Goettingen, Germany</div>
                 </div>
@@ -1145,8 +1623,6 @@ const MainPageTable = () => {
         bgcolor: "#f8fafc",
       }}
     >
-      
-
       {/* Main content */}
       <Box sx={{ p: { xs: 2, md: 4 }, flexGrow: 1 }}>
         <Card
@@ -1175,13 +1651,11 @@ const MainPageTable = () => {
 
             <Box
               sx={{
-                
                 p: 2,
                 display: "flex",
                 justifyContent: "space-between",
-                gap:"15px",
+                gap: "15px",
                 alignItems: "center",
-                
               }}
             >
               <Button
