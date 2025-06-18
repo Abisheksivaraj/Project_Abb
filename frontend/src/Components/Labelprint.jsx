@@ -1224,11 +1224,89 @@ const LabelPrint = () => {
     collectionsWithCodes,
   ]);
 
-  // Handle LabelType change with LogoType visibility logic
+  // Debug useEffect to monitor state changes
+  useEffect(() => {
+    console.log("=== STATE DEBUG ===");
+    console.log("- LabelType:", LabelType);
+    console.log("- BasicCode:", basicCode);
+    console.log(
+      "- Collections count:",
+      Object.keys(collectionsWithCodes).length
+    );
+    console.log("- Show dropdown:", showCollectionDropdown);
+    console.log("- Is Edit Mode:", isInEditMode);
+  }, [
+    LabelType,
+    basicCode,
+    collectionsWithCodes,
+    showCollectionDropdown,
+    isInEditMode,
+  ]);
+
+  // FIXED: Handle LabelType change with collection loading logic
   const handleLabelTypeChange = (event) => {
     const value = event.target.value;
+    console.log(`=== LABEL TYPE CHANGE: ${value} ===`);
     setLabelType(value);
 
+    // FIXED: Also set basicCode when LabelType changes (for new mode)
+    if (!isInEditMode) {
+      console.log("Setting basicCode and loading collections for new mode");
+      setBasicCode(value); // Set basicCode to match LabelType
+
+      // Load collections for the selected basic code
+      const dbName = getDatabaseForBasicCode(value);
+      setSelectedDatabase(dbName);
+
+      if (dbName) {
+        // Reset collections first
+        setCollectionsWithCodes({});
+        setCollectionNames([]);
+        setFilteredCollectionNames([]);
+        setSelectedCollections({});
+        setShowCollectionDropdown(false);
+
+        // Reset all states
+        setPowerSupply("");
+        setPower("");
+        setLinerMaterial("");
+        setProtectionClass("");
+        setTamb("");
+        setFitting("");
+        setElect("");
+        setSize("");
+        setSizeDescription("");
+        setSelectedQmax("");
+        setQmaxDescription("");
+        setSelectedTmedDropdown("");
+
+        // Load collections from cache
+        console.log(
+          `Loading collections for LabelType: ${value}, Database: ${dbName}`
+        );
+        const success = loadCollectionsFromCache(dbName);
+        if (success) {
+          setShowCollectionDropdown(true);
+          console.log(`✓ Collections loaded successfully for ${value}`);
+        } else {
+          console.log(`✗ Failed to load collections for ${value}`);
+        }
+      }
+
+      // Set model type based on the selected value
+      let defaultModelType = "";
+      if (value === "FEP631" || value === "FEP632") {
+        defaultModelType = "Sensor";
+      } else if (value === "FET632") {
+        defaultModelType = "Transmitter";
+      }
+      setModelType(defaultModelType);
+
+      // Update label details
+      updateLabelDetails({}, ss, sz, value);
+    }
+
+    // Handle LogoType visibility (this should work for both edit and new mode)
     const shouldHideLogoType =
       value === "Sensor(115x35)" || value === "Transmitter";
     setShowLogoType(!shouldHideLogoType);
@@ -1268,70 +1346,13 @@ const LabelPrint = () => {
     }
   };
 
-  // Update handleSSChange:
+  // Update handleSZChange:
   const handleSZChange = (value) => {
     setSZ(value);
 
     // UPDATED: Use the new logic for edit mode updates
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, value, basicCode);
-    }
-  };
-
-  // FIXED: Handle basic code selection with instant cache loading
-  const handleBasicCodeChange = (event) => {
-    const value = event.target.value;
-    setBasicCode(value);
-
-    // FIXED: Don't reset if in edit mode
-    if (!isInEditMode) {
-      // Reset collections and selections first
-      setCollectionsWithCodes({});
-      setCollectionNames([]);
-      setFilteredCollectionNames([]);
-      setSelectedCollections({});
-      setShowCollectionDropdown(false);
-
-      // Reset all states
-      setPowerSupply("");
-      setPower("");
-      setLinerMaterial("");
-      setProtectionClass("");
-      setTamb("");
-      setFitting("");
-      setElect("");
-      setSize("");
-      setSizeDescription("");
-      setSelectedQmax("");
-      setQmaxDescription("");
-      setSelectedTmedDropdown("");
-    }
-
-    const dbName = getDatabaseForBasicCode(value);
-    setSelectedDatabase(dbName);
-
-    if (dbName) {
-      // Try to load from cache first for instant response
-      const success = loadCollectionsFromCache(dbName);
-      if (success) {
-        setShowCollectionDropdown(true);
-      }
-    }
-
-    let defaultModelType = "";
-    if (value === "FEP631") {
-      defaultModelType = "Sensor";
-    } else if (value === "FEP632") {
-      defaultModelType = "Sensor";
-    } else if (value === "FET632") {
-      defaultModelType = "Transmitter";
-    }
-
-    setModelType(defaultModelType);
-
-    // FIXED: Don't auto-update model number in edit mode
-    if (!isInEditMode) {
-      updateLabelDetails({}, ss, sz, value);
     }
   };
 
@@ -1463,7 +1484,7 @@ const LabelPrint = () => {
     }
   };
 
-  // FIXED: Updated function to respect edit mode and exclude SS/SZ in edit mode
+  // FIXED: Updated function to respect edit mode and exclude hyphens completely
   const updateLabelDetails = (
     selections,
     currentSS,
@@ -1472,12 +1493,14 @@ const LabelPrint = () => {
   ) => {
     // UPDATED: Check both edit mode status and the allow updates flag
     if (isInEditMode && !allowEditModeUpdates) {
-      console.log("Preserving original label details in edit mode (auto-update disabled)");
+      console.log(
+        "Preserving original label details in edit mode (auto-update disabled)"
+      );
       return;
     }
-  
+
     let details = currentBasicCode || "";
-  
+
     // Get the collection order for the current basic code
     const order = COLLECTION_ORDERS[currentBasicCode];
     if (order) {
@@ -1485,28 +1508,22 @@ const LabelPrint = () => {
       order.forEach((orderedName) => {
         const matchingCollection = Object.keys(selections).find(
           (collectionName) =>
-            collectionName.trim().toLowerCase() === orderedName.trim().toLowerCase()
+            collectionName.trim().toLowerCase() ===
+            orderedName.trim().toLowerCase()
         );
-  
+
         if (matchingCollection) {
           const code = selections[matchingCollection];
-          // FIXED: In edit mode, don't add hyphens for empty values
-          if (code === "" || code === null || code === undefined) {
-            if (!isInEditMode) {
-              details += "-";
-            }
-          } else if (code) {
+          // FIXED: Only add codes that have values, skip empty values entirely (no hyphens)
+          if (code && code !== "" && code !== null && code !== undefined) {
             details += code;
           }
-        } else {
-          // If this ordered collection is not in selections, add a dash only if not in edit mode
-          if (!isInEditMode) {
-            details += "-";
-          }
+          // Removed hyphen logic - no hyphens will be added for empty values
         }
+        // Removed the else clause that added hyphens for missing collections
       });
-    } 
-    
+    }
+
     // FIXED: Don't add SS and SZ in edit mode
     if (!isInEditMode) {
       if (currentSS) details += currentSS;
@@ -1632,12 +1649,11 @@ const LabelPrint = () => {
         <Alert severity="info" sx={{ mb: 1 }}>
           <Box
             display="flex"
-        
             justifyContent="space-between"
             alignItems="center"
           >
             <Typography variant="body2">
-              <strong>Edit Mode:</strong>Toggle the button to edit
+              <strong>Edit Mode:</strong> Toggle the button to enable editing
             </Typography>
             <FormControlLabel
               control={
@@ -1647,15 +1663,11 @@ const LabelPrint = () => {
                   color="primary"
                 />
               }
-              
               sx={{ ml: 2 }}
             />
           </Box>
         </Alert>
       )}
-      
-      {/* Performance indicator */}
-     
 
       {/* Form Card */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
@@ -2050,7 +2062,6 @@ const LabelPrint = () => {
                         height: "50px",
                       },
                     }}
-                    
                   />
                 </Paper>
               </Grid>
@@ -2093,4 +2104,4 @@ const LabelPrint = () => {
   );
 };
 
-export default LabelPrint; 
+export default LabelPrint;
