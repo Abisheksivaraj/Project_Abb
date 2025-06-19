@@ -968,7 +968,8 @@ const LabelPrint = () => {
   };
 
   // Ultra-fast collections loading from cache
-  const loadCollectionsFromCache = (dbName) => {
+  // NEW: Async version of loadCollectionsFromCache that returns a Promise
+  const loadCollectionsFromCacheAsync = async (dbName) => {
     setIsLoading(true);
     setError(null);
 
@@ -990,7 +991,9 @@ const LabelPrint = () => {
         return true;
       } else {
         console.log(`No cache found for ${dbName}, falling back to API call`);
-        return fetchCollectionsFromDatabase(dbName);
+        // Call the API version and wait for it
+        const success = await fetchCollectionsFromDatabase(dbName);
+        return success;
       }
     } catch (error) {
       console.error(`Error loading from cache for ${dbName}:`, error);
@@ -1000,10 +1003,11 @@ const LabelPrint = () => {
     }
   };
 
-  // Fallback function for API calls (only used if cache miss)
+  // FIXED: Make fetchCollectionsFromDatabase return a Promise
   const fetchCollectionsFromDatabase = async (dbName) => {
     setIsLoading(true);
     setError(null);
+
     try {
       console.log(`Fetching collections from database: ${dbName}`);
       const response = await api.get(`/collections-by-database/${dbName}`);
@@ -1031,19 +1035,22 @@ const LabelPrint = () => {
           Object.keys(filteredCollections).length,
           "collections"
         );
+        setIsLoading(false);
         return true;
       } else {
         setError("Failed to fetch collections: " + response.data.message);
+        setIsLoading(false);
         return false;
       }
     } catch (error) {
       console.error(`Error fetching collections from ${dbName}:`, error);
       setError(`Error fetching collections: ${error.message}`);
-      return false;
-    } finally {
       setIsLoading(false);
+      return false;
     }
   };
+
+  // Fallback function for API calls (only used if cache miss)
 
   // FIXED: Initialize edit mode - this runs once when component mounts in edit mode
   useEffect(() => {
@@ -1243,53 +1250,115 @@ const LabelPrint = () => {
     isInEditMode,
   ]);
 
+  // ENHANCED: Debug useEffect to monitor dropdown visibility
+  useEffect(() => {
+    console.log("=== DROPDOWN VISIBILITY DEBUG ===");
+    console.log("- basicCode:", basicCode);
+    console.log(
+      "- collectionsWithCodes keys:",
+      Object.keys(collectionsWithCodes)
+    );
+    console.log(
+      "- collectionsWithCodes count:",
+      Object.keys(collectionsWithCodes).length
+    );
+    console.log("- showCollectionDropdown:", showCollectionDropdown);
+    console.log("- isInEditMode:", isInEditMode);
+    console.log("- LabelType:", LabelType);
+    console.log("- isLoading:", isLoading);
+
+    // FIXED: Show dropdown when basic code is set and collections are loaded
+    if (basicCode && Object.keys(collectionsWithCodes).length > 0) {
+      if (!showCollectionDropdown) {
+        console.log(
+          `🔧 FIXING: Setting showCollectionDropdown to true for ${basicCode}`
+        );
+        setShowCollectionDropdown(true);
+      }
+    } else if (!basicCode) {
+      if (showCollectionDropdown) {
+        console.log(
+          "🔧 FIXING: Hiding collection dropdown - no basic code selected"
+        );
+        setShowCollectionDropdown(false);
+      }
+    }
+  }, [
+    basicCode,
+    collectionsWithCodes,
+    showCollectionDropdown,
+    isInEditMode,
+    LabelType,
+    isLoading,
+  ]);
+
   // FIXED: Handle LabelType change with collection loading logic
-  const handleLabelTypeChange = (event) => {
+  // FIXED: Handle LabelType change with proper async collection loading
+  const handleLabelTypeChange = async (event) => {
     const value = event.target.value;
     console.log(`=== LABEL TYPE CHANGE: ${value} ===`);
     setLabelType(value);
 
-    // FIXED: Also set basicCode when LabelType changes (for new mode)
+    // Handle LogoType visibility (this should work for both edit and new mode)
+    const shouldHideLogoType =
+      value === "Sensor(115x35)" || value === "Transmitter";
+    setShowLogoType(!shouldHideLogoType);
+
+    if (shouldHideLogoType) {
+      setLogoType("");
+    }
+
+    // FIXED: Only handle collection loading logic for new mode
     if (!isInEditMode) {
       console.log("Setting basicCode and loading collections for new mode");
-      setBasicCode(value); // Set basicCode to match LabelType
 
-      // Load collections for the selected basic code
+      // Reset states first
+      setCollectionsWithCodes({});
+      setCollectionNames([]);
+      setFilteredCollectionNames([]);
+      setSelectedCollections({});
+      setShowCollectionDropdown(false);
+
+      // Reset all states
+      setPowerSupply("");
+      setPower("");
+      setLinerMaterial("");
+      setProtectionClass("");
+      setTamb("");
+      setFitting("");
+      setElect("");
+      setSize("");
+      setSizeDescription("");
+      setSelectedQmax("");
+      setQmaxDescription("");
+      setSelectedTmedDropdown("");
+
+      // Set basicCode to match LabelType
+      setBasicCode(value);
+
+      // REMOVED: Don't update LabelDetails with LabelType value
+      // setLabelDetails(value);
+
+      // Determine database and load collections
       const dbName = getDatabaseForBasicCode(value);
       setSelectedDatabase(dbName);
 
-      if (dbName) {
-        // Reset collections first
-        setCollectionsWithCodes({});
-        setCollectionNames([]);
-        setFilteredCollectionNames([]);
-        setSelectedCollections({});
-        setShowCollectionDropdown(false);
-
-        // Reset all states
-        setPowerSupply("");
-        setPower("");
-        setLinerMaterial("");
-        setProtectionClass("");
-        setTamb("");
-        setFitting("");
-        setElect("");
-        setSize("");
-        setSizeDescription("");
-        setSelectedQmax("");
-        setQmaxDescription("");
-        setSelectedTmedDropdown("");
-
-        // Load collections from cache
+      if (dbName && value) {
         console.log(
           `Loading collections for LabelType: ${value}, Database: ${dbName}`
         );
-        const success = loadCollectionsFromCache(dbName);
-        if (success) {
-          setShowCollectionDropdown(true);
-          console.log(`✓ Collections loaded successfully for ${value}`);
-        } else {
-          console.log(`✗ Failed to load collections for ${value}`);
+
+        // Load collections and wait for completion
+        try {
+          const success = await loadCollectionsFromCacheAsync(dbName);
+          if (success) {
+            setShowCollectionDropdown(true);
+            console.log(`✓ Collections loaded successfully for ${value}`);
+          } else {
+            console.log(`✗ Failed to load collections for ${value}`);
+          }
+        } catch (error) {
+          console.error(`Error loading collections for ${value}:`, error);
         }
       }
 
@@ -1302,17 +1371,8 @@ const LabelPrint = () => {
       }
       setModelType(defaultModelType);
 
-      // Update label details
+      // Update label details with basic code only (for new entries)
       updateLabelDetails({}, ss, sz, value);
-    }
-
-    // Handle LogoType visibility (this should work for both edit and new mode)
-    const shouldHideLogoType =
-      value === "Sensor(115x35)" || value === "Transmitter";
-    setShowLogoType(!shouldHideLogoType);
-
-    if (shouldHideLogoType) {
-      setLogoType("");
     }
   };
 
@@ -1485,6 +1545,7 @@ const LabelPrint = () => {
   };
 
   // FIXED: Updated function to respect edit mode and exclude hyphens completely
+  // FIXED: Updated function to respect edit mode and exclude LabelType, ss, and sz from model number
   const updateLabelDetails = (
     selections,
     currentSS,
@@ -1499,10 +1560,11 @@ const LabelPrint = () => {
       return;
     }
 
-    let details = currentBasicCode || "";
+    // FIXED: Start with basic code (but don't include LabelType)
+    let details = currentBasicCode || basicCode || "";
 
     // Get the collection order for the current basic code
-    const order = COLLECTION_ORDERS[currentBasicCode];
+    const order = COLLECTION_ORDERS[currentBasicCode || basicCode];
     if (order) {
       // Process collections in the specified order
       order.forEach((orderedName) => {
@@ -1518,18 +1580,16 @@ const LabelPrint = () => {
           if (code && code !== "" && code !== null && code !== undefined) {
             details += code;
           }
-          // Removed hyphen logic - no hyphens will be added for empty values
         }
-        // Removed the else clause that added hyphens for missing collections
       });
     }
 
-    // FIXED: Don't add SS and SZ in edit mode
-    if (!isInEditMode) {
-      if (currentSS) details += currentSS;
-      if (currentSZ) details += currentSZ;
-    }
+    // REMOVED: Don't add SS and SZ to the model number
+    // The following lines are commented out:
+    // if (currentSS) details += currentSS;
+    // if (currentSZ) details += currentSZ;
 
+    // FIXED: Always update LabelDetails, even if just basic code
     if (details) {
       setAllSelectionsDone(true);
       setLabelDetails(details);
@@ -1538,6 +1598,8 @@ const LabelPrint = () => {
       setLabelDetails("");
     }
   };
+
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -1610,6 +1672,75 @@ const LabelPrint = () => {
   const handleDevVersionChange = (event) => {
     setDevVersion(event.target.value);
   };
+
+  // FIXED: Async version of handleBasicCodeChange
+  const handleBasicCodeChange = async (event) => {
+    const value = event.target.value;
+    setBasicCode(value);
+
+    // FIXED: Update LabelDetails immediately with the basic code
+    if (!isInEditMode) {
+      setLabelDetails(value);
+    }
+
+    // Reset collections and selections first
+    setCollectionsWithCodes({});
+    setCollectionNames([]);
+    setFilteredCollectionNames([]);
+    setSelectedCollections({});
+    setShowCollectionDropdown(false);
+
+    // Reset powerSupply when basic code changes
+    setPowerSupply("");
+    setProtectionClass("");
+    setTamb("");
+    setSize("");
+    setSelectedQmax("");
+    setSelectedTmedDropdown("");
+
+    // Determine which database to use based on the basic code
+    const dbName = getDatabaseForBasicCode(value);
+    setSelectedDatabase(dbName);
+
+    if (dbName && value) {
+      try {
+        // FIXED: Use async version and wait for completion
+        const success = await loadCollectionsFromCacheAsync(dbName);
+        if (success) {
+          setShowCollectionDropdown(true);
+          console.log(`✓ Collections loaded and dropdown shown for ${value}`);
+        } else {
+          console.log(`✗ Failed to load collections for ${value}`);
+        }
+      } catch (error) {
+        console.error(`Error loading collections for ${value}:`, error);
+      }
+    }
+
+    let defaultModelType = "";
+    if (value === "FEP631") {
+      defaultModelType = "Sensor";
+    } else if (value === "FEP632") {
+      defaultModelType = "Sensor";
+    } else if (value === "FET632") {
+      defaultModelType = "Transmitter";
+    }
+
+    setModelType(defaultModelType);
+    updateLabelDetails({}, ss, sz, value);
+  };
+
+  // Filter collections based on basicCode and apply ordering
+  useEffect(() => {
+    // FIXED: Show dropdown when basic code is set and collections are loaded
+    if (basicCode && Object.keys(collectionsWithCodes).length > 0) {
+      setShowCollectionDropdown(true);
+      console.log(`✓ Showing collection dropdown for basic code: ${basicCode}`);
+    } else if (!basicCode) {
+      setShowCollectionDropdown(false);
+      console.log("✗ Hiding collection dropdown - no basic code selected");
+    }
+  }, [basicCode, collectionsWithCodes]);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -1727,13 +1858,11 @@ const LabelPrint = () => {
                       />
                     </Grid>
                     <Grid item>
-                      <FormControl
-                        sx={{ width: "140px" }}
-                        size="small"
-                        required
-                      >
+                      <FormControl variant="outlined" required>
                         <InputLabel>Label Type</InputLabel>
                         <Select
+                          sx={{ width: "150px" }}
+                          label="Label Type"
                           value={LabelType}
                           onChange={handleLabelTypeChange}
                           IconComponent={() => null}
@@ -1743,27 +1872,38 @@ const LabelPrint = () => {
                             </InputAdornment>
                           }
                         >
-                          <MenuItem value="" sx={{ justifyContent: "center" }}>
-                            Select
+                          <MenuItem value="">Select</MenuItem>
+                          <MenuItem value="Sensor(96x98)">
+                            Sensor(96x98)
                           </MenuItem>
-                          <MenuItem
-                            value="FEP631"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            FEP631
+                          <MenuItem value="Sensor(115x35)">
+                            Sensor(115x35)
                           </MenuItem>
-                          <MenuItem
-                            value="FEP632"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            FEP632
-                          </MenuItem>
-                          <MenuItem
-                            value="FET632"
-                            sx={{ justifyContent: "center" }}
-                          >
-                            FET632
-                          </MenuItem>
+                          <MenuItem value="Sensor">Sensor</MenuItem>
+                          <MenuItem value="Transmitter">Transmitter</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item>
+                      <FormControl variant="outlined">
+                        <InputLabel>Basic Code</InputLabel>
+                        <Select
+                          sx={{ width: "150px" }}
+                          label="Basic Code"
+                          value={basicCode}
+                          onChange={handleBasicCodeChange}
+                          IconComponent={() => null}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <CodeIcon color="action" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="">Select</MenuItem>
+                          <MenuItem value="FEP631">FEP631 </MenuItem>
+                          <MenuItem value="FEP632">FEP632</MenuItem>
+                          <MenuItem value="FET632">FET632</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
