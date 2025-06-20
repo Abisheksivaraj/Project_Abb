@@ -364,6 +364,7 @@ const parseModelNumberForAllCollections = (
 };
 
 // Helper function to update special fields from parsed collections
+// FIXED: Helper function to update special fields from parsed collections - also needs specific matching
 const updateSpecialFieldsFromCollections = (
   parsedCollections,
   collectionsWithCodes,
@@ -377,10 +378,16 @@ const updateSpecialFieldsFromCollections = (
     const trimmedName = collectionName.trim();
     const lowerName = trimmedName.toLowerCase();
 
-    // Field type detection
+    // Field type detection with specific matching
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
-    const isProtectionClass = lowerName.includes("protection");
+    
+    // FIXED: More specific matching for protection class
+    const isProtectionClass = 
+      (lowerName.includes("protection class") && 
+       (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
+      trimmedName === "Protection Class Transmitter / Protection Class Sensor";
+    
     const isTamb = lowerName.includes("temperature");
     const isSize =
       trimmedName === "Nominal Diameter" ||
@@ -390,7 +397,12 @@ const updateSpecialFieldsFromCollections = (
       lowerName.includes("power supply line frequency");
     const isLiner =
       lowerName.includes("liner") && lowerName.includes("material");
-    const isProcessConnection = lowerName.includes("process connection");
+    
+    // FIXED: More specific matching for process connection
+    const isProcessConnection = 
+      (lowerName.includes("process connection") && !lowerName.includes("material")) ||
+      trimmedName === "Process connection";
+    
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
 
@@ -422,6 +434,103 @@ const updateSpecialFieldsFromCollections = (
   });
 
   console.log("=== SPECIAL FIELDS UPDATE COMPLETE ===");
+};
+
+// FIXED: Handle collection code selection - more specific protection class matching
+const handleCollectionCodeChange = (collectionName, codeValue) => {
+  console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
+  const trimmedName = collectionName.trim();
+  const lowerName = trimmedName.toLowerCase();
+
+  // Update special field states with more specific matching
+  const isPowerSupply =
+    lowerName.includes("power") && lowerName.includes("supply");
+
+  // FIXED: More specific matching for protection class
+  // Only match "Protection Class Transmitter / Protection Class Sensor" 
+  // but NOT "Other Explosion Protection Certifications and other Approvals"
+  const isProtectionClass = 
+    (lowerName.includes("protection class") && 
+     (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
+    trimmedName === "Protection Class Transmitter / Protection Class Sensor";
+
+  const isTamb = lowerName.includes("temperature");
+  const isSize =
+    trimmedName === "Nominal Diameter" ||
+    lowerName.includes("nominal diameter");
+  const isPower =
+    trimmedName === "Power Supply Line Frequency" ||
+    lowerName.includes("power supply line frequency");
+  const isLiner =
+    lowerName.includes("liner") && lowerName.includes("material");
+
+  // More specific matching for process connection
+  // Only match "Process connection" but NOT "Process connection material"
+  const isProcessConnection =
+    (lowerName.includes("process connection") &&
+      !lowerName.includes("material")) ||
+    trimmedName === "Process connection";
+
+  const isElect =
+    lowerName.includes("measuring") && lowerName.includes("electrode");
+
+  if (
+    isPowerSupply ||
+    isPower ||
+    isProtectionClass ||
+    isTamb ||
+    isSize ||
+    isLiner ||
+    isProcessConnection ||
+    isElect
+  ) {
+    if (codeValue === "") {
+      if (isPowerSupply) setPowerSupply("");
+      else if (isProtectionClass) setProtectionClass(""); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
+      else if (isTamb) setTamb("");
+      else if (isSize) {
+        setSize("");
+        setSizeDescription("");
+      } else if (isLiner) setLinerMaterial("");
+      else if (isProcessConnection) setFitting("");
+      else if (isElect) setElect("");
+    } else {
+      const codeItems = collectionsWithCodes[collectionName] || [];
+      const matchingItem = codeItems.find((item) => item.code === codeValue);
+
+      if (isSize) {
+        setSize(codeValue);
+        setSizeDescription(matchingItem?.description || "");
+      } else {
+        const description = matchingItem?.description || codeValue;
+        if (isPowerSupply) setPowerSupply(description);
+        else if (isProtectionClass) setProtectionClass(description); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
+        else if (isTamb) setTamb(description);
+        else if (isLiner) setLinerMaterial(description);
+        else if (isProcessConnection) setFitting(description);
+        else if (isElect) setElect(description);
+        else if (isPower) setPower(description);
+      }
+    }
+  }
+
+  // Extract code if it includes "||"
+  let code = codeValue;
+  if (codeValue && codeValue.includes("||")) {
+    code = codeValue.split("||")[0];
+  }
+
+  const updatedCollections = {
+    ...selectedCollections,
+    [collectionName]: code,
+  };
+
+  setSelectedCollections(updatedCollections);
+
+  // UPDATED: Use the new logic for edit mode updates
+  if (!isInEditMode || allowEditModeUpdates) {
+    updateLabelDetails(updatedCollections, ss, sz, basicCode);
+  }
 };
 
 // Fast Loading Dropdown Component with Virtual Scrolling
@@ -1452,16 +1561,25 @@ const LabelPrint = () => {
   }, [basicCode, collectionNames, isInEditMode]);
 
   // FIXED: Handle collection code selection - don't auto-update model number in edit mode
+  // FIXED: Handle collection code selection - more specific process connection matching
+  // FIXED: Handle collection code selection - more specific protection class matching
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
     const trimmedName = collectionName.trim();
     const lowerName = trimmedName.toLowerCase();
 
-    // Update special field states
+    // Update special field states with more specific matching
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
 
-    const isProtectionClass = lowerName.includes("protection");
+    // FIXED: More specific matching for protection class
+    // Only match "Protection Class Transmitter / Protection Class Sensor"
+    // but NOT "Other Explosion Protection Certifications and other Approvals"
+    const isProtectionClass =
+      (lowerName.includes("protection class") &&
+        (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
+      trimmedName === "Protection Class Transmitter / Protection Class Sensor";
+
     const isTamb = lowerName.includes("temperature");
     const isSize =
       trimmedName === "Nominal Diameter" ||
@@ -1471,7 +1589,14 @@ const LabelPrint = () => {
       lowerName.includes("power supply line frequency");
     const isLiner =
       lowerName.includes("liner") && lowerName.includes("material");
-    const isProcessConnection = lowerName.includes("process connection");
+
+    // More specific matching for process connection
+    // Only match "Process connection" but NOT "Process connection material"
+    const isProcessConnection =
+      (lowerName.includes("process connection") &&
+        !lowerName.includes("material")) ||
+      trimmedName === "Process connection";
+
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
 
@@ -1487,7 +1612,10 @@ const LabelPrint = () => {
     ) {
       if (codeValue === "") {
         if (isPowerSupply) setPowerSupply("");
-        else if (isProtectionClass) setProtectionClass("");
+        else if (isProtectionClass)
+          setProtectionClass(
+            ""
+          ); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
         else if (isTamb) setTamb("");
         else if (isSize) {
           setSize("");
@@ -1505,7 +1633,10 @@ const LabelPrint = () => {
         } else {
           const description = matchingItem?.description || codeValue;
           if (isPowerSupply) setPowerSupply(description);
-          else if (isProtectionClass) setProtectionClass(description);
+          else if (isProtectionClass)
+            setProtectionClass(
+              description
+            ); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
           else if (isTamb) setTamb(description);
           else if (isLiner) setLinerMaterial(description);
           else if (isProcessConnection) setFitting(description);
@@ -1560,7 +1691,6 @@ const LabelPrint = () => {
       return;
     }
 
-    // FIXED: Start with basic code (but don't include LabelType)
     let details = currentBasicCode || basicCode || "";
 
     // Get the collection order for the current basic code
@@ -1598,8 +1728,6 @@ const LabelPrint = () => {
       setLabelDetails("");
     }
   };
-
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();

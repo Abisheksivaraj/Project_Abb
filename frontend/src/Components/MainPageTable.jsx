@@ -854,9 +854,6 @@ const MainPageTable = () => {
     showAlert("Print dialog opened successfully");
   };
 
-  // Rest of your existing component code remains the same...
-
-  // Prepare data for CSV export
   const csvData = filteredData.map((row, index) => {
     const csvRow = {};
     if (visibleColumns.sNo) csvRow["S No"] = index + 1;
@@ -883,7 +880,7 @@ const MainPageTable = () => {
       const ss = label?.ss;
       const modelNumber =
         label?.LabelDetails || "FEP631M1A2030A1T1B1D0aerdkejygdukhrweu";
-        
+
       const power = label?.powerSupply;
       const qmax = label?.selectedQmax;
       const tmed = label?.selectedTmedDropdown;
@@ -955,15 +952,15 @@ const MainPageTable = () => {
             <div>
               <div>FM17US0062X</div>
               <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
-              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
+              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+              <div>CL I, ZN 2, AEx ec IIC T6...T1</div>
               <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
               <br />
               <div>FM17CA0033X</div>
               <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
               <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
-              <div>CL I, ZN 21, Ex tb IIIC T80°C...T165°C Db</div>
+              <div>Ex tb IIIC T80°C...T165°C Db</div>
               <div class="h-[2px]"></div>
               <div>See handbook for temperature class information</div>
             </div>
@@ -980,13 +977,13 @@ const MainPageTable = () => {
               <div>NI:CL I,Div2,GPS ABCD T4</div>
               <div>DIP:CL II,III,Div2,GPS EFG T4</div>
               <div>CL I, ZN 2, AEx ec IIC T4</div>
-              <div> ZN 21, AEx tb IIIC T180°C</div>
+              <div> ZN 21, AEx tb IIIC T80°C</div>
               <br />
               <div>FM17CA0033X</div>
               <div>NI:CL I,Div2,GPS ABCD T4</div>
               <div>DIP:CL II,III,Div2,GPS EFG T4</div>
               <div>Ex ec IIC T4 Gc</div>
-              <div>Ex tb IIIC T180°C Db</div>
+              <div>Ex tb IIIC T80°C Db</div>
               <div>See handbook for temperature class information</div>
             </div>
           </div>`;
@@ -1016,13 +1013,14 @@ const MainPageTable = () => {
               <div class="text-3px -mt-2 font-bold">
                 <div>FM17US0062X</div>
                 <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-                <div>DIP: CL III, Div 2, GPS EFG T6...T3B</div>
+                <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
                 <div>See handbook for temperature class information</div>
               </div>
             </div>
-            <div class="mr-6 text-3px font-bold -mt-4  -ml-10">
-              <div>CL I, ZN 2, AEx qc IIC T6...T1</div>
-              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+            <div class="mr-20 text-3px font-bold -mt-4 ">
+            <div>FM17CA0033X</div>
+              <div>NI: CL I, ZN 2, AEx qc IIC T6...T1</div>
+              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
               
             </div>
           </div>`;
@@ -1040,8 +1038,9 @@ const MainPageTable = () => {
               </div>
             </div>
             <div class="text-3px font-bold -mt-4  -ml-10">
-              <div>CL I, ZN 2, AEx ec IIC T4</div>
-              <div>ZN 21, AEx tb IIIC T180°C</div>
+             <div>FM17CA0033X</div>
+              <div>NI:CL I,Div2,GPS ABCD T4</div>
+                <div>DIP:CL II,III,Div2,GPS EFG T4</div>
              
             </div>
           </div>`;
@@ -1138,10 +1137,10 @@ const MainPageTable = () => {
                         )}</div>
                         <div class="leading-tight">${modelNumber.substring(
                           58,
-                          97
+                          90
                         )}</div>
                         <div class="leading-tight">${modelNumber.substring(
-                          97,
+                          90,
                           110
                         )}</div>
                     </div>
@@ -1379,30 +1378,30 @@ const MainPageTable = () => {
                     <!-- Right Section with no gaps between headings and values -->
 <div class="text-[6px] w-[60%] leading-[11px] p-1 font-bold">
   <p>${power}</p>
-  <p>Protection class:${protection}</p>
+  <p>Protection class: ${protection}</p>
   <p>Tamb: ${tamb}</p>
   
   <!-- Using table display for perfect alignment without gaps -->
   <div style="display: table; width: 100%;">
     <div style="display: table-row;">
-      <div style="display: table-cell; width: 50%;">Size:${size}</div>
-      <div style="display: table-cell; width: 50%;">Fitting:${fitting}</div>
+      <div style="display: table-cell; width: 50%;">Size: ${size}</div>
+      <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
     </div>
     <div style="display: table-row;">
       <div style="display: table-cell;">Qmax:${qmax}</div>
-      <div style="display: table-cell;">Fexc:${fexc}</div>
+      <div style="display: table-cell;">Fexc: ${fexc}</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Liner mat:${liner}</div>
-      <div style="display: table-cell;">Elect:${elect}</div>
+      <div style="display: table-cell;">Liner mat: ${liner}</div>
+      <div style="display: table-cell;">Elect: ${elect}</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Tmed:${tmed}</div>
+      <div style="display: table-cell;">Tmed: ${tmed}</div>
       <div style="display: table-cell;">PED:</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Ss:${ss}</div>
-      <div style="display: table-cell;">Sz:${sz}</div>
+      <div style="display: table-cell;">Ss: ${ss}</div>
+      <div style="display: table-cell;">Sz: ${sz}</div>
     </div>
   </div>
 </div>
@@ -1511,7 +1510,7 @@ const MainPageTable = () => {
                   <div>OPTIONS 1 ></div>
                   <div>OPTIONS 2 ></div>
                   <div class="h-[5px]"></div>
-                  <div>Dev. version:${deviceVersion}</div>
+                  <div>Dev. version: ${deviceVersion}</div>
                   <div>Update:</div>
                 </div>
         
@@ -1529,24 +1528,24 @@ const MainPageTable = () => {
   <!-- Using table display for perfect alignment without gaps -->
   <div style="display: table; width: 100%;">
     <div style="display: table-row;">
-      <div style="display: table-cell; width: 50%;">Size:${size}</div>
-      <div style="display: table-cell; width: 50%;">Fitting:${fitting}</div>
+      <div style="display: table-cell; width: 50%;">Size: ${size}</div>
+      <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Qmax:${qmax}</div>
-      <div style="display: table-cell;">Fexc:${fexc}</div>
+      <div style="display: table-cell;">Qmax: ${qmax}</div>
+      <div style="display: table-cell;">Fexc: ${fexc}</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Liner mat:${liner}</div>
-      <div style="display: table-cell;">Elect:${elect}</div>
+      <div style="display: table-cell;">Liner mat: ${liner}</div>
+      <div style="display: table-cell;">Elect: ${elect}</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Tmed:${tmed}</div>
+      <div style="display: table-cell;">Tmed: ${tmed}</div>
       <div style="display: table-cell;">PED:</div>
     </div>
     <div style="display: table-row;">
-      <div style="display: table-cell;">Ss:${ss}</div>
-      <div style="display: table-cell;">Sz:${sz}</div>
+      <div style="display: table-cell;">Ss: ${ss}</div>
+      <div style="display: table-cell;">Sz: ${sz}</div>
     </div>
   </div>
 </div>
