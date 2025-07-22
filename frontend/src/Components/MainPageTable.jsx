@@ -627,7 +627,7 @@ const MainPageTable = () => {
           }
           
           body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family:sans-serif;
             font-size: 11px;
             line-height: 1.4;
             color: #1f2937;
@@ -920,7 +920,7 @@ const MainPageTable = () => {
         if (logoType === "logo_1") {
           middleSectionContent = `
           <!-- Black Middle Section for logo 1 (96x98) with consistent spacing -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[7px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
             <div class="mr-2">
               <!-- Empty space where logo would be -->
               <div class="h-[7rem] w-[9rem]"></div>
@@ -945,7 +945,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[6px] border-b-2 border-black w-full p-1 h-[10rem]">
+          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -968,7 +968,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[6px] border-b-2 border-black w-full p-1">
+          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
             <div class="mr-2">
               <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
             </div>
@@ -991,7 +991,7 @@ const MainPageTable = () => {
           middleSectionContent = `
           <!-- Default Middle Section (96x98) -->
           <div class="flex-1 border-b-2 border-black w-full p-1">
-            <div class="text-[7px] font-semibold">
+            <div class="text-[8px] font-semibold">
               <div>No certification information available</div>
               <div>Please contact ABB support for details</div>
             </div>
@@ -1007,7 +1007,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_2") {
           middleSectionContent = `
           <!-- Middle Section for logo 2 (sensor) -->
-          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[6px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -1027,7 +1027,7 @@ const MainPageTable = () => {
         } else if (logoType === "logo_3") {
           middleSectionContent = `
           <!-- Middle Section for logo 3 (sensor) -->
-         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[6px] border-b-2 h-[3rem] border-black w-full p-1">
+         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
             <div class="flex items-center">
               <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
               <div class="text-3px -mt-2 font-bold">
@@ -1048,7 +1048,7 @@ const MainPageTable = () => {
           middleSectionContent = `
           <!-- Default Middle Section (sensor) -->
           <div class="flex-1 border-b-2 border-black w-full p-1">
-            <div class="text-[7px] font-semibold">
+            <div class="text-[8px] font-semibold">
               <div>No certification information available</div>
               <div>Please contact ABB support for details</div>
             </div>
@@ -1078,7 +1078,7 @@ const MainPageTable = () => {
             body {
                 margin: 0;
                 padding: 0;
-                font-family: Arial, sans-serif;
+                font-family:sans-serif;
                 font-size: 7px;
                 line-height: 1.1;
                 -webkit-print-color-adjust: exact;
@@ -1121,26 +1121,26 @@ const MainPageTable = () => {
             <!-- Main Content -->
             <div class="flex w-full font-semibold border-black flex-grow">
                 <!-- Left Section -->
-                <div class="w-2/5 font-bold flex flex-col text-[7px] border-r-2 border-black p-1 relative">
+                <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
                     <div class="mb-1">Serial No: ${serialNumber}</div>
                     
                     <div class="mb-2">
                         <div class="mb-0">
                             <span class="font-bold">Model number: </span>${modelNumber.substring(
                               0,
-                              25
+                              20
                             )}
                         </div>
                         <div class="leading-tight">${modelNumber.substring(
-                          25,
-                          58
+                          20,
+                          50
                         )}</div>
                         <div class="leading-tight">${modelNumber.substring(
-                          58,
-                          90
+                          50,
+                          79
                         )}</div>
                         <div class="leading-tight">${modelNumber.substring(
-                          90,
+                          79,
                           110
                         )}</div>
                     </div>
@@ -1150,19 +1150,19 @@ const MainPageTable = () => {
                         <div>Update:</div>
                     </div>
                     
-                    <div class="absolute right-1 bottom-1 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                    <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
                         <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
                     </div>
                 </div>
     
                 <!-- Right Section -->
-                <div class="text-[7px] w-3/5 p-1 font-bold">
+                <div class="text-[8px] w-3/5 p-1 font-bold">
                     <div class="mb-1">${power}</div>
                     <div class="mb-1">Protection class: IP67/IP67</div>
                     <div class="mb-2">Tamb: ${tamb}</div>
                     
                     <!-- Specifications Grid -->
-                    <div class="grid grid-cols-2 gap-x-2 text-[7px] leading-tight">
+                    <div class="grid grid-cols-2 gap-x-2 mt-[-5px] text-[8px] leading-tight">
                         <div>Size: ${size}</div>
                         <div>Fitting: ${fitting}</div>
                         
@@ -1199,7 +1199,7 @@ const MainPageTable = () => {
             body {
                 margin: 0;
                 padding: 0;
-                font-family: Arial, sans-serif;
+                font-family:sans-serif;
                 font-size: 7px;
                 line-height: 1.1;
                 -webkit-print-color-adjust: exact;
@@ -1242,19 +1242,23 @@ const MainPageTable = () => {
             <!-- Main Content -->
             <div class="flex w-full font-semibold border-black flex-grow">
                 <!-- Left Section -->
-                <div class="w-2/5 font-bold flex flex-col text-[7px] border-r-2 border-black p-1 relative">
+                <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
                     <div class="mb-1">Serial No: ${serialNumber}</div>
                     
                     <div class="mb-2">
                         <div class="mb-0">
                             <span class="font-bold">Model number: </span>${modelNumber.substring(
                               0,
-                              23
+                              20
                             )}
                         </div>
                         <div class="leading-tight">${modelNumber.substring(
-                          25,
-                          70
+                          20,
+                          57
+                        )}</div>
+                        <div class="leading-tight">${modelNumber.substring(
+                          57,
+                          90
                         )}</div>
                     </div>
                     
@@ -1263,19 +1267,19 @@ const MainPageTable = () => {
                         <div>Update:</div>
                     </div>
                     
-                    <div class="absolute right-1 bottom-1 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                    <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
                         <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
                     </div>
                 </div>
     
                 <!-- Right Section -->
-                <div class="text-[7px] w-3/5 p-1 font-bold">
+                <div class="text-[8px] w-3/5 p-1 font-bold">
                     <div class="mb-1">${power}</div>
                     <div class="mb-1">Protection class: IP67/IP67</div>
                     <div class="mb-2">Tamb: ${tamb}</div>
                     
                     <!-- Specifications Grid -->
-                    <div class="grid grid-cols-2 gap-x-2 text-[7px] leading-tight">
+                    <div class="grid grid-cols-2 gap-x-1 mt-[-5px] text-[8px] leading-tight">
                         <div>Size:</div>
                         <div>Fitting:</div>
                         
@@ -1355,18 +1359,18 @@ const MainPageTable = () => {
       <!-- Upper Section -->
       <div class="flex w-full border-b-2 h-[5.8rem] border-black">
         <!-- Left Section -->
-        <div class="w-[50%] text-[6px] border-r-2 border-black p-1 relative font-bold">
+        <div class="w-[50%] text-[8px] border-r-2 border-black p-1 relative font-bold">
           <div>Serial No: ${serialNumber}</div>
           <div class="h-[5px]"></div>
           <div style="margin-top: 1px;">
             <span class="font-bold">Model number: </span>${modelNumber.substring(
               0,
-              33
+              26
             )}
           </div>
-          <div style="margin-top: 0px;">${modelNumber.substring(33, 73)}</div>
-          <div style="margin-top: 0px;">${modelNumber.substring(73, 120)}</div>
-        
+          <div style="margin-top: 0px;">${modelNumber.substring(26, 60)}</div>
+          <div style="margin-top: 0px;">${modelNumber.substring(60, 90)}</div>
+        <div style="margin-top: 0px;">${modelNumber.substring(90, 120)}</div>
           <div class="h-[2px]"></div>
           <div class="mt-2">Dev. version: ${deviceVersion}</div>
           <!-- QR Code positioned with absolute positioning -->
@@ -1376,7 +1380,7 @@ const MainPageTable = () => {
         </div>
   
                     <!-- Right Section with no gaps between headings and values -->
-<div class="text-[6px] w-[60%] leading-[11px] p-1 font-bold">
+<div class="text-[8px] w-[60%] leading-[11px] p-1 font-bold">
   <p>${power}</p>
   <p>Protection class: ${protection}</p>
   <p>Tamb: ${tamb}</p>
@@ -1413,11 +1417,11 @@ const MainPageTable = () => {
    
   
       <!-- Footer -->
-       <div class="flex font-bold justify-between items-start text-[7px] w-full px-2">
+       <div class="flex font-bold justify-between items-start text-[8px] w-full px-2">
                 <div>
                   <div>Made in:</div>
                   <div>ABB India Limited, Bangalore</div>
-                  <div class="text-center ml-15">${date}</div>
+                  <div class="text-center ml-15 -mt-1">${date}</div>
                 </div>
                 <div class="mt-1">
                   <div>Designed by ABB AG</div>
@@ -1457,7 +1461,7 @@ const MainPageTable = () => {
                 justify-content: center;
                 align-items: center;
                 min-height: 100vh;
-                font-family: Arial;
+                font-family:sans-serif;
               }
               * {
                 color: black;
@@ -1476,7 +1480,7 @@ const MainPageTable = () => {
                 <div class="h-full flex items-center">
                   <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
                 </div>
-                <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
+                <div class="text-[20px] font-bold text-center flex-1 leading-none font-[sans-serif]">
                   ProcessMaster 630
                 </div>
               </div>
@@ -1485,25 +1489,25 @@ const MainPageTable = () => {
               <div class="flex w-full border-b-2 font-semibold border-black  h-[7.6rem] relative">
                 
                 <!-- Left Section -->
-                <div class="w-[40%] font-bold text-[6px] border-r-2 border-black p-1">
+                <div class="w-[40%] font-bold text-[8px] border-r-2 border-black p-1">
                   <div>Serial No: ${serialNumber}</div>
                   <div style="margin-top: 4px;">
                     <span class="font-bold">Model number: </span>${modelNumber.substring(
                       0,
-                      23
+                      15
                     )}
                   </div>
                   <div style="margin-top: 0px;">${modelNumber.substring(
-                    23,
-                    55
+                    15,
+                    41
                   )}</div>
                   <div style="margin-top: 0px;">${modelNumber.substring(
-                    55,
-                    88
+                    41,
+                    65
                   )}</div>
                   <div style="margin-top: 0px;">${modelNumber.substring(
-                    88,
-                    110
+                    65,
+                   90
                   )}</div>
         
                   <div class="h-[5px]"></div>
@@ -1520,7 +1524,7 @@ const MainPageTable = () => {
                 </div>
               
                 <!-- Right Section with no gaps between headings and values -->
-<div class="text-[6px] w-[60%] leading-[0.9rem] p-1 font-bold">
+<div class="text-[8px] w-[60%] leading-[0.9rem] p-1 font-bold">
   <p>${power}</p>
   <p>Protection class: IP67/IP67</p>
   <p>Tamb: ${tamb}</p>
@@ -1555,19 +1559,19 @@ const MainPageTable = () => {
               ${middleSectionContent}
         
               <!-- Footer -->
-              <div class="flex font-semibold justify-between items-start mt-1 text-[7px] px-2">
+              <div class="flex font-semibold justify-between items-start mt-1 text-[8px] px-2">
                 <div>
                   <div>Made in:</div>
                   <div>ABB India Limited, Bangalore</div>
                   <div class="text-center">${date}</div>
                 </div>
-                                  <div class="-mr-10">
+                                  <div class="">
                   <div class="w-full">Designed by ABB AG</div>
                   <div>Goettingen, Germany</div>
                 </div>
                 <div class="flex mr-6 mt-3">
-                  <div class="w-30 h-10">
-                    <img src=${dispose} alt="Dispose Icon" class="w-30 h-10" />
+                  <div class="w-25 h-8 mt-[-15px] mr-[-25px]">
+                    <img src=${dispose} alt="Dispose Icon" class="w-25 h-8" />
                   </div>
                 </div>
               </div>

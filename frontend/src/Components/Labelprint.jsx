@@ -150,43 +150,7 @@ const COLLECTION_ORDERS = {
 };
 
 // Static data for Tamb dropdown
-const TMED_OPTIONS = [
-  {
-    code: "130°C(266°F)",
-    description: "PTFE, PFA, ETFE",
-  },
-  {
-    code: "80°C (194°F/176°F)",
-    description: "hard rubber",
-  },
-  {
-    code: "60°C(140°F)",
-    description: "soft rubber",
-  },
-];
 
-// Static data for Qmax dropdown
-const QMAX_OPTIONS = [
-  { code: "15", description: "100 l/min" },
-  { code: "20", description: "150 l/min" },
-  { code: "25", description: "200 l/min" },
-  { code: "32", description: "400 l/min" },
-  { code: "40", description: "600 l/min" },
-  { code: "50", description: "60 m³/h" },
-  { code: "65", description: "120 m³/h" },
-  { code: "80", description: "180 m³/h" },
-  { code: "100", description: "240 m³/h" },
-  { code: "125", description: "420 m³/h" },
-  { code: "150", description: "600 m³/h" },
-  { code: "200", description: "1080 m³/h" },
-  { code: "250", description: "1800 m³/h" },
-  { code: "300", description: "2400 m³/h" },
-  { code: "350", description: "3300 m³/h" },
-  { code: "400", description: "4500 m³/h" },
-  { code: "450", description: "6000 m³/h" },
-  { code: "500", description: "6600 m³/h" },
-  { code: "600", description: "9600 m³/h" },
-];
 
 const DEV_VERSION_OPTIONS = [
   { value: "01.14.00", label: "01.14.00" },
@@ -381,13 +345,13 @@ const updateSpecialFieldsFromCollections = (
     // Field type detection with specific matching
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
-    
+
     // FIXED: More specific matching for protection class
-    const isProtectionClass = 
-      (lowerName.includes("protection class") && 
-       (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
+    const isProtectionClass =
+      (lowerName.includes("protection class") &&
+        (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
       trimmedName === "Protection Class Transmitter / Protection Class Sensor";
-    
+
     const isTamb = lowerName.includes("temperature");
     const isSize =
       trimmedName === "Nominal Diameter" ||
@@ -397,12 +361,13 @@ const updateSpecialFieldsFromCollections = (
       lowerName.includes("power supply line frequency");
     const isLiner =
       lowerName.includes("liner") && lowerName.includes("material");
-    
+
     // FIXED: More specific matching for process connection
-    const isProcessConnection = 
-      (lowerName.includes("process connection") && !lowerName.includes("material")) ||
+    const isProcessConnection =
+      (lowerName.includes("process connection") &&
+        !lowerName.includes("material")) ||
       trimmedName === "Process connection";
-    
+
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
 
@@ -437,101 +402,6 @@ const updateSpecialFieldsFromCollections = (
 };
 
 // FIXED: Handle collection code selection - more specific protection class matching
-const handleCollectionCodeChange = (collectionName, codeValue) => {
-  console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
-  const trimmedName = collectionName.trim();
-  const lowerName = trimmedName.toLowerCase();
-
-  // Update special field states with more specific matching
-  const isPowerSupply =
-    lowerName.includes("power") && lowerName.includes("supply");
-
-  // FIXED: More specific matching for protection class
-  // Only match "Protection Class Transmitter / Protection Class Sensor" 
-  // but NOT "Other Explosion Protection Certifications and other Approvals"
-  const isProtectionClass = 
-    (lowerName.includes("protection class") && 
-     (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
-    trimmedName === "Protection Class Transmitter / Protection Class Sensor";
-
-  const isTamb = lowerName.includes("temperature");
-  const isSize =
-    trimmedName === "Nominal Diameter" ||
-    lowerName.includes("nominal diameter");
-  const isPower =
-    trimmedName === "Power Supply Line Frequency" ||
-    lowerName.includes("power supply line frequency");
-  const isLiner =
-    lowerName.includes("liner") && lowerName.includes("material");
-
-  // More specific matching for process connection
-  // Only match "Process connection" but NOT "Process connection material"
-  const isProcessConnection =
-    (lowerName.includes("process connection") &&
-      !lowerName.includes("material")) ||
-    trimmedName === "Process connection";
-
-  const isElect =
-    lowerName.includes("measuring") && lowerName.includes("electrode");
-
-  if (
-    isPowerSupply ||
-    isPower ||
-    isProtectionClass ||
-    isTamb ||
-    isSize ||
-    isLiner ||
-    isProcessConnection ||
-    isElect
-  ) {
-    if (codeValue === "") {
-      if (isPowerSupply) setPowerSupply("");
-      else if (isProtectionClass) setProtectionClass(""); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
-      else if (isTamb) setTamb("");
-      else if (isSize) {
-        setSize("");
-        setSizeDescription("");
-      } else if (isLiner) setLinerMaterial("");
-      else if (isProcessConnection) setFitting("");
-      else if (isElect) setElect("");
-    } else {
-      const codeItems = collectionsWithCodes[collectionName] || [];
-      const matchingItem = codeItems.find((item) => item.code === codeValue);
-
-      if (isSize) {
-        setSize(codeValue);
-        setSizeDescription(matchingItem?.description || "");
-      } else {
-        const description = matchingItem?.description || codeValue;
-        if (isPowerSupply) setPowerSupply(description);
-        else if (isProtectionClass) setProtectionClass(description); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
-        else if (isTamb) setTamb(description);
-        else if (isLiner) setLinerMaterial(description);
-        else if (isProcessConnection) setFitting(description);
-        else if (isElect) setElect(description);
-        else if (isPower) setPower(description);
-      }
-    }
-  }
-
-  // Extract code if it includes "||"
-  let code = codeValue;
-  if (codeValue && codeValue.includes("||")) {
-    code = codeValue.split("||")[0];
-  }
-
-  const updatedCollections = {
-    ...selectedCollections,
-    [collectionName]: code,
-  };
-
-  setSelectedCollections(updatedCollections);
-
-  // UPDATED: Use the new logic for edit mode updates
-  if (!isInEditMode || allowEditModeUpdates) {
-    updateLabelDetails(updatedCollections, ss, sz, basicCode);
-  }
-};
 
 // Fast Loading Dropdown Component with Virtual Scrolling
 const FastDropdown = ({
@@ -1560,9 +1430,289 @@ const LabelPrint = () => {
     }
   }, [basicCode, collectionNames, isInEditMode]);
 
-  // FIXED: Handle collection code selection - don't auto-update model number in edit mode
-  // FIXED: Handle collection code selection - more specific process connection matching
-  // FIXED: Handle collection code selection - more specific protection class matching
+  // Add this mapping object near your TMED_OPTIONS constant
+  const LINER_MATERIAL_TO_TMED_MAPPING = {
+    // PTFE materials
+    PTFE: "130°C(266°F)",
+    ptfe: "130°C(266°F)",
+    PFA: "130°C(266°F)",
+    pfa: "130°C(266°F)",
+    ETFE: "130°C(266°F)",
+    etfe: "130°C(266°F)",
+
+    // Hard rubber materials
+    "hard rubber": "80°C (194°F/176°F)",
+    "Hard Rubber": "80°C (194°F/176°F)",
+    "HARD RUBBER": "80°C (194°F/176°F)",
+    hardrubber: "80°C (194°F/176°F)",
+
+    // Soft rubber materials
+    "soft rubber": "60°C(140°F)",
+    "Soft Rubber": "60°C(140°F)",
+    "SOFT RUBBER": "60°C(140°F)",
+    softrubber: "60°C(140°F)",
+    rubber: "60°C(140°F)", // Default rubber to soft rubber
+    Rubber: "60°C(140°F)",
+    RUBBER: "60°C(140°F)",
+  };
+
+  // Function to auto-update Tmed based on liner material
+  const autoUpdateTmedFromLinerMaterial = (linerMaterialDescription) => {
+    if (!linerMaterialDescription) return;
+
+    console.log(
+      `Auto-updating Tmed for liner material: ${linerMaterialDescription}`
+    );
+
+    // Check for exact match first
+    let tmedValue = LINER_MATERIAL_TO_TMED_MAPPING[linerMaterialDescription];
+
+    // If no exact match, check if the description contains any of the key materials
+    if (!tmedValue) {
+      const lowerDescription = linerMaterialDescription.toLowerCase();
+
+      // Check for PTFE, PFA, ETFE materials (highest temperature)
+      if (
+        lowerDescription.includes("ptfe") ||
+        lowerDescription.includes("pfa") ||
+        lowerDescription.includes("etfe")
+      ) {
+        tmedValue = "130°C(266°F)";
+      }
+      // Check for hard rubber materials
+      else if (
+        lowerDescription.includes("hard") &&
+        lowerDescription.includes("rubber")
+      ) {
+        tmedValue = "80°C (194°F/176°F)";
+      }
+      // Check for soft rubber or general rubber materials
+      else if (lowerDescription.includes("rubber")) {
+        tmedValue = "60°C(140°F)";
+      }
+    }
+
+    if (tmedValue) {
+      console.log(`Setting Tmed to: ${tmedValue}`);
+      setSelectedTmedDropdown(tmedValue);
+
+      // Also update the label details if not in edit mode or if updates are allowed
+      if (!isInEditMode || allowEditModeUpdates) {
+        updateLabelDetails(selectedCollections, ss, sz, basicCode);
+      }
+    } else {
+      console.log(
+        `No Tmed mapping found for liner material: ${linerMaterialDescription}`
+      );
+    }
+  };
+
+  // Enhanced version of your auto-update system with better integration
+
+  const NOMINAL_DIAMETER_TO_QMAX_MAPPING = [
+    { code: "15", description: "100 l/min" },
+    { code: "20", description: "150 l/min" },
+    { code: "25", description: "200 l/min" },
+    { code: "32", description: "400 l/min" },
+    { code: "40", description: "600 l/min" },
+    { code: "50", description: "60 m³/h" },
+    { code: "65", description: "120 m³/h" },
+    { code: "80", description: "180 m³/h" },
+    { code: "100", description: "240 m³/h" },
+    { code: "125", description: "420 m³/h" },
+    { code: "150", description: "600 m³/h" },
+    { code: "200", description: "1080 m³/h" },
+    { code: "250", description: "1800 m³/h" },
+    { code: "300", description: "2400 m³/h" },
+    { code: "350", description: "3300 m³/h" },
+    { code: "400", description: "4500 m³/h" },
+    { code: "450", description: "6000 m³/h" },
+    { code: "500", description: "6600 m³/h" },
+    { code: "600", description: "9600 m³/h" },
+  ];
+
+  // You'll need to update your Qmax options to include these flow rate values
+  const QMAX_OPTIONS = [
+    { value: "", label: "" },
+    // Diameter codes
+    ...[
+      "15",
+      "20",
+      "25",
+      "32",
+      "40",
+      "50",
+      "65",
+      "80",
+      "100",
+      "125",
+      "150",
+      "200",
+      "250",
+      "300",
+      "350",
+      "400",
+      "450",
+      "500",
+      "600",
+    ].map((val) => ({ value: val, label: val })),
+    // Flow rate descriptions
+    ...[
+      "100 l/min",
+      "150 l/min",
+      "200 l/min",
+      "400 l/min",
+      "600 l/min",
+      "60 m³/h",
+      "120 m³/h",
+      "180 m³/h",
+      "240 m³/h",
+      "420 m³/h",
+      "600 m³/h",
+      "1080 m³/h",
+      "1800 m³/h",
+      "2400 m³/h",
+      "3300 m³/h",
+      "4500 m³/h",
+      "6000 m³/h",
+      "6600 m³/h",
+      "9600 m³/h",
+    ].map((val) => ({ value: val, label: val })),
+  ];
+
+  const autoUpdateQmaxFromNominalDiameter = (nominalDiameterDescription) => {
+    if (!nominalDiameterDescription) return;
+
+    console.log(
+      `Auto-updating Qmax for nominal diameter: ${nominalDiameterDescription}`
+    );
+
+    let qmaxValue = null;
+
+    let searchCode = nominalDiameterDescription;
+    if (nominalDiameterDescription.includes("||")) {
+      searchCode = nominalDiameterDescription.split("||")[0].trim();
+    }
+
+    const mapping = NOMINAL_DIAMETER_TO_QMAX_MAPPING.find(
+      (item) =>
+        item.code === searchCode ||
+        item.code === searchCode.padStart(4, "0") ||
+        item.code === searchCode.replace(/^0+/, "")
+    );
+
+    if (mapping) {
+      qmaxValue = mapping.description;
+      console.log(`Found direct mapping: ${searchCode} -> ${qmaxValue}`);
+    } else {
+      const lowerDescription = nominalDiameterDescription.toLowerCase();
+      const diameterMatch = lowerDescription.match(
+        /\b(15|20|25|32|40|50|65|80|100|125|150|200|250|300|350|400|450|500|600)\b/
+      );
+
+      if (diameterMatch) {
+        const diameterCode = diameterMatch[1];
+        const foundMapping = NOMINAL_DIAMETER_TO_QMAX_MAPPING.find(
+          (item) => item.code === diameterCode
+        );
+        if (foundMapping) {
+          qmaxValue = foundMapping.description;
+          console.log(
+            `Found diameter pattern: ${diameterCode} -> ${qmaxValue}`
+          );
+        }
+      } else {
+        const dnMatch = lowerDescription.match(/dn\s*(\d+)/);
+        if (dnMatch) {
+          const dnValue = dnMatch[1];
+          const foundMapping = NOMINAL_DIAMETER_TO_QMAX_MAPPING.find(
+            (item) => item.code === dnValue
+          );
+          if (foundMapping) {
+            qmaxValue = foundMapping.description;
+            console.log(`Found DN pattern: DN${dnValue} -> ${qmaxValue}`);
+          }
+        } else {
+          const inchMappings = {
+            "1/2": "15",
+            "3/4": "20",
+            1: "25",
+            "1-1/4": "32",
+            "1 1/4": "32",
+            1.25: "32",
+            "1-1/2": "40",
+            "1 1/2": "40",
+            1.5: "40",
+            2: "50",
+            "2-1/2": "65",
+            "2 1/2": "65",
+            2.5: "65",
+            3: "80",
+            4: "100",
+            5: "125",
+            6: "150",
+            8: "200",
+            10: "250",
+            12: "300",
+            14: "350",
+            16: "400",
+            18: "450",
+            20: "500",
+            24: "600",
+          };
+
+          const inchMatch = lowerDescription.match(
+            /(\d+(?:\.\d+)?(?:\/\d+)?(?:\s*-\s*\d+(?:\.\d+)?(?:\/\d+)?)?)\s*(?:in|inch)/
+          );
+
+          if (inchMatch) {
+            const inchValue = inchMatch[1].trim();
+            const diameterCode = inchMappings[inchValue];
+            if (diameterCode) {
+              const foundMapping = NOMINAL_DIAMETER_TO_QMAX_MAPPING.find(
+                (item) => item.code === diameterCode
+              );
+              if (foundMapping) {
+                qmaxValue = foundMapping.description;
+                console.log(`Found inch pattern: ${inchValue} -> ${qmaxValue}`);
+              }
+            }
+          } else {
+            for (const [inch, code] of Object.entries(inchMappings)) {
+              if (lowerDescription.includes(inch)) {
+                const foundMapping = NOMINAL_DIAMETER_TO_QMAX_MAPPING.find(
+                  (item) => item.code === code
+                );
+                if (foundMapping) {
+                  qmaxValue = foundMapping.description;
+                  console.log(`Found inch match: ${inch} -> ${qmaxValue}`);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (qmaxValue) {
+      const isValid = QMAX_OPTIONS.find((opt) => opt.value === qmaxValue);
+      if (isValid) {
+        setSelectedQmax(qmaxValue);
+        if (!isInEditMode || allowEditModeUpdates) {
+          updateLabelDetails(selectedCollections, ss, sz, basicCode);
+        }
+      } else {
+        console.warn(`Qmax "${qmaxValue}" not found in QMAX_OPTIONS`);
+      }
+    } else {
+      console.log(
+        `No Qmax mapping found for nominal diameter: ${nominalDiameterDescription}`
+      );
+    }
+  };
+
+  // Updated handleCollectionCodeChange function remains the same
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
     const trimmedName = collectionName.trim();
@@ -1571,15 +1721,10 @@ const LabelPrint = () => {
     // Update special field states with more specific matching
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
-
-    // FIXED: More specific matching for protection class
-    // Only match "Protection Class Transmitter / Protection Class Sensor"
-    // but NOT "Other Explosion Protection Certifications and other Approvals"
     const isProtectionClass =
       (lowerName.includes("protection class") &&
         (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
       trimmedName === "Protection Class Transmitter / Protection Class Sensor";
-
     const isTamb = lowerName.includes("temperature");
     const isSize =
       trimmedName === "Nominal Diameter" ||
@@ -1589,14 +1734,10 @@ const LabelPrint = () => {
       lowerName.includes("power supply line frequency");
     const isLiner =
       lowerName.includes("liner") && lowerName.includes("material");
-
-    // More specific matching for process connection
-    // Only match "Process connection" but NOT "Process connection material"
     const isProcessConnection =
       (lowerName.includes("process connection") &&
         !lowerName.includes("material")) ||
       trimmedName === "Process connection";
-
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
 
@@ -1612,34 +1753,39 @@ const LabelPrint = () => {
     ) {
       if (codeValue === "") {
         if (isPowerSupply) setPowerSupply("");
-        else if (isProtectionClass)
-          setProtectionClass(
-            ""
-          ); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
+        else if (isProtectionClass) setProtectionClass("");
         else if (isTamb) setTamb("");
         else if (isSize) {
           setSize("");
           setSizeDescription("");
-        } else if (isLiner) setLinerMaterial("");
-        else if (isProcessConnection) setFitting("");
+          // Clear Qmax when nominal diameter is cleared
+          setSelectedQmax("");
+        } else if (isLiner) {
+          setLinerMaterial("");
+          setSelectedTmedDropdown(""); // Clear Tmed when liner material is cleared
+        } else if (isProcessConnection) setFitting("");
         else if (isElect) setElect("");
       } else {
         const codeItems = collectionsWithCodes[collectionName] || [];
         const matchingItem = codeItems.find((item) => item.code === codeValue);
+        const description = matchingItem?.description || codeValue;
 
         if (isSize) {
           setSize(codeValue);
-          setSizeDescription(matchingItem?.description || "");
+          setSizeDescription(description);
+
+          // AUTO-UPDATE QMAX WHEN NOMINAL DIAMETER CHANGES
+          // Pass the code value instead of description for better matching
+          autoUpdateQmaxFromNominalDiameter(codeValue);
         } else {
-          const description = matchingItem?.description || codeValue;
           if (isPowerSupply) setPowerSupply(description);
-          else if (isProtectionClass)
-            setProtectionClass(
-              description
-            ); // Only updates for "Protection Class Transmitter / Protection Class Sensor"
+          else if (isProtectionClass) setProtectionClass(description);
           else if (isTamb) setTamb(description);
-          else if (isLiner) setLinerMaterial(description);
-          else if (isProcessConnection) setFitting(description);
+          else if (isLiner) {
+            setLinerMaterial(description);
+            // AUTO-UPDATE TMED WHEN LINER MATERIAL CHANGES
+            autoUpdateTmedFromLinerMaterial(description);
+          } else if (isProcessConnection) setFitting(description);
           else if (isElect) setElect(description);
           else if (isPower) setPower(description);
         }
@@ -1659,7 +1805,7 @@ const LabelPrint = () => {
 
     setSelectedCollections(updatedCollections);
 
-    // UPDATED: Use the new logic for edit mode updates
+    // Update label details if not in edit mode or if updates are allowed
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(updatedCollections, ss, sz, basicCode);
     }
@@ -1738,8 +1884,7 @@ const LabelPrint = () => {
       LabelDetails,
       Date,
       Status,
-      ss,
-      sz,
+     
     ];
 
     if (showLogoType && !LogoType) {
@@ -1762,8 +1907,7 @@ const LabelPrint = () => {
         Date,
         Status,
         DevVersion,
-        ss,
-        sz,
+      
         powerSupply,
         LinerMaterial,
         ProtectionClass,
@@ -2184,7 +2328,6 @@ const LabelPrint = () => {
                         variant="outlined"
                         value={ss}
                         onChange={(e) => handleSSChange(e.target.value)}
-                        required
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -2205,7 +2348,6 @@ const LabelPrint = () => {
                         variant="outlined"
                         value={sz}
                         onChange={(e) => handleSZChange(e.target.value)}
-                        required
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -2216,62 +2358,44 @@ const LabelPrint = () => {
                       />
                     </Grid>
 
-                    {/* Qmax Dropdown */}
+                    {/* Replace both dropdowns with these readonly text fields */}
+
+                    {/* Qmax - Readonly Text Field */}
                     <Grid item>
-                      <FormControl
-                        sx={{ width: "140px" }}
+                      <TextField
+                        label="Qmax"
+                        value={selectedQmax}
                         size="small"
                         variant="outlined"
-                      >
-                        <InputLabel>Qmax</InputLabel>
-                        <Select
-                          label="Qmax"
-                          value={selectedQmax}
-                          onChange={handleQmaxChange}
-                          IconComponent={() => null}
-                          endAdornment={
+                        sx={{ width: "140px" }}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
                             <InputAdornment position="end">
                               <SpeedIcon color="action" />
                             </InputAdornment>
-                          }
-                        >
-                          <MenuItem value="">Select</MenuItem>
-                          {QMAX_OPTIONS.map((option) => (
-                            <MenuItem key={option.code} value={option.code}>
-                              {option.code} - {option.description}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          ),
+                        }}
+                      />
                     </Grid>
 
-                    {/* Tmed Dropdown */}
+                    {/* Tmed - Readonly Text Field */}
                     <Grid item>
-                      <FormControl
-                        sx={{ width: "200px" }}
+                      <TextField
+                        label="Tmed"
+                        value={selectedTmedDropdown}
                         size="small"
                         variant="outlined"
-                      >
-                        <InputLabel>Tmed</InputLabel>
-                        <Select
-                          label="Tmed"
-                          value={selectedTmedDropdown}
-                          onChange={handleTambDropdownChange}
-                          IconComponent={() => null}
-                          endAdornment={
+                        sx={{ width: "200px" }}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
                             <InputAdornment position="end">
                               <ThermostatIcon color="action" />
                             </InputAdornment>
-                          }
-                        >
-                          <MenuItem value="">Select</MenuItem>
-                          {TMED_OPTIONS.map((option) => (
-                            <MenuItem key={option.code} value={option.code}>
-                              {option.code} - {option.description}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          ),
+                        }}
+                      />
                     </Grid>
                   </Grid>
                 </Paper>

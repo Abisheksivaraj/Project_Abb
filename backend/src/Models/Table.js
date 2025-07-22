@@ -21,11 +21,11 @@ const tableSchema = new mongoose.Schema({
   },
   ss: {
     type: String,
-    required: true,
+    // required: true,
   },
   sz: {
     type: String,
-    required: true,
+    // required: true,
   },
   Date: {
     type: String,
