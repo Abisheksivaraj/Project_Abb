@@ -1907,7 +1907,8 @@ const LabelPrint = () => {
         Date,
         Status,
         DevVersion,
-      
+        ss,
+        sz,
         powerSupply,
         LinerMaterial,
         ProtectionClass,

@@ -56,9 +56,10 @@ import fm from "../assets/fm.png";
 import black from "../assets/black.png";
 import dispose from "../assets/dispose.png";
 import bin from "../assets/bin3.png";
-import QRCode from "qrcode";
+import { QRCodeSVG } from "qrcode.react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ReactDOM from "react-dom/client";
 
 import * as XLSX from "xlsx";
 import { CSVLink } from "react-csv";
@@ -870,10 +871,10 @@ const MainPageTable = () => {
     return csvRow;
   });
 
+  // Replace the handlePrintLabel function in your MainPageTable component with this updated version:
+
   const handlePrintLabel = async (label) => {
     try {
-      openPreviewModal(label);
-
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
       const deviceVersion = label?.DevVersion;
       const sz = label?.sz;
@@ -905,12 +906,6 @@ const MainPageTable = () => {
 
       const qrUrl = `https://my-measurement-assistant.abb.com/products/productPage/9AAC183924?SN=${serialNumber}`;
 
-      const qrDataUrl = await QRCode.toDataURL(qrUrl, {
-        errorCorrectionLevel: "H",
-        width: 100,
-        margin: 1,
-      });
-
       let middleSectionContent = "";
 
       console.log("Current logoType:", logoType);
@@ -919,140 +914,140 @@ const MainPageTable = () => {
       if (labelType === "sensor(96x98)") {
         if (logoType === "logo_1") {
           middleSectionContent = `
-          <!-- Black Middle Section for logo 1 (96x98) with consistent spacing -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
-            <div class="mr-2">
-              <!-- Empty space where logo would be -->
-              <div class="h-[7rem] w-[9rem]"></div>
-            </div>
-            <div>
-              <!-- Empty lines with same spacing structure as logo_2 and logo_3 -->
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <br />
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div>&nbsp;</div>
-              <div class="h-[2px]"></div>
-              <div>&nbsp;</div>
-            </div>
-          </div>`;
+        <!-- Black Middle Section for logo 1 (96x98) with consistent spacing -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+          <div class="mr-2">
+            <!-- Empty space where logo would be -->
+            <div class="h-[7rem] w-[9rem]"></div>
+          </div>
+          <div>
+            <!-- Empty lines with same spacing structure as logo_2 and logo_3 -->
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <br />
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div>&nbsp;</div>
+            <div class="h-[2px]"></div>
+            <div>&nbsp;</div>
+          </div>
+        </div>`;
         } else if (logoType === "logo_2") {
           middleSectionContent = `
-          <!-- Middle Section for logo 2 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
-            <div class="mr-2">
-              <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
-            </div>
-            <div>
-              <div>FM17US0062X</div>
-              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-              <div>CL I, ZN 2, AEx ec IIC T6...T1</div>
-              <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
-              <br />
-              <div>FM17CA0033X</div>
-              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-              <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
-              <div>Ex tb IIIC T80°C...T165°C Db</div>
-              <div class="h-[2px]"></div>
-              <div>See handbook for temperature class information</div>
-            </div>
-          </div>`;
+        <!-- Middle Section for logo 2 (96x98) -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
+          <div class="mr-2">
+            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+          </div>
+          <div>
+            <div>FM17US0062X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+            <div>CL I, ZN 2, AEx ec IIC T6...T1</div>
+            <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+            <br />
+            <div>FM17CA0033X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+            <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
+            <div>Ex tb IIIC T80°C...T165°C Db</div>
+            <div class="h-[2px]"></div>
+            <div>See handbook for temperature class information</div>
+          </div>
+        </div>`;
         } else if (logoType === "logo_3") {
           middleSectionContent = `
-          <!-- Middle Section for logo 3 (96x98) -->
-          <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
-            <div class="mr-2">
-              <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
-            </div>
-            <div>
-              <div>FM17US0062X</div>
-              <div>NI:CL I,Div2,GPS ABCD T4</div>
-              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-              <div>CL I, ZN 2, AEx ec IIC T4</div>
-              <div> ZN 21, AEx tb IIIC T80°C</div>
-              <br />
-              <div>FM17CA0033X</div>
-              <div>NI:CL I,Div2,GPS ABCD T4</div>
-              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-              <div>Ex ec IIC T4 Gc</div>
-              <div>Ex tb IIIC T80°C Db</div>
-              <div>See handbook for temperature class information</div>
-            </div>
-          </div>`;
+        <!-- Middle Section for logo 3 (96x98) -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+          <div class="mr-2">
+            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+          </div>
+          <div>
+            <div>FM17US0062X</div>
+            <div>NI:CL I,Div2,GPS ABCD T4</div>
+            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+            <div>CL I, ZN 2, AEx ec IIC T4</div>
+            <div> ZN 21, AEx tb IIIC T80°C</div>
+            <br />
+            <div>FM17CA0033X</div>
+            <div>NI:CL I,Div2,GPS ABCD T4</div>
+            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+            <div>Ex ec IIC T4 Gc</div>
+            <div>Ex tb IIIC T80°C Db</div>
+            <div>See handbook for temperature class information</div>
+          </div>
+        </div>`;
         } else {
           middleSectionContent = `
-          <!-- Default Middle Section (96x98) -->
-          <div class="flex-1 border-b-2 border-black w-full p-1">
-            <div class="text-[8px] font-semibold">
-              <div>No certification information available</div>
-              <div>Please contact ABB support for details</div>
-            </div>
-          </div>`;
+        <!-- Default Middle Section (96x98) -->
+        <div class="flex-1 border-b-2 border-black w-full p-1">
+          <div class="text-[8px] font-semibold">
+            <div>No certification information available</div>
+            <div>Please contact ABB support for details</div>
+          </div>
+        </div>`;
         }
       } else if (labelType === "sensor") {
         if (logoType === "logo_1") {
           middleSectionContent = `
-          <!-- Black Middle Section for logo 1 (sensor) -->
-          <div class="flex-1 border-b-2 border-black w-full p-1">
-            <!-- Black space -->
-          </div>`;
+        <!-- Black Middle Section for logo 1 (sensor) -->
+        <div class="flex-1 border-b-2 border-black w-full p-1">
+          <!-- Black space -->
+        </div>`;
         } else if (logoType === "logo_2") {
           middleSectionContent = `
-          <!-- Middle Section for logo 2 (sensor) -->
-          <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
-            <div class="flex items-center">
-              <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
-              <div class="text-3px -mt-2 font-bold">
-                <div>FM17US0062X</div>
-                <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-                <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-                <div>See handbook for temperature class information</div>
-              </div>
-            </div>
-            <div class="mr-20 text-3px font-bold -mt-4 ">
-            <div>FM17CA0033X</div>
-              <div>NI: CL I, ZN 2, AEx qc IIC T6...T1</div>
+        <!-- Middle Section for logo 2 (sensor) -->
+        <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex items-center">
+            <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
+            <div class="text-3px -mt-2 font-bold">
+              <div>FM17US0062X</div>
+              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
               <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-              
+              <div>See handbook for temperature class information</div>
             </div>
-          </div>`;
+          </div>
+          <div class="mr-20 text-3px font-bold -mt-4 ">
+          <div>FM17CA0033X</div>
+            <div>NI: CL I, ZN 2, AEx qc IIC T6...T1</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+            
+          </div>
+        </div>`;
         } else if (logoType === "logo_3") {
           middleSectionContent = `
-          <!-- Middle Section for logo 3 (sensor) -->
-         <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
-            <div class="flex items-center">
-              <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
-              <div class="text-3px -mt-2 font-bold">
-                <div>FM17US0062X</div>
-                <div>NI:CL I,Div2,GPS ABCD T4</div>
-                <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-                 <div>See handbook for temperature class information</div>
-              </div>
-            </div>
-            <div class="text-3px font-bold -mt-4  -ml-10">
-             <div>FM17CA0033X</div>
+        <!-- Middle Section for logo 3 (sensor) -->
+       <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex items-center">
+            <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
+            <div class="text-3px -mt-2 font-bold">
+              <div>FM17US0062X</div>
               <div>NI:CL I,Div2,GPS ABCD T4</div>
-                <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-             
+              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+               <div>See handbook for temperature class information</div>
             </div>
-          </div>`;
+          </div>
+          <div class="text-3px font-bold -mt-4  -ml-10">
+           <div>FM17CA0033X</div>
+            <div>NI:CL I,Div2,GPS ABCD T4</div>
+              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+           
+          </div>
+        </div>`;
         } else {
           middleSectionContent = `
-          <!-- Default Middle Section (sensor) -->
-          <div class="flex-1 border-b-2 border-black w-full p-1">
-            <div class="text-[8px] font-semibold">
-              <div>No certification information available</div>
-              <div>Please contact ABB support for details</div>
-            </div>
-          </div>`;
+        <!-- Default Middle Section (sensor) -->
+        <div class="flex-1 border-b-2 border-black w-full p-1">
+          <div class="text-[8px] font-semibold">
+            <div>No certification information available</div>
+            <div>Please contact ABB support for details</div>
+          </div>
+        </div>`;
         }
       } else if (
         labelType === "sensor(115x35)" ||
@@ -1065,282 +1060,306 @@ const MainPageTable = () => {
 
       if (labelType === "sensor(115x35)") {
         printContainer.innerHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>ABB ProcessMaster 630 Label</title>
-        <style>
-            @page {
-                size: 115mm 35mm;
-                margin: 0;
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>ABB ProcessMaster 630 Label</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <style>
+          @page {
+              size: 115mm 35mm;
+              margin: 0;
+          }
+          
+          body {
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+              font-size: 7px;
+              line-height: 1.1;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+          }
+          
+          @media print {
+              body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+              }
+              
+              .print-container {
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+              }
+          }
+          
+           .red-hairline-border {
+              border: 1px solid red;
+              padding:2px;
+              border-radius: 3px;
             }
-            
-            body {
-                margin: 0;
-                padding: 0;
-                font-family:sans-serif;
-                font-size: 7px;
-                line-height: 1.1;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .black-inner-border {
+              border: 3px solid black;
+              border-radius: 3px;
             }
-            
-            @media print {
-                body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-                
-                .print-container {
-                    page-break-inside: avoid;
-                    break-inside: avoid;
-                }
-            }
-        </style>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body>
-        <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black print-container">
-            <!-- Header Section -->
-            <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
-                <!-- Logo aligned to left -->
-                <div class="h-6">
-                    <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
-                </div>
-    
-                <!-- Absolutely centered title -->
-                <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
-                    ProcessMaster 630
-                </div>
-    
-                <div class="w-5 h-6">
-                    <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
-                </div>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="flex w-full font-semibold border-black flex-grow">
-                <!-- Left Section -->
-                <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
-                    <div class="mb-1">Serial No: ${serialNumber}</div>
-                    
-                    <div class="mb-2">
-                        <div class="mb-0">
-                            <span class="font-bold">Model number: </span>${modelNumber.substring(
-                              0,
-                              20
-                            )}
-                        </div>
-                        <div class="leading-tight">${modelNumber.substring(
-                          20,
-                          50
-                        )}</div>
-                        <div class="leading-tight">${modelNumber.substring(
-                          50,
-                          79
-                        )}</div>
-                        <div class="leading-tight">${modelNumber.substring(
-                          79,
-                          110
-                        )}</div>
-                    </div>
-                    
-                    <div class="mt-2">
-                        <div>Dev. version: ${deviceVersion}</div>
-                        <div>Update:</div>
-                    </div>
-                    
-                    <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
-                        <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-                    </div>
-                </div>
-    
-                <!-- Right Section -->
-                <div class="text-[8px] w-3/5 p-1 font-bold">
-                    <div class="mb-1">${power}</div>
-                    <div class="mb-1">Protection class: IP67/IP67</div>
-                    <div class="mb-2">Tamb: ${tamb}</div>
-                    
-                    <!-- Specifications Grid -->
-                    <div class="grid grid-cols-2 gap-x-2 mt-[-5px] text-[8px] leading-tight">
-                        <div>Size: ${size}</div>
-                        <div>Fitting: ${fitting}</div>
-                        
-                        <div>Qmax: ${qmax}</div>
-                        <div>Fexc: ${fexc}</div>
-                        
-                        <div>Liner mat: ${liner}</div>
-                        <div>Elect: ${elect}</div>
-                        
-                        <div>Tmed: ${tmed}</div>
-                        <div>PED:</div>
-                        
-                        <div>Ss: ${ss}</div>
-                        <div>Sz: ${sz}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
+      </style>
+  </head>
+  <body>
+      <div class="w-[115mm] h-[35mm] red-hairline-border flex flex-col text-black print-container">
+        <div class="black-inner-border w-full h-full flex flex-col">
+          <!-- Header Section -->
+          <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+              <!-- Logo aligned to left -->
+              <div class="h-6">
+                  <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
+              </div>
+  
+              <!-- Absolutely centered title -->
+              <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
+                  ProcessMaster 630
+              </div>
+  
+              <div class="w-5 h-6">
+                  <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
+              </div>
+          </div>
+          
+          <!-- Main Content -->
+          <div class="flex w-full font-semibold border-black flex-grow">
+              <!-- Left Section -->
+              <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
+                  <div class="mb-1">Serial No: ${serialNumber}</div>
+                  
+                  <div class="mb-2">
+                      <div class="mb-0">
+                          <span class="font-bold">Model number: </span>${modelNumber.substring(
+                            0,
+                            20
+                          )}
+                      </div>
+                      <div class="leading-tight">${modelNumber.substring(
+                        20,
+                        50
+                      )}</div>
+                      <div class="leading-tight">${modelNumber.substring(
+                        50,
+                        79
+                      )}</div>
+                      <div class="leading-tight">${modelNumber.substring(
+                        79,
+                        110
+                      )}</div>
+                  </div>
+                  
+                  <div class="mt-2">
+                      <div>Dev. version: ${deviceVersion}</div>
+                      <div>Update:</div>
+                  </div>
+                  
+                  <div class="absolute right-1 bottom-2 flex items-center justify-center">
+                      <div class="qr-code-container"></div>
+                  </div>
+              </div>
+  
+              <!-- Right Section -->
+              <div class="text-[8px] w-3/5 p-1 font-bold">
+                  <div class="mb-1">${power}</div>
+                  <div class="mb-1">Protection class: IP67/IP67</div>
+                  <div class="mb-2">Tamb: ${tamb}</div>
+                  
+                  <!-- Specifications Grid -->
+                  <div class="grid grid-cols-2 gap-x-2 mt-[-9px] text-[8px] leading-tight">
+                      <div>Size: ${size}</div>
+                      <div>Fitting: ${fitting}</div>
+                      
+                      <div>Qmax: ${qmax}</div>
+                      <div>Fexc: ${fexc}</div>
+                      
+                      <div>Liner mat: ${liner}</div>
+                      <div>Elect: ${elect}</div>
+                      
+                      <div>Tmed: ${tmed}</div>
+                      <div>PED:</div>
+                      
+                      <div>Ss: ${ss}</div>
+                      <div>Sz: ${sz}</div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </body>
+  </html>
+  `;
       } else if (labelType === "transmitter") {
         printContainer.innerHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>ABB ProcessMaster 630 Label</title>
-        <style>
-            @page {
-                size: 115mm 35mm;
-                margin: 0;
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>ABB ProcessMaster 630 Label</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <style>
+          @page {
+              size: 115mm 35mm;
+              margin: 0;
+          }
+          
+          body {
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+              font-size: 7px;
+              line-height: 1.1;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+          }
+          
+          @media print {
+              body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+              }
+              
+              .print-container {
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+              }
+          }
+          
+          .red-hairline-border {
+              border: 1px solid red;
+              padding:2px;
+              border-radius: 3px;
             }
-            
-            body {
-                margin: 0;
-                padding: 0;
-                font-family:sans-serif;
-                font-size: 7px;
-                line-height: 1.1;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .black-inner-border {
+              border: 3px solid black;
+              border-radius: 3px;
             }
-            
-            @media print {
-                body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-                
-                .print-container {
-                    page-break-inside: avoid;
-                    break-inside: avoid;
-                }
-            }
-        </style>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body>
-        <div class="w-[115mm] h-[35mm] border-black border-2 flex flex-col text-black print-container">
-            <!-- Header Section -->
-            <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
-                <!-- Logo aligned to left -->
-                <div class="h-6">
-                    <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
-                </div>
-    
-                <!-- Absolutely centered title -->
-                <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
-                    ProcessMaster 630
-                </div>
-    
-                <div class="w-5 h-6">
-                    <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
-                </div>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="flex w-full font-semibold border-black flex-grow">
-                <!-- Left Section -->
-                <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
-                    <div class="mb-1">Serial No: ${serialNumber}</div>
-                    
-                    <div class="mb-2">
-                        <div class="mb-0">
-                            <span class="font-bold">Model number: </span>${modelNumber.substring(
-                              0,
-                              20
-                            )}
-                        </div>
-                        <div class="leading-tight">${modelNumber.substring(
-                          20,
-                          57
-                        )}</div>
-                        <div class="leading-tight">${modelNumber.substring(
-                          57,
-                          90
-                        )}</div>
-                    </div>
-                    
-                    <div class="mt-2">
-                        <div>Dev. version: ${deviceVersion}</div>
-                        <div>Update:</div>
-                    </div>
-                    
-                    <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
-                        <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-                    </div>
-                </div>
-    
-                <!-- Right Section -->
-                <div class="text-[8px] w-3/5 p-1 font-bold">
-                    <div class="mb-1">${power}</div>
-                    <div class="mb-1">Protection class: IP67/IP67</div>
-                    <div class="mb-2">Tamb: ${tamb}</div>
-                    
-                    <!-- Specifications Grid -->
-                    <div class="grid grid-cols-2 gap-x-1 mt-[-5px] text-[8px] leading-tight">
-                        <div>Size:</div>
-                        <div>Fitting:</div>
-                        
-                        <div>Qmax:</div>
-                        <div>Fexc:</div>
-                        
-                        <div>Liner mat:</div>
-                        <div>Elect:</div>
-                        
-                        <div>Tmed:</div>
-                        <div>PED:</div>
-                        
-                        <div>Ss:</div>
-                        <div>Sz:</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
+      </style>
+  </head>
+  <body>
+      <div class="w-[115mm] h-[35mm] red-hairline-border flex flex-col text-black print-container">
+        <div class="black-inner-border w-full h-full flex flex-col">
+          <!-- Header Section -->
+          <div class="relative flex items-center justify-between border-b-2 border-black w-full px-1 py-1">
+              <!-- Logo aligned to left -->
+              <div class="h-6">
+                  <img src="${black}" alt="ABB Logo" class="w-16 h-6 object-contain" />
+              </div>
+  
+              <!-- Absolutely centered title -->
+              <div class="absolute left-1/2 transform -translate-x-1/2 text-sm font-bold">
+                  ProcessMaster 630
+              </div>
+  
+              <div class="w-5 h-6">
+                  <img src="${bin}" alt="Dispose Icon" class="w-5 h-6 object-contain" />
+              </div>
+          </div>
+          
+          <!-- Main Content -->
+          <div class="flex w-full font-semibold border-black flex-grow">
+              <!-- Left Section -->
+              <div class="w-2/5 font-bold flex flex-col text-[8px] border-r-2 border-black p-1 relative">
+                  <div class="mb-1">Serial No: ${serialNumber}</div>
+                  
+                  <div class="mb-2">
+                      <div class="mb-0">
+                          <span class="font-bold">Model number: </span>${modelNumber.substring(
+                            0,
+                            20
+                          )}
+                      </div>
+                      <div class="leading-tight">${modelNumber.substring(
+                        20,
+                        57
+                      )}</div>
+                      <div class="leading-tight">${modelNumber.substring(
+                        57,
+                        90
+                      )}</div>
+                  </div>
+                  
+                  <div class="mt-2">
+                      <div>Dev. version: ${deviceVersion}</div>
+                      <div>Update:</div>
+                  </div>
+                  
+                  <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                      <div class="qr-code-container"></div>
+                  </div>
+              </div>
+  
+              <!-- Right Section -->
+              <div class="text-[8px] w-3/5 p-1 font-bold">
+                  <div class="mb-1">${power}</div>
+                  <div class="mb-1">Protection class: IP67/IP67</div>
+                  <div class="mb-2">Tamb: ${tamb}</div>
+                  
+                  <!-- Specifications Grid -->
+                  <div class="grid grid-cols-2 gap-x-1 mt-[-5px] text-[8px] leading-tight">
+                      <div>Size:</div>
+                      <div>Fitting:</div>
+                      
+                      <div>Qmax:</div>
+                      <div>Fexc:</div>
+                      
+                      <div>Liner mat:</div>
+                      <div>Elect:</div>
+                      
+                      <div>Tmed:</div>
+                      <div>PED:</div>
+                      
+                      <div>Ss:</div>
+                      <div>Sz:</div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </body>
+  </html>
+  `;
       } else if (labelType === "sensor") {
         printContainer.innerHTML = `
-     <!DOCTYPE html>
+   <!DOCTYPE html>
 <html>
 <head>
-  <title>Sensor Label Print</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @page {
-      size: 113.50mm 58.50mm;
-      margin: 0;
-    }
-    body {
-      -webkit-print-color-adjust: exact;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    * {
-      color: black;
-      box-sizing: border-box;
-    }
-    div, img, hr {
-      border-color: black !important;
-    }
-    /* Ensure consistent border rendering */
-    .label-container {
-      width: 113.50mm;
-      height: 58.50mm;
-      border: 2px solid black;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-  </style>
+<title>Sensor Label Print</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @page {
+    size: 113.50mm 58.50mm;
+    margin: 0;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  * {
+    color: black;
+    box-sizing: border-box;
+  }
+  div, img, hr {
+    border-color: black !important;
+  }
+  .red-hairline-border {
+              border: 1px solid red;
+              padding:2px;
+              border-radius: 3px;
+            }
+            .black-inner-border {
+              border: 3px solid black;
+              border-radius: 3px;
+            }
+</style>
 </head>
 <body class="m-0 p-0 font-sans text-black">
-  <div class="label-container flex flex-col text-black">
+<div class="red-hairline-border flex flex-col text-black" style="width: 113.50mm; height: 58.50mm;">
+  <div class="black-inner-border w-full h-full flex flex-col" style="border-radius: 8px;">
     <!-- Header -->
     <div class="relative flex items-center border-b-2 border-black w-full px-1 py-1 rounded-t-lg">
       <!-- Logo aligned to left -->
@@ -1353,7 +1372,7 @@ const MainPageTable = () => {
         ProcessMaster 630
       </div>
     </div>
-  
+
     <!-- Main Content -->
     <div class="flex flex-col flex-1 w-full">
       <!-- Upper Section -->
@@ -1365,228 +1384,265 @@ const MainPageTable = () => {
           <div style="margin-top: 1px;">
             <span class="font-bold">Model number: </span>${modelNumber.substring(
               0,
-              26
+              23
             )}
           </div>
-          <div style="margin-top: 0px;">${modelNumber.substring(26, 60)}</div>
-          <div style="margin-top: 0px;">${modelNumber.substring(60, 90)}</div>
-        <div style="margin-top: 0px;">${modelNumber.substring(90, 120)}</div>
+          <div style="margin-top: 0px;">${modelNumber.substring(23, 55)}</div>
+          <div style="margin-top: 0px;">${modelNumber.substring(55, 85)}</div>
+      <div style="margin-top: 0px;">${modelNumber.substring(85, 120)}</div>
           <div class="h-[2px]"></div>
           <div class="mt-2">Dev. version: ${deviceVersion}</div>
           <!-- QR Code positioned with absolute positioning -->
-          <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] border border-black">
-            <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
+          <div class="w-[33px] h-[33px] absolute right-1 top-[3.3rem] ">
+         <div class="qr-code-container"></div>
           </div>
         </div>
-  
-                    <!-- Right Section with no gaps between headings and values -->
-<div class="text-[8px] w-[60%] leading-[11px] p-1 font-bold">
-  <p>${power}</p>
-  <p>Protection class: ${protection}</p>
-  <p>Tamb: ${tamb}</p>
-  
-  <!-- Using table display for perfect alignment without gaps -->
-  <div style="display: table; width: 100%;">
-    <div style="display: table-row;">
-      <div style="display: table-cell; width: 50%;">Size: ${size}</div>
-      <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Qmax:${qmax}</div>
-      <div style="display: table-cell;">Fexc: ${fexc}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Liner mat: ${liner}</div>
-      <div style="display: table-cell;">Elect: ${elect}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Tmed: ${tmed}</div>
-      <div style="display: table-cell;">PED:</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Ss: ${ss}</div>
-      <div style="display: table-cell;">Sz: ${sz}</div>
-    </div>
-  </div>
-</div>
+
+        <!-- Right Section with no gaps between headings and values -->
+        <div class="text-[8px] w-[60%] leading-[11px] p-1 font-bold">
+        <p>${power}</p>
+        <p>Protection class: ${protection}</p>
+        <p>Tamb: ${tamb}</p>
+        
+        <!-- Using table display for perfect alignment without gaps -->
+        <div style="display: table; width: 100%;">
+          <div style="display: table-row;">
+            <div style="display: table-cell; width: 50%;">Size: ${size}</div>
+            <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell;">Qmax:${qmax}</div>
+            <div style="display: table-cell;">Fexc: ${fexc}</div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell;">Liner mat: ${liner}</div>
+            <div style="display: table-cell;">Elect: ${elect}</div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell;">Tmed: ${tmed}</div>
+            <div style="display: table-cell;">PED:</div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell;">Ss: ${ss}</div>
+            <div style="display: table-cell;">Sz: ${sz}</div>
+          </div>
+        </div>
+        </div>
       </div>
-  
+
      
-         ${middleSectionContent}
-      
-   
-  
-      <!-- Footer -->
-       <div class="flex font-bold justify-between items-start text-[8px] w-full px-2">
-                <div>
-                  <div>Made in:</div>
-                  <div>ABB India Limited, Bangalore</div>
-                  <div class="text-center ml-15 -mt-1">${date}</div>
-                </div>
-                <div class="mt-1">
-                  <div>Designed by ABB AG</div>
-                  <div>Goettingen, Germany</div>
+       ${middleSectionContent}
+    
+
+    <!-- Footer -->
+     <div class="flex font-bold justify-between items-start text-[7.6px] w-full px-2">
+              <div>
+                <div>Made in:</div>
+                <div class="-mt-1">ABB India Limited, Bangalore</div>
+                <div class="text-center ml-15 -mt-1">${date}</div>
+              </div>
+              <div class="mt-0.5">
+                <div>Designed by ABB AG</div>
+                <div>Goettingen, Germany</div>
+              </div>
+              
+                <div class="w-[80px] h-[29px] -mt-1">
+                <img src=${dispose} alt="Dispose Icon" class="w-[80px] h-[29px]"/>
                 </div>
                 
-                  <div class="w-[80px] h-[29px]">
-                  <img src=${dispose} alt="Dispose Icon" class="w-[80px] h-[29px]"/>
-                  </div>
-                  
-              </div>
-    </div>
+            </div>
   </div>
+</div>
+</div>
 </body>
 </html>
-      `;
+    `;
       } else {
         console.log("Creating standard label with logoType:", logoType);
         console.log("Using middleSectionContent:", middleSectionContent);
 
         printContainer.innerHTML = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Label Print</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              @page {
-                size: 96mm 98mm;
-                margin: 3mm;
-              }
-              body {
-                -webkit-print-color-adjust: exact;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                font-family:sans-serif;
-              }
-              * {
-                color: black;
-                box-sizing: border-box;
-              }
-              div, img, hr {
-                border-color: black !important;
-              }
-            </style>
-          </head>
-          <body class="m-0 p-0 font-sans text-black">
-            <div class="w-[96mm] h-[98mm] border-black border-2 rounded-lg flex flex-col text-black">
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Label Print</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @page {
+              size: 96mm 98mm;
+              margin: 0;
+            }
+            body {
+              -webkit-print-color-adjust: exact;
+              margin: 0;
+              padding: 2mm;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              font-family: Arial, sans-serif;
+            }
+            * {
+              color: black;
+              box-sizing: border-box;
+            }
+            div, img, hr {
+              border-color: black !important;
+            }
+            .red-hairline-border {
+              border: 1px solid red;
+              padding:2px;
+              border-radius: 10px;
+            }
+            .black-inner-border {
+              border: 3px solid black;
+              border-radius: 8px;
+            }
+          </style>
+        </head>
+        <body class="m-0 p-0 font-sans text-black">
+          <div class="red-hairline-border flex flex-col text-black" style="width: 96mm; height: 98mm;">
+            <div class="black-inner-border w-full h-full flex flex-col" style="border-radius: 8px;">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
+              <div class="h-full flex items-center">
+                <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
+              </div>
+              <div class="text-[20px] font-bold text-center flex-1 leading-none font-[Arial]">
+                ProcessMaster 630
+              </div>
+            </div>
+      
+            <!-- Main Content -->
+            <div class="flex w-full border-b-2 font-semibold border-black  h-[7.6rem] relative">
               
-              <!-- Header -->
-              <div class="flex items-center justify-between border-b-2 border-black w-full rounded-t-lg h-[2.7rem]">
-                <div class="h-full flex items-center">
-                  <img src="${black}" alt="ABB Logo" class="w-[4rem] h-[4rem] object-contain" />
+              <!-- Left Section -->
+              <div class="w-[40%] font-bold text-[8px] border-r-2 border-black p-1">
+                <div>Serial No: ${serialNumber}</div>
+                <div style="margin-top: 4px;">
+                  <span class="font-bold">Model number: </span>${modelNumber.substring(
+                    0,
+                    15
+                  )}
                 </div>
-                <div class="text-[20px] font-bold text-center flex-1 leading-none font-[sans-serif]">
-                  ProcessMaster 630
+                <div style="margin-top: 0px;">${modelNumber.substring(
+                  15,
+                  41
+                )}</div>
+                <div style="margin-top: 0px;">${modelNumber.substring(
+                  41,
+                  65
+                )}</div>
+                <div style="margin-top: 0px;">${modelNumber.substring(
+                  65,
+                  90
+                )}</div>
+      
+                <div class="h-[5px]"></div>
+                <div>OPTIONS 1 ></div>
+                <div>OPTIONS 2 ></div>
+                <div class="h-[5px]"></div>
+                <div>Dev. version: ${deviceVersion}</div>
+                <div>Update:</div>
+              </div>
+      
+              <!-- QR Code positioned 10px from bottom border -->
+              <div class="absolute bottom-[2px] left-[6.6rem] w-[33px] h-[33px]  text-center flex items-center justify-center">
+                <div class="qr-code-container"></div>
+              </div>
+            
+              <!-- Right Section with no gaps between headings and values -->
+              <div class="text-[8px] w-[60%] leading-[0.9rem] p-1 font-bold">
+              <p>${power}</p>
+              <p>Protection class: IP67/IP67</p>
+              <p>Tamb: ${tamb}</p>
+              
+              <!-- Using table display for perfect alignment without gaps -->
+              <div style="display: table; width: 100%;">
+                <div style="display: table-row;">
+                  <div style="display: table-cell; width: 50%;">Size: ${size}</div>
+                  <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
+                </div>
+                <div style="display: table-row;">
+                  <div style="display: table-cell;">Qmax: ${qmax}</div>
+                  <div style="display: table-cell;">Fexc: ${fexc}</div>
+                </div>
+                <div style="display: table-row;">
+                  <div style="display: table-cell;">Liner mat: ${liner}</div>
+                  <div style="display: table-cell;">Elect: ${elect}</div>
+                </div>
+                <div style="display: table-row;">
+                  <div style="display: table-cell;">Tmed: ${tmed}</div>
+                  <div style="display: table-cell;">PED:</div>
+                </div>
+                <div style="display: table-row;">
+                  <div style="display: table-cell;">Ss: ${ss}</div>
+                  <div style="display: table-cell;">Sz: ${sz}</div>
                 </div>
               </div>
-        
-              <!-- Main Content -->
-              <div class="flex w-full border-b-2 font-semibold border-black  h-[7.6rem] relative">
-                
-                <!-- Left Section -->
-                <div class="w-[40%] font-bold text-[8px] border-r-2 border-black p-1">
-                  <div>Serial No: ${serialNumber}</div>
-                  <div style="margin-top: 4px;">
-                    <span class="font-bold">Model number: </span>${modelNumber.substring(
-                      0,
-                      15
-                    )}
-                  </div>
-                  <div style="margin-top: 0px;">${modelNumber.substring(
-                    15,
-                    41
-                  )}</div>
-                  <div style="margin-top: 0px;">${modelNumber.substring(
-                    41,
-                    65
-                  )}</div>
-                  <div style="margin-top: 0px;">${modelNumber.substring(
-                    65,
-                   90
-                  )}</div>
-        
-                  <div class="h-[5px]"></div>
-                  <div>OPTIONS 1 ></div>
-                  <div>OPTIONS 2 ></div>
-                  <div class="h-[5px]"></div>
-                  <div>Dev. version: ${deviceVersion}</div>
-                  <div>Update:</div>
-                </div>
-        
-                <!-- QR Code positioned 10px from bottom border -->
-                <div class="absolute bottom-[2px] left-[6.6rem] w-[33px] h-[33px] border text-center flex items-center justify-center">
-                  <img src="${qrDataUrl}" alt="QR Code" class="w-full h-full object-contain" />
-                </div>
-              
-                <!-- Right Section with no gaps between headings and values -->
-<div class="text-[8px] w-[60%] leading-[0.9rem] p-1 font-bold">
-  <p>${power}</p>
-  <p>Protection class: IP67/IP67</p>
-  <p>Tamb: ${tamb}</p>
-  
-  <!-- Using table display for perfect alignment without gaps -->
-  <div style="display: table; width: 100%;">
-    <div style="display: table-row;">
-      <div style="display: table-cell; width: 50%;">Size: ${size}</div>
-      <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Qmax: ${qmax}</div>
-      <div style="display: table-cell;">Fexc: ${fexc}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Liner mat: ${liner}</div>
-      <div style="display: table-cell;">Elect: ${elect}</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Tmed: ${tmed}</div>
-      <div style="display: table-cell;">PED:</div>
-    </div>
-    <div style="display: table-row;">
-      <div style="display: table-cell;">Ss: ${ss}</div>
-      <div style="display: table-cell;">Sz: ${sz}</div>
-    </div>
-  </div>
-</div>
               </div>
-        
-              <!-- Optional Middle Section -->
-              ${middleSectionContent}
-        
-              <!-- Footer -->
-              <div class="flex font-semibold justify-between items-start mt-1 text-[8px] px-2">
-                <div>
-                  <div>Made in:</div>
-                  <div>ABB India Limited, Bangalore</div>
-                  <div class="text-center">${date}</div>
-                </div>
-                                  <div class="">
-                  <div class="w-full">Designed by ABB AG</div>
-                  <div>Goettingen, Germany</div>
-                </div>
-                <div class="flex mr-6 mt-3">
-                  <div class="w-25 h-8 mt-[-15px] mr-[-25px]">
-                    <img src=${dispose} alt="Dispose Icon" class="w-25 h-8" />
-                  </div>
+            </div>
+      
+            <!-- Optional Middle Section -->
+            ${middleSectionContent}
+      
+            <!-- Footer -->
+            <div class="flex font-semibold justify-between items-start mt-1 text-[8px] px-2">
+              <div>
+                <div>Made in:</div>
+                <div>ABB India Limited, Bangalore</div>
+                <div class="text-center">${date}</div>
+              </div>
+              <div class="">
+                <div class="w-full">Designed by ABB AG</div>
+                <div>Goettingen, Germany</div>
+              </div>
+              <div class="flex mr-6 mt-3">
+                <div class="w-25 h-8 mt-[-15px] mr-[-25px]">
+                  <img src=${dispose} alt="Dispose Icon" class="w-25 h-8" />
                 </div>
               </div>
             </div>
-          </body>
+          </div>
+        </div>
+        </body>
         </html>
-        `;
+      `;
       }
 
-      if (labelRef.current) {
-        labelRef.current.innerHTML = "";
-        labelRef.current.appendChild(printContainer.cloneNode(true));
-      }
+      // First, set the selected label and open modal
+      setSelectedLabel(label);
+      setPreviewOpen(true);
+
+      // Wait for modal to render, then inject content
+      setTimeout(() => {
+        if (labelRef.current) {
+          labelRef.current.innerHTML = "";
+          labelRef.current.appendChild(printContainer.cloneNode(true));
+
+          // Inject QR codes after DOM is ready
+          setTimeout(() => {
+            const qrContainers =
+              labelRef.current.querySelectorAll(".qr-code-container");
+            qrContainers.forEach((container) => {
+              const root = ReactDOM.createRoot(container);
+              root.render(
+                <QRCodeSVG
+                  className="ml-[-8px] mb-1.5"
+                  value={qrUrl}
+                  size={35}
+                  level="H"
+                  includeMargin={false}
+                />
+              );
+            });
+          }, 0);
+        }
+      }, 100);
     } catch (error) {
       console.error("Error generating label preview:", error);
+      showAlert("Failed to generate label preview", "error");
     }
   };
 
@@ -2320,8 +2376,14 @@ const MainPageTable = () => {
       <Dialog
         open={previewOpen}
         onClose={closePreviewModal}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
+        PaperProps={{
+          sx: {
+            minHeight: "80vh",
+            maxHeight: "90vh",
+          },
+        }}
       >
         <DialogTitle>
           <Box
@@ -2331,13 +2393,15 @@ const MainPageTable = () => {
               alignItems: "center",
             }}
           >
-            <Typography variant="h6">Label Preview</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Label Preview
+            </Typography>
             <IconButton onClick={closePreviewModal} size="small">
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ bgcolor: "#f5f5f5", p: 3 }}>
           <Box
             ref={labelRef}
             sx={{
@@ -2345,14 +2409,13 @@ const MainPageTable = () => {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              p: 2,
-              minHeight: "400px",
+              minHeight: "500px",
             }}
           >
-            {/* Label content will be injected here via labelRef */}
+            {/* Label content will be injected here */}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button
             variant="outlined"
             onClick={closePreviewModal}
@@ -2365,6 +2428,12 @@ const MainPageTable = () => {
             color="primary"
             onClick={printLabel}
             startIcon={<PrintIcon />}
+            sx={{
+              background: "linear-gradient(45deg, #667eea, #764ba2)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #5a67d8, #6b46c1)",
+              },
+            }}
           >
             Print Label
           </Button>
