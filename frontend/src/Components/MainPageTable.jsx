@@ -871,8 +871,7 @@ const MainPageTable = () => {
     return csvRow;
   });
 
-  // Replace the handlePrintLabel function in your MainPageTable component with this updated version:
-
+  // ENHANCED handlePrintLabel function with ALL 7 LOGO OPTIONS
   const handlePrintLabel = async (label) => {
     try {
       const serialNumber = label?.SerialNumber || "3K8225003G0365";
@@ -911,17 +910,19 @@ const MainPageTable = () => {
       console.log("Current logoType:", logoType);
       console.log("Current labelType:", labelType);
 
+      // ============ ALL 7 LOGO OPTIONS FOR SENSOR(96x98) ============
       if (labelType === "sensor(96x98)") {
         if (logoType === "logo_1") {
+          // Logo 1: Y0/Y1 certification - No FM logo, empty space
           middleSectionContent = `
-        <!-- Black Middle Section for logo 1 (96x98) with consistent spacing -->
-        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+        <!-- Logo 1 (96x98) - Y0/Y1 Certification: No FM Logo -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
           <div class="mr-2">
             <!-- Empty space where logo would be -->
             <div class="h-[7rem] w-[9rem]"></div>
           </div>
           <div>
-            <!-- Empty lines with same spacing structure as logo_2 and logo_3 -->
+            <!-- Empty lines with same spacing -->
             <div>&nbsp;</div>
             <div>&nbsp;</div>
             <div>&nbsp;</div>
@@ -938,22 +939,23 @@ const MainPageTable = () => {
           </div>
         </div>`;
         } else if (logoType === "logo_2") {
+          // Logo 2: F2 certification - Standard FM with T6...T1
           middleSectionContent = `
-        <!-- Middle Section for logo 2 (96x98) -->
+        <!-- Logo 2 (96x98) - F2 Certification -->
         <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
           <div class="mr-2">
             <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
           </div>
           <div>
             <div>FM17US0062X</div>
-            <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-            <div>CL I, ZN 2, AEx ec IIC T6...T1</div>
-            <div>ZN 21, AEx tb IIIC T80°C...T165°C</div>
+            <div>NI:CL I, Div 2, GPS ABCD T6...T1</div>
+            <div> DIP: CL II,III, Div 2, GPS EFG T6…T3B</div>
+            <div> CL I, ZN 2, AEx ec IIC T6…T1</div>
+            <div> ZN 21, AEx tb IIIC T80°C...T165°C</div>
             <br />
             <div>FM17CA0033X</div>
             <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+            <div> DIP: CL II,III, Div 2, GPS EFG T6…T3B</div>
             <div>CL I, ZN 2, Ex ec IIC T6...T1 Gc</div>
             <div>Ex tb IIIC T80°C...T165°C Db</div>
             <div class="h-[2px]"></div>
@@ -961,98 +963,152 @@ const MainPageTable = () => {
           </div>
         </div>`;
         } else if (logoType === "logo_3") {
+          // Logo 3: F1 certification - Division 1 with Ex d mb
           middleSectionContent = `
-        <!-- Middle Section for logo 3 (96x98) -->
-        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1">
+        <!-- Logo 3 (96x98) - F1 Certification: Division 1 -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
           <div class="mr-2">
             <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
           </div>
           <div>
             <div>FM17US0062X</div>
-            <div>NI:CL I,Div2,GPS ABCD T4</div>
-            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-            <div>CL I, ZN 2, AEx ec IIC T4</div>
-            <div> ZN 21, AEx tb IIIC T80°C</div>
+            <div>S-XP-IS: CL I, Div 1, GPS ABCD T6...T1</div>
+            <div> DIP: CL II,III, Div 1, GPS EFG T6...T3B</div>
+            <div> CL I, ZN 1, AEx db eb mb [ia Ga] IIB+H2 T6…T1 Gb</div>
+            <div>ZN 21, AEx tb [ia Da] IIIC T80°C...T165°C Db</div>
             <br />
             <div>FM17CA0033X</div>
-            <div>NI:CL I,Div2,GPS ABCD T4</div>
-            <div>DIP:CL II,III,Div2,GPS EFG T4</div>
+            <div> S-XP-IS: CL I, Div 1, GPS BCD T6...T1</div>
+            <div> DIP: CL II,III, Div 1, GPS EFG T6...T3B</div>
+            <div>CL I, ZN 1, Ex db eb mb [ia Ga] IIB+H2 T6…T1 Gb</div>
+            <div> Ex tb [ia Da] IIIC T80°C...T165°C Db</div>
+            <div class="h-[2px]"></div>
+            <div>See handbook for temperature class information and installation drawing</div>
+          </div>
+        </div>`;
+        } else if (logoType === "logo_7") {
+          // Logo 7: Alternative T4 certification
+          middleSectionContent = `
+        <!-- Logo 7 (96x98) - T4 Certification -->
+        <div class="flex font-semibold flex-row items-center justify-start text-[8px] border-b-2 border-black w-full p-1 h-[10rem]">
+          <div class="mr-2">
+            <img src="${fm}" alt="FM Logo" class="h-[7rem] w-[9rem]" />
+          </div>
+          <div>
+            <div>FM17US0062X</div>
+            <div> NI: CL I, Div 2, GPS ABCD T4</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T4</div>
+            <div> CL I, ZN 2, AEx ec IIC T4</div>
+            <div>ZN 21, AEx tb IIIC T80°C</div>
+            <br />
+            <div>FM17CA0033X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T4</div>
+            <div> DIP: CL II,III, Div 2, GPS EFG T4</div>
             <div>Ex ec IIC T4 Gc</div>
-            <div>Ex tb IIIC T80°C Db</div>
+            <div> Ex tb IIIC T80°C Db</div>
+            <div class="h-[2px]"></div>
             <div>See handbook for temperature class information</div>
           </div>
         </div>`;
         } else {
+          // Default fallback for unknown logo types
           middleSectionContent = `
         <!-- Default Middle Section (96x98) -->
-        <div class="flex-1 border-b-2 border-black w-full p-1">
+        <div class="flex-1 border-b-2 border-black w-full p-1 h-[10rem]">
           <div class="text-[8px] font-semibold">
             <div>No certification information available</div>
             <div>Please contact ABB support for details</div>
           </div>
         </div>`;
         }
-      } else if (labelType === "sensor") {
+      }
+      // ============ ALL 7 LOGO OPTIONS FOR SENSOR (113x58.5) ============
+      else if (labelType === "sensor") {
         if (logoType === "logo_1") {
+          // Logo 1: Y0/Y1 certification - Black space
           middleSectionContent = `
-        <!-- Black Middle Section for logo 1 (sensor) -->
-        <div class="flex-1 border-b-2 border-black w-full p-1">
+        <!-- Logo 1 (sensor 113x58.5) - Y0/Y1: No FM Logo -->
+        <div class="flex-1 border-b-2 border-black w-full p-1 h-[3rem]">
           <!-- Black space -->
         </div>`;
-        } else if (logoType === "logo_2") {
+        } else if (logoType === "logo_4") {
+          // Logo 4: F2 certification for 113x58.5 - Compact layout
           middleSectionContent = `
-        <!-- Middle Section for logo 2 (sensor) -->
+        <!-- Logo 4 (sensor 113x58.5) - F2 Certification -->
         <div class="flex mt-[0.3rem] flex-row font-semibold items-center justify-between text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
           <div class="flex items-center">
             <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
             <div class="text-3px -mt-2 font-bold">
               <div>FM17US0062X</div>
-              <div>NI: CL I, Div 2, GPS ABCD T6...T1</div>
-              <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
+              <div>NI:CL I, Div 2, GPS ABCD T6...T1</div>
+              <div>DIP: CL II,III, Div 2, GPS EFG T6…T3B</div>
               <div>See handbook for temperature class information</div>
             </div>
           </div>
-          <div class="mr-20 text-3px font-bold -mt-4 ">
-          <div>FM17CA0033X</div>
-            <div>NI: CL I, ZN 2, AEx qc IIC T6...T1</div>
-            <div>DIP: CL II,III, Div 2, GPS EFG T6...T3B</div>
-            
+          <div class="mr-20 text-3px font-bold -mt-4">
+            <div>FM17CA0033X</div>
+            <div> NI:CL I, Div 2, GPS ABCD T6...T1</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T6…T3B</div>
           </div>
         </div>`;
-        } else if (logoType === "logo_3") {
+        } else if (logoType === "logo_5") {
+          // Logo 5: F1 certification for 113x58.5 - Division 1
           middleSectionContent = `
-        <!-- Middle Section for logo 3 (sensor) -->
-       <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+        <!-- Logo 5 (sensor 113x58.5) - F1 Certification: Division 1 -->
+        <div class="flex mt-[0.4rem] flex-row font-semibold items-center justify-between text-[7px] border-b-2 h-[3rem] border-black w-full p-1">
           <div class="flex items-center">
             <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
             <div class="text-3px -mt-2 font-bold">
               <div>FM17US0062X</div>
-              <div>NI:CL I,Div2,GPS ABCD T4</div>
-              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-               <div>See handbook for temperature class information</div>
+              <div>S-XP: CL I, Div 1, GPS ABCD T6...T1</div>
+              <div> DIP: CL II,III, Div 1, GPS EFG T6...T3B</div>
+              <div>See handbook for temperature class information</div>
             </div>
           </div>
-          <div class="text-3px font-bold -mt-4  -ml-10">
-           <div>FM17CA0033X</div>
-            <div>NI:CL I,Div2,GPS ABCD T4</div>
-              <div>DIP:CL II,III,Div2,GPS EFG T4</div>
-           
+          <div class="mr-20 text-3px font-bold -mt-2">
+            <div>FM17CA0033X</div>
+            <div>S-XP: CL I, Div 1, GPS BCD T6...T1</div>
+            <div> DIP: CL II,III, Div 1, GPS EFG T6...T3B</div>
+          </div>
+        </div>`;
+        } else if (logoType === "logo_6") {
+          // Logo 6: Alternative F1 for 113x58.5 - T4
+          middleSectionContent = `
+        <!-- Logo 6 (sensor 113x58.5) - F1 T4 Certification -->
+        <div class="flex mt-[0.3rem] flex-row font-bold items-center gap-5 text-[8px] border-b-2 h-[3rem] border-black w-full p-1">
+          <div class="flex items-center">
+            <img src="${fm}" alt="FM Logo" class="h-[3rem] w-[5rem] mr-2" />
+            <div class="text-2px -mt-2 font-bold">
+              <div>FM17US0062X</div>
+              <div> NI: CL I, Div 2, GPS ABCD T4</div>
+              <div> DIP: CL II,III, Div 2, GPS EFG T4</div>
+              <div>CL I, ZN 2, AEx ec IIC T4</div>
+              <div>ZN 21, AEx tb IIIC T80°C  </div>
+              <div>See handbook for temperature class information</div>
+            </div>
+          </div>
+          <div class="text-3px font-bold -mt-4 -ml-10">
+            <div>FM17CA0033X</div>
+            <div>NI: CL I, Div 2, GPS ABCD T4</div>
+            <div>DIP: CL II,III, Div 2, GPS EFG T4</div>
+            <div>Ex ec IIC T4 Gc</div>
+            <div> Ex tb IIIC T80°C Db</div>
           </div>
         </div>`;
         } else {
+          // Default fallback
           middleSectionContent = `
         <!-- Default Middle Section (sensor) -->
-        <div class="flex-1 border-b-2 border-black w-full p-1">
+        <div class="flex-1 border-b-2 border-black w-full p-1 h-[3rem]">
           <div class="text-[8px] font-semibold">
             <div>No certification information available</div>
             <div>Please contact ABB support for details</div>
           </div>
         </div>`;
         }
-      } else if (
-        labelType === "sensor(115x35)" ||
-        labelType === "transmitter"
-      ) {
+      }
+      // ============ SENSOR(115x35) and TRANSMITTER - No middle section ============
+      else if (labelType === "sensor(115x35)" || labelType === "transmitter") {
         middleSectionContent = "";
       }
 
@@ -1151,12 +1207,12 @@ const MainPageTable = () => {
                       )}</div>
                   </div>
                   
-                  <div class="mt-2">
+                  <div class="mt-1">
                       <div>Dev. version: ${deviceVersion}</div>
                       <div>Update:</div>
                   </div>
                   
-                  <div class="absolute right-1 bottom-2 flex items-center justify-center">
+                  <div class="absolute right-1 mt-11 flex items-center justify-center">
                       <div class="qr-code-container"></div>
                   </div>
               </div>
@@ -1170,19 +1226,19 @@ const MainPageTable = () => {
                   <!-- Specifications Grid -->
                   <div class="grid grid-cols-2 gap-x-2 mt-[-9px] text-[8px] leading-tight">
                       <div>Size: ${size}</div>
-                      <div>Fitting: ${fitting}</div>
+                      <div class="ml-[-20px]">Fitting: ${fitting}</div>
                       
                       <div>Qmax: ${qmax}</div>
-                      <div>Fexc: ${fexc}</div>
+                      <div class="ml-[-20px]">Fexc: ${fexc}</div>
                       
                       <div>Liner mat: ${liner}</div>
-                      <div>Elect: ${elect}</div>
+                      <div class="ml-[-20px]">Elect: ${elect}</div>
                       
                       <div>Tmed: ${tmed}</div>
-                      <div>PED:</div>
+                      <div class="ml-[-20px]">PED:</div>
                       
                       <div>Ss: ${ss}</div>
-                      <div>Sz: ${sz}</div>
+                      <div class="ml-[-20px]">Sz: ${sz}</div>
                   </div>
               </div>
           </div>
@@ -1279,12 +1335,12 @@ const MainPageTable = () => {
                       )}</div>
                   </div>
                   
-                  <div class="mt-2">
+                  <div class="mt-1">
                       <div>Dev. version: ${deviceVersion}</div>
                       <div>Update:</div>
                   </div>
                   
-                  <div class="absolute right-1 bottom-2 w-8 h-8 border border-black bg-white flex items-center justify-center">
+                  <div class="absolute right-1 mt-11 flex items-center justify-center">
                       <div class="qr-code-container"></div>
                   </div>
               </div>
@@ -1296,7 +1352,7 @@ const MainPageTable = () => {
                   <div class="mb-2">Tamb: ${tamb}</div>
                   
                   <!-- Specifications Grid -->
-                  <div class="grid grid-cols-2 gap-x-1 mt-[-5px] text-[8px] leading-tight">
+                  <div class="grid grid-cols-2 gap-x-1 mt-[-9px] text-[8px] leading-tight">
                       <div>Size:</div>
                       <div>Fitting:</div>
                       
@@ -1388,8 +1444,8 @@ const MainPageTable = () => {
             )}
           </div>
           <div style="margin-top: 0px;">${modelNumber.substring(23, 55)}</div>
-          <div style="margin-top: 0px;">${modelNumber.substring(55, 85)}</div>
-      <div style="margin-top: 0px;">${modelNumber.substring(85, 120)}</div>
+          <div style="margin-top: 0px;">${modelNumber.substring(55, 80)}</div>
+      <div style="margin-top: 0px;">${modelNumber.substring(81, 120)}</div>
           <div class="h-[2px]"></div>
           <div class="mt-2">Dev. version: ${deviceVersion}</div>
           <!-- QR Code positioned with absolute positioning -->
@@ -1398,36 +1454,30 @@ const MainPageTable = () => {
           </div>
         </div>
 
-        <!-- Right Section with no gaps between headings and values -->
-        <div class="text-[8px] w-[60%] leading-[11px] p-1 font-bold">
-        <p>${power}</p>
-        <p>Protection class: ${protection}</p>
-        <p>Tamb: ${tamb}</p>
-        
-        <!-- Using table display for perfect alignment without gaps -->
-        <div style="display: table; width: 100%;">
-          <div style="display: table-row;">
-            <div style="display: table-cell; width: 50%;">Size: ${size}</div>
-            <div style="display: table-cell; width: 50%;">Fitting: ${fitting}</div>
-          </div>
-          <div style="display: table-row;">
-            <div style="display: table-cell;">Qmax:${qmax}</div>
-            <div style="display: table-cell;">Fexc: ${fexc}</div>
-          </div>
-          <div style="display: table-row;">
-            <div style="display: table-cell;">Liner mat: ${liner}</div>
-            <div style="display: table-cell;">Elect: ${elect}</div>
-          </div>
-          <div style="display: table-row;">
-            <div style="display: table-cell;">Tmed: ${tmed}</div>
-            <div style="display: table-cell;">PED:</div>
-          </div>
-          <div style="display: table-row;">
-            <div style="display: table-cell;">Ss: ${ss}</div>
-            <div style="display: table-cell;">Sz: ${sz}</div>
-          </div>
-        </div>
-        </div>
+         <!-- Right Section -->
+              <div class="text-[8px] w-3/5 p-1 font-bold">
+                  <div class="mb-1">${power}</div>
+                  <div class="mt-[-5px]">Protection class:${protection}</div>
+                  <div class="mb-2">Tamb: ${tamb}</div>
+                  
+                  <!-- Specifications Grid -->
+                  <div class="grid grid-cols-2 gap-x-2 mt-[-9px] text-[8px] leading-tight">
+                      <div>Size: ${size}</div>
+                      <div class="ml-[-30px]">Fitting: ${fitting}</div>
+                      
+                      <div>Qmax: ${qmax}</div>
+                      <div class="ml-[-30px]">Fexc: ${fexc}</div>
+                      
+                      <div>Liner mat: ${liner}</div>
+                      <div class="ml-[-30px]">Elect: ${elect}</div>
+                      
+                      <div>Tmed: ${tmed}</div>
+                      <div class="ml-[-30px]">PED:</div>
+                      
+                      <div>Ss: ${ss}</div>
+                      <div class="ml-[-30px]">Sz: ${sz}</div>
+                  </div>
+              </div>
       </div>
 
      
@@ -1523,12 +1573,12 @@ const MainPageTable = () => {
                 <div style="margin-top: 4px;">
                   <span class="font-bold">Model number: </span>${modelNumber.substring(
                     0,
-                    15
+                    14
                   )}
                 </div>
                 <div style="margin-top: 0px;">${modelNumber.substring(
                   15,
-                  41
+                  40
                 )}</div>
                 <div style="margin-top: 0px;">${modelNumber.substring(
                   41,
@@ -1539,10 +1589,10 @@ const MainPageTable = () => {
                   90
                 )}</div>
       
-                <div class="h-[5px]"></div>
+                <div class="h-[3px]"></div>
                 <div>OPTIONS 1 ></div>
                 <div>OPTIONS 2 ></div>
-                <div class="h-[5px]"></div>
+                <div class="h-[1px]"></div>
                 <div>Dev. version: ${deviceVersion}</div>
                 <div>Update:</div>
               </div>
@@ -1588,7 +1638,7 @@ const MainPageTable = () => {
             ${middleSectionContent}
       
             <!-- Footer -->
-            <div class="flex font-semibold justify-between items-start mt-1 text-[8px] px-2">
+            <div class="flex font-semibold justify-between items-start text-[8px] px-2">
               <div>
                 <div>Made in:</div>
                 <div>ABB India Limited, Bangalore</div>

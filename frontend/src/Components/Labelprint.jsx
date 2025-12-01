@@ -23,6 +23,8 @@ import {
   Alert,
   Switch,
   FormControlLabel,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -39,6 +41,7 @@ import StraightenIcon from "@mui/icons-material/Straighten";
 import VersionIcon from "@mui/icons-material/Rule";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import SpeedIcon from "@mui/icons-material/Speed";
+import ImageIcon from "@mui/icons-material/Image";
 import { api } from "../apiConfig";
 
 // List of collections to exclude from the UI
@@ -149,8 +152,85 @@ const COLLECTION_ORDERS = {
   ],
 };
 
-// Static data for Tamb dropdown
+/**
+ * ENHANCED: Determines the appropriate logo based on Label Type and Explosion Protection Certification
+ * Based on the PDF conditions document
+ */
+const determineLogoType = (labelType, explosionCert) => {
+  if (!labelType || !explosionCert) return "";
 
+  const cert = explosionCert.toUpperCase().trim();
+  const label = labelType.toLowerCase().trim();
+
+  console.log(
+    `🔍 Auto-selecting logo for LabelType: "${labelType}", Cert: "${explosionCert}"`
+  );
+
+  // Condition 1: Y0 or Y1 for ALL label types
+  if (
+    cert === "Y0" ||
+    cert === "Y1" ||
+    cert.includes("Y0") ||
+    cert.includes("Y1")
+  ) {
+    console.log("✓ Logo_1 (Y0/Y1 - all label types)");
+    return "Logo_1";
+  }
+
+  // Conditions for 96x98 labels
+  if (label.includes("96") && label.includes("98")) {
+    // Condition 2: F2 for 96x98
+    if (cert === "F2" || cert.includes("F2")) {
+      console.log("✓ Logo_2 (F2 for 96x98)");
+      return "Logo_2";
+    }
+    // Condition 3: F1 for 96x98
+    if (cert === "F1" || cert.includes("F1")) {
+      console.log("✓ Logo_3 (F1 for 96x98)");
+      return "Logo_3";
+    }
+  }
+
+  // Conditions for 113x58.5 labels (Sensor without 96x98 or 115x35)
+  // The value for this label type is just "Sensor" (MenuItem value="Sensor")
+  if (
+    label === "sensor" ||
+    (label.includes("sensor") &&
+      label.includes("113") &&
+      !label.includes("115") &&
+      !label.includes("96"))
+  ) {
+    // Make sure it's not one of the other sensor types by checking it doesn't have dimension identifiers
+    if (
+      !label.includes("96") &&
+      !label.includes("98") &&
+      !label.includes("115") &&
+      !label.includes("35")
+    ) {
+      // Condition 4: F2 for 113x58.5
+      if (cert === "F2" || cert.includes("F2")) {
+        console.log("✓ Logo_4 (F2 for 113x58.5)");
+        return "Logo_4";
+      }
+      // Condition 5: F1 for 113x58.5
+      if (cert === "F1" || cert.includes("F1")) {
+        console.log("✓ Logo_5 (F1 for 113x58.5)");
+        return "Logo_5";
+      }
+    }
+  }
+
+  // Condition 6: For 115x35 labels (both Sensor and Transmitter) with F1
+  if (label.includes("115") && label.includes("35")) {
+    if (cert === "F1" || cert.includes("F1")) {
+      console.log("✓ Logo_6 (F1 for 115x35)");
+      return "Logo_6";
+    }
+  }
+
+  console.log("✗ No automatic logo match found");
+  return "";
+};
 
 const DEV_VERSION_OPTIONS = [
   { value: "01.14.00", label: "01.14.00" },
@@ -295,7 +375,6 @@ const parseModelNumberForAllCollections = (
     } else {
       console.log(`✗ No match found for ${collectionName}`);
       // Try to find any single character or skip this collection
-      // This handles cases where the format might be different
       if (currentPosition < remainingCode.length) {
         const nextChar = remainingCode.charAt(currentPosition);
         if (nextChar !== "-") {
@@ -309,7 +388,6 @@ const parseModelNumberForAllCollections = (
             console.log(`✓ Found single char match: "${nextChar}"`);
           } else {
             console.log(`Skipping unmatched character: "${nextChar}"`);
-            // Don't increment position, let next collection try
           }
         }
       }
@@ -328,7 +406,6 @@ const parseModelNumberForAllCollections = (
 };
 
 // Helper function to update special fields from parsed collections
-// FIXED: Helper function to update special fields from parsed collections - also needs specific matching
 const updateSpecialFieldsFromCollections = (
   parsedCollections,
   collectionsWithCodes,
@@ -346,7 +423,7 @@ const updateSpecialFieldsFromCollections = (
     const isPowerSupply =
       lowerName.includes("power") && lowerName.includes("supply");
 
-    // FIXED: More specific matching for protection class
+    // More specific matching for protection class
     const isProtectionClass =
       (lowerName.includes("protection class") &&
         (lowerName.includes("transmitter") || lowerName.includes("sensor"))) ||
@@ -362,7 +439,7 @@ const updateSpecialFieldsFromCollections = (
     const isLiner =
       lowerName.includes("liner") && lowerName.includes("material");
 
-    // FIXED: More specific matching for process connection
+    // More specific matching for process connection
     const isProcessConnection =
       (lowerName.includes("process connection") &&
         !lowerName.includes("material")) ||
@@ -370,6 +447,12 @@ const updateSpecialFieldsFromCollections = (
 
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
+
+    // ENHANCED: Check for Explosion Protection Certification
+    const isExplosionCert =
+      lowerName.includes("explosion") &&
+      lowerName.includes("protection") &&
+      lowerName.includes("certification");
 
     // Find the matching item in the collection
     const codeItems = collectionsWithCodes[collectionName] || [];
@@ -392,6 +475,7 @@ const updateSpecialFieldsFromCollections = (
         else if (isProcessConnection) setters.setFitting(description);
         else if (isElect) setters.setElect(description);
         else if (isPower) setters.setPower(description);
+        else if (isExplosionCert) setters.setExplosionCert(codeValue); // ENHANCED: Set explosion cert
       }
     } else {
       console.log(`No matching item found for ${collectionName}: ${codeValue}`);
@@ -400,8 +484,6 @@ const updateSpecialFieldsFromCollections = (
 
   console.log("=== SPECIAL FIELDS UPDATE COMPLETE ===");
 };
-
-// FIXED: Handle collection code selection - more specific protection class matching
 
 // Fast Loading Dropdown Component with Virtual Scrolling
 const FastDropdown = ({
@@ -503,9 +585,7 @@ const FastDropdown = ({
                 width: 350,
               },
             },
-            // Disable auto focus to improve performance
             autoFocus: false,
-            // Add search functionality
             MenuListProps: {
               onKeyDown: (e) => {
                 if (e.key.length === 1) {
@@ -780,6 +860,12 @@ const LabelPrint = () => {
   const [selectedQmax, setSelectedQmax] = useState("");
   const [selectedTmedDropdown, setSelectedTmedDropdown] = useState("");
 
+  // ENHANCED: Add state for explosion protection certification
+  const [explosionCert, setExplosionCert] = useState("");
+
+  // ENHANCED: Add state for manual logo override
+  const [manualLogoOverride, setManualLogoOverride] = useState(false);
+
   // New state variables for storing descriptions
   const [sizeDescription, setSizeDescription] = useState("");
   const [qmaxDescription, setQmaxDescription] = useState("");
@@ -787,17 +873,16 @@ const LabelPrint = () => {
   // New state to control LogoType visibility
   const [showLogoType, setShowLogoType] = useState(true);
 
-  // FIXED: Control states for edit mode
+  // Control states for edit mode
   const [isEditModeInitialized, setIsEditModeInitialized] = useState(false);
-  const [isInEditMode, setIsInEditMode] = useState(false); // NEW: Persistent edit mode flag
-  const [originalLabelDetails, setOriginalLabelDetails] = useState(""); // NEW: Store original value
+  const [isInEditMode, setIsInEditMode] = useState(false);
+  const [originalLabelDetails, setOriginalLabelDetails] = useState("");
 
   // Preload all databases on component mount for instant access
   useEffect(() => {
     const preloadAllDatabases = async () => {
       const databases = ["Fep631", "Fep632", "Transmitter"];
 
-      // Check cache first
       const cachedPromises = databases.map(async (dbName) => {
         const cached = getCacheData(dbName);
         if (cached) {
@@ -946,8 +1031,7 @@ const LabelPrint = () => {
     }
   };
 
-  // Ultra-fast collections loading from cache
-  // NEW: Async version of loadCollectionsFromCache that returns a Promise
+  // Async version of loadCollectionsFromCache that returns a Promise
   const loadCollectionsFromCacheAsync = async (dbName) => {
     setIsLoading(true);
     setError(null);
@@ -970,7 +1054,6 @@ const LabelPrint = () => {
         return true;
       } else {
         console.log(`No cache found for ${dbName}, falling back to API call`);
-        // Call the API version and wait for it
         const success = await fetchCollectionsFromDatabase(dbName);
         return success;
       }
@@ -982,7 +1065,6 @@ const LabelPrint = () => {
     }
   };
 
-  // FIXED: Make fetchCollectionsFromDatabase return a Promise
   const fetchCollectionsFromDatabase = async (dbName) => {
     setIsLoading(true);
     setError(null);
@@ -1029,15 +1111,12 @@ const LabelPrint = () => {
     }
   };
 
-  // Fallback function for API calls (only used if cache miss)
-
-  // FIXED: Initialize edit mode - this runs once when component mounts in edit mode
+  // Initialize edit mode - this runs once when component mounts in edit mode
   useEffect(() => {
     if (isEditMode && editData && !isEditModeInitialized) {
       console.log("=== INITIALIZING EDIT MODE ===");
       console.log("Edit data:", editData);
 
-      // FIXED: Set persistent edit mode flags
       setIsEditModeInitialized(true);
       setIsInEditMode(true);
       setOriginalLabelDetails(editData.LabelDetails || "");
@@ -1183,6 +1262,7 @@ const LabelPrint = () => {
               setFitting,
               setElect,
               setPower,
+              setExplosionCert, // ENHANCED: Add explosion cert setter
             };
 
             updateSpecialFieldsFromCollections(
@@ -1210,11 +1290,39 @@ const LabelPrint = () => {
     collectionsWithCodes,
   ]);
 
+  // ENHANCED: Auto-update LogoType when LabelType or explosionCert changes (only for Logos 1-6)
+  useEffect(() => {
+    // Only auto-update if Logo 7 is not manually selected
+    if (!manualLogoOverride && LabelType && explosionCert) {
+      const autoLogo = determineLogoType(LabelType, explosionCert);
+      if (autoLogo && autoLogo !== LogoType) {
+        console.log(`🔄 Auto-updating LogoType to: ${autoLogo}`);
+        setLogoType(autoLogo);
+      }
+    }
+  }, [LabelType, explosionCert, manualLogoOverride]);
+
+  // ENHANCED: Special handling for edit mode - update logo when explosion cert changes via dropdown
+  useEffect(() => {
+    if (isInEditMode && !manualLogoOverride && LabelType && explosionCert) {
+      const autoLogo = determineLogoType(LabelType, explosionCert);
+      if (autoLogo && autoLogo !== LogoType) {
+        console.log(
+          `🔄 [EDIT MODE] Auto-updating LogoType to: ${autoLogo} based on cert: ${explosionCert}`
+        );
+        setLogoType(autoLogo);
+      }
+    }
+  }, [explosionCert, isInEditMode, manualLogoOverride, LabelType, LogoType]);
+
   // Debug useEffect to monitor state changes
   useEffect(() => {
     console.log("=== STATE DEBUG ===");
     console.log("- LabelType:", LabelType);
     console.log("- BasicCode:", basicCode);
+    console.log("- Explosion Cert:", explosionCert);
+    console.log("- LogoType:", LogoType);
+    console.log("- Manual Override:", manualLogoOverride);
     console.log(
       "- Collections count:",
       Object.keys(collectionsWithCodes).length
@@ -1224,6 +1332,9 @@ const LabelPrint = () => {
   }, [
     LabelType,
     basicCode,
+    explosionCert,
+    LogoType,
+    manualLogoOverride,
     collectionsWithCodes,
     showCollectionDropdown,
     isInEditMode,
@@ -1246,7 +1357,6 @@ const LabelPrint = () => {
     console.log("- LabelType:", LabelType);
     console.log("- isLoading:", isLoading);
 
-    // FIXED: Show dropdown when basic code is set and collections are loaded
     if (basicCode && Object.keys(collectionsWithCodes).length > 0) {
       if (!showCollectionDropdown) {
         console.log(
@@ -1271,23 +1381,28 @@ const LabelPrint = () => {
     isLoading,
   ]);
 
-  // FIXED: Handle LabelType change with collection loading logic
-  // FIXED: Handle LabelType change with proper async collection loading
+  // Handle LabelType change with proper async collection loading
   const handleLabelTypeChange = async (event) => {
     const value = event.target.value;
     console.log(`=== LABEL TYPE CHANGE: ${value} ===`);
     setLabelType(value);
 
-    // Handle LogoType visibility (this should work for both edit and new mode)
+    // Handle LogoType visibility
     const shouldHideLogoType =
       value === "Sensor(115x35)" || value === "Transmitter";
     setShowLogoType(!shouldHideLogoType);
 
     if (shouldHideLogoType) {
       setLogoType("");
+      setManualLogoOverride(false);
+    } else {
+      // Reset manual override when changing label type (unless Logo 7 is selected)
+      if (LogoType !== "Logo_7") {
+        setManualLogoOverride(false);
+      }
     }
 
-    // FIXED: Only handle collection loading logic for new mode
+    // Only handle collection loading logic for new mode
     if (!isInEditMode) {
       console.log("Setting basicCode and loading collections for new mode");
 
@@ -1311,12 +1426,10 @@ const LabelPrint = () => {
       setSelectedQmax("");
       setQmaxDescription("");
       setSelectedTmedDropdown("");
+      setExplosionCert(""); // ENHANCED: Reset explosion cert
 
       // Set basicCode to match LabelType
       setBasicCode(value);
-
-      // REMOVED: Don't update LabelDetails with LabelType value
-      // setLabelDetails(value);
 
       // Determine database and load collections
       const dbName = getDatabaseForBasicCode(value);
@@ -1327,7 +1440,6 @@ const LabelPrint = () => {
           `Loading collections for LabelType: ${value}, Database: ${dbName}`
         );
 
-        // Load collections and wait for completion
         try {
           const success = await loadCollectionsFromCacheAsync(dbName);
           if (success) {
@@ -1350,12 +1462,11 @@ const LabelPrint = () => {
       }
       setModelType(defaultModelType);
 
-      // Update label details with basic code only (for new entries)
       updateLabelDetails({}, ss, sz, value);
     }
   };
 
-  // FIXED: Handle Qmax dropdown change - don't auto-update model number in edit mode
+  // Handle Qmax dropdown change
   const handleQmaxChange = (event) => {
     const value = event.target.value;
     setSelectedQmax(value);
@@ -1369,7 +1480,6 @@ const LabelPrint = () => {
       setQmaxDescription("");
     }
 
-    // FIXED: Don't auto-update model number in edit mode
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, sz, basicCode);
     }
@@ -1379,17 +1489,14 @@ const LabelPrint = () => {
     const value = event.target.value;
     setSelectedTmedDropdown(value);
 
-    // UPDATED: Use the new logic for edit mode updates
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, sz, basicCode);
     }
   };
 
-  // Update handleSZChange:
   const handleSZChange = (value) => {
     setSZ(value);
 
-    // UPDATED: Use the new logic for edit mode updates
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, ss, value, basicCode);
     }
@@ -1416,7 +1523,6 @@ const LabelPrint = () => {
       "collections"
     );
 
-    // FIXED: In edit mode, don't clear selections when filtering
     if (!isInEditMode) {
       const updatedSelectedCollections = { ...selectedCollections };
       Object.keys(updatedSelectedCollections).forEach((collectionName) => {
@@ -1430,7 +1536,7 @@ const LabelPrint = () => {
     }
   }, [basicCode, collectionNames, isInEditMode]);
 
-  // Add this mapping object near your TMED_OPTIONS constant
+  // Mapping object for liner material to Tmed
   const LINER_MATERIAL_TO_TMED_MAPPING = {
     // PTFE materials
     PTFE: "130°C(266°F)",
@@ -1451,7 +1557,7 @@ const LabelPrint = () => {
     "Soft Rubber": "60°C(140°F)",
     "SOFT RUBBER": "60°C(140°F)",
     softrubber: "60°C(140°F)",
-    rubber: "60°C(140°F)", // Default rubber to soft rubber
+    rubber: "60°C(140°F)",
     Rubber: "60°C(140°F)",
     RUBBER: "60°C(140°F)",
   };
@@ -1464,30 +1570,23 @@ const LabelPrint = () => {
       `Auto-updating Tmed for liner material: ${linerMaterialDescription}`
     );
 
-    // Check for exact match first
     let tmedValue = LINER_MATERIAL_TO_TMED_MAPPING[linerMaterialDescription];
 
-    // If no exact match, check if the description contains any of the key materials
     if (!tmedValue) {
       const lowerDescription = linerMaterialDescription.toLowerCase();
 
-      // Check for PTFE, PFA, ETFE materials (highest temperature)
       if (
         lowerDescription.includes("ptfe") ||
         lowerDescription.includes("pfa") ||
         lowerDescription.includes("etfe")
       ) {
         tmedValue = "130°C(266°F)";
-      }
-      // Check for hard rubber materials
-      else if (
+      } else if (
         lowerDescription.includes("hard") &&
         lowerDescription.includes("rubber")
       ) {
         tmedValue = "80°C (194°F/176°F)";
-      }
-      // Check for soft rubber or general rubber materials
-      else if (lowerDescription.includes("rubber")) {
+      } else if (lowerDescription.includes("rubber")) {
         tmedValue = "60°C(140°F)";
       }
     }
@@ -1496,7 +1595,6 @@ const LabelPrint = () => {
       console.log(`Setting Tmed to: ${tmedValue}`);
       setSelectedTmedDropdown(tmedValue);
 
-      // Also update the label details if not in edit mode or if updates are allowed
       if (!isInEditMode || allowEditModeUpdates) {
         updateLabelDetails(selectedCollections, ss, sz, basicCode);
       }
@@ -1506,8 +1604,6 @@ const LabelPrint = () => {
       );
     }
   };
-
-  // Enhanced version of your auto-update system with better integration
 
   const NOMINAL_DIAMETER_TO_QMAX_MAPPING = [
     { code: "15", description: "100 l/min" },
@@ -1531,7 +1627,6 @@ const LabelPrint = () => {
     { code: "600", description: "9600 m³/h" },
   ];
 
-  // You'll need to update your Qmax options to include these flow rate values
   const QMAX_OPTIONS = [
     { value: "", label: "" },
     // Diameter codes
@@ -1712,7 +1807,7 @@ const LabelPrint = () => {
     }
   };
 
-  // Updated handleCollectionCodeChange function remains the same
+  // ENHANCED: Updated handleCollectionCodeChange to track explosion cert
   const handleCollectionCodeChange = (collectionName, codeValue) => {
     console.log(`Collection code change: ${collectionName} -> "${codeValue}"`);
     const trimmedName = collectionName.trim();
@@ -1741,6 +1836,12 @@ const LabelPrint = () => {
     const isElect =
       lowerName.includes("measuring") && lowerName.includes("electrode");
 
+    // ENHANCED: Check for Explosion Protection Certification
+    const isExplosionCert =
+      lowerName.includes("explosion") &&
+      lowerName.includes("protection") &&
+      lowerName.includes("certification");
+
     if (
       isPowerSupply ||
       isPower ||
@@ -1749,7 +1850,8 @@ const LabelPrint = () => {
       isSize ||
       isLiner ||
       isProcessConnection ||
-      isElect
+      isElect ||
+      isExplosionCert // ENHANCED: Add explosion cert check
     ) {
       if (codeValue === "") {
         if (isPowerSupply) setPowerSupply("");
@@ -1758,13 +1860,15 @@ const LabelPrint = () => {
         else if (isSize) {
           setSize("");
           setSizeDescription("");
-          // Clear Qmax when nominal diameter is cleared
           setSelectedQmax("");
         } else if (isLiner) {
           setLinerMaterial("");
-          setSelectedTmedDropdown(""); // Clear Tmed when liner material is cleared
+          setSelectedTmedDropdown("");
         } else if (isProcessConnection) setFitting("");
         else if (isElect) setElect("");
+        else if (isExplosionCert) {
+          setExplosionCert(""); // ENHANCED: Clear explosion cert
+        }
       } else {
         const codeItems = collectionsWithCodes[collectionName] || [];
         const matchingItem = codeItems.find((item) => item.code === codeValue);
@@ -1773,17 +1877,30 @@ const LabelPrint = () => {
         if (isSize) {
           setSize(codeValue);
           setSizeDescription(description);
-
-          // AUTO-UPDATE QMAX WHEN NOMINAL DIAMETER CHANGES
-          // Pass the code value instead of description for better matching
           autoUpdateQmaxFromNominalDiameter(codeValue);
+        } else if (isExplosionCert) {
+          // ENHANCED: Set explosion cert and trigger logo update
+          console.log(
+            `🔍 Setting Explosion Cert to: ${codeValue} (Previous: ${explosionCert})`
+          );
+          console.log(
+            `📍 Current LabelType: ${LabelType}, Current LogoType: ${LogoType}`
+          );
+          setExplosionCert(codeValue);
+
+          // If not manual override, immediately determine and log what logo should be
+          if (!manualLogoOverride) {
+            const expectedLogo = determineLogoType(LabelType, codeValue);
+            console.log(
+              `🎯 Expected auto-logo for cert "${codeValue}": ${expectedLogo}`
+            );
+          }
         } else {
           if (isPowerSupply) setPowerSupply(description);
           else if (isProtectionClass) setProtectionClass(description);
           else if (isTamb) setTamb(description);
           else if (isLiner) {
             setLinerMaterial(description);
-            // AUTO-UPDATE TMED WHEN LINER MATERIAL CHANGES
             autoUpdateTmedFromLinerMaterial(description);
           } else if (isProcessConnection) setFitting(description);
           else if (isElect) setElect(description);
@@ -1805,31 +1922,25 @@ const LabelPrint = () => {
 
     setSelectedCollections(updatedCollections);
 
-    // Update label details if not in edit mode or if updates are allowed
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(updatedCollections, ss, sz, basicCode);
     }
   };
 
-  // FIXED: Handle SS and SZ changes - don't auto-update model number in edit mode
   const handleSSChange = (value) => {
     setSS(value);
 
-    // FIXED: Don't auto-update model number in edit mode
     if (!isInEditMode || allowEditModeUpdates) {
       updateLabelDetails(selectedCollections, value, sz, basicCode);
     }
   };
 
-  // FIXED: Updated function to respect edit mode and exclude hyphens completely
-  // FIXED: Updated function to respect edit mode and exclude LabelType, ss, and sz from model number
   const updateLabelDetails = (
     selections,
     currentSS,
     currentSZ,
     currentBasicCode
   ) => {
-    // UPDATED: Check both edit mode status and the allow updates flag
     if (isInEditMode && !allowEditModeUpdates) {
       console.log(
         "Preserving original label details in edit mode (auto-update disabled)"
@@ -1839,10 +1950,8 @@ const LabelPrint = () => {
 
     let details = currentBasicCode || basicCode || "";
 
-    // Get the collection order for the current basic code
     const order = COLLECTION_ORDERS[currentBasicCode || basicCode];
     if (order) {
-      // Process collections in the specified order
       order.forEach((orderedName) => {
         const matchingCollection = Object.keys(selections).find(
           (collectionName) =>
@@ -1852,7 +1961,6 @@ const LabelPrint = () => {
 
         if (matchingCollection) {
           const code = selections[matchingCollection];
-          // FIXED: Only add codes that have values, skip empty values entirely (no hyphens)
           if (code && code !== "" && code !== null && code !== undefined) {
             details += code;
           }
@@ -1860,12 +1968,6 @@ const LabelPrint = () => {
       });
     }
 
-    // REMOVED: Don't add SS and SZ to the model number
-    // The following lines are commented out:
-    // if (currentSS) details += currentSS;
-    // if (currentSZ) details += currentSZ;
-
-    // FIXED: Always update LabelDetails, even if just basic code
     if (details) {
       setAllSelectionsDone(true);
       setLabelDetails(details);
@@ -1884,11 +1986,10 @@ const LabelPrint = () => {
       LabelDetails,
       Date,
       Status,
-     
     ];
 
     if (showLogoType && !LogoType) {
-      alert("Please fill in all required fields");
+      alert("Please fill in all required fields including Logo Type");
       return;
     }
 
@@ -1946,38 +2047,33 @@ const LabelPrint = () => {
     setDevVersion(event.target.value);
   };
 
-  // FIXED: Async version of handleBasicCodeChange
   const handleBasicCodeChange = async (event) => {
     const value = event.target.value;
     setBasicCode(value);
 
-    // FIXED: Update LabelDetails immediately with the basic code
     if (!isInEditMode) {
       setLabelDetails(value);
     }
 
-    // Reset collections and selections first
     setCollectionsWithCodes({});
     setCollectionNames([]);
     setFilteredCollectionNames([]);
     setSelectedCollections({});
     setShowCollectionDropdown(false);
 
-    // Reset powerSupply when basic code changes
     setPowerSupply("");
     setProtectionClass("");
     setTamb("");
     setSize("");
     setSelectedQmax("");
     setSelectedTmedDropdown("");
+    setExplosionCert(""); // ENHANCED: Reset explosion cert
 
-    // Determine which database to use based on the basic code
     const dbName = getDatabaseForBasicCode(value);
     setSelectedDatabase(dbName);
 
     if (dbName && value) {
       try {
-        // FIXED: Use async version and wait for completion
         const success = await loadCollectionsFromCacheAsync(dbName);
         if (success) {
           setShowCollectionDropdown(true);
@@ -2005,7 +2101,6 @@ const LabelPrint = () => {
 
   // Filter collections based on basicCode and apply ordering
   useEffect(() => {
-    // FIXED: Show dropdown when basic code is set and collections are loaded
     if (basicCode && Object.keys(collectionsWithCodes).length > 0) {
       setShowCollectionDropdown(true);
       console.log(`✓ Showing collection dropdown for basic code: ${basicCode}`);
@@ -2091,14 +2186,14 @@ const LabelPrint = () => {
             <Grid container spacing={3}>
               {/* First row of fields */}
               <Grid item xs={12}>
-                <Paper sx={{ p: 3 }}>
+                <Paper sx={{ p: 2 }}>
                   <Grid container spacing={2} alignItems="center">
                     <Grid item>
                       <TextField
                         sx={{ width: "140px" }}
                         size="small"
                         label="Serial No"
-                        placeholder="Enter Serial Number..."
+                        placeholder="Enter Serial..."
                         variant="outlined"
                         value={SerialNumber}
                         onChange={(e) => setSerialNumber(e.target.value)}
@@ -2114,10 +2209,10 @@ const LabelPrint = () => {
                     </Grid>
                     <Grid item>
                       <TextField
-                        sx={{ width: "140px" }}
+                        sx={{ width: "120px" }}
                         size="small"
                         label="Tag No"
-                        placeholder="Enter Tag Number..."
+                        placeholder="Enter Tag..."
                         variant="outlined"
                         value={TagNumber}
                         onChange={(e) => setTagNumber(e.target.value)}
@@ -2131,7 +2226,7 @@ const LabelPrint = () => {
                       />
                     </Grid>
                     <Grid item>
-                      <FormControl variant="outlined" required>
+                      <FormControl variant="outlined" size="small" required>
                         <InputLabel>Label Type</InputLabel>
                         <Select
                           sx={{ width: "150px" }}
@@ -2152,17 +2247,19 @@ const LabelPrint = () => {
                           <MenuItem value="Sensor(115x35)">
                             Sensor(115x35)
                           </MenuItem>
-                          <MenuItem value="Sensor">Sensor</MenuItem>
-                          <MenuItem value="Transmitter">Transmitter</MenuItem>
+                          <MenuItem value="Sensor">Sensor(113 x 58.5)</MenuItem>
+                          <MenuItem value="Transmitter">
+                            Transmitter(115x35)
+                          </MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
 
                     <Grid item>
-                      <FormControl variant="outlined">
+                      <FormControl variant="outlined" size="small">
                         <InputLabel>Basic Code</InputLabel>
                         <Select
-                          sx={{ width: "150px" }}
+                          sx={{ width: "120px" }}
                           label="Basic Code"
                           value={basicCode}
                           onChange={handleBasicCodeChange}
@@ -2174,70 +2271,16 @@ const LabelPrint = () => {
                           }
                         >
                           <MenuItem value="">Select</MenuItem>
-                          <MenuItem value="FEP631">FEP631 </MenuItem>
+                          <MenuItem value="FEP631">FEP631</MenuItem>
                           <MenuItem value="FEP632">FEP632</MenuItem>
                           <MenuItem value="FET632">FET632</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
-                    {showLogoType && (
-                      <Grid item>
-                        <FormControl
-                          sx={{ width: "140px" }}
-                          size="small"
-                          variant="outlined"
-                          required
-                        >
-                          <InputLabel>Logo Option</InputLabel>
-                          <Select
-                            sx={{
-                              width: "140px",
-                              "& .MuiSelect-select": {
-                                textAlign: "center",
-                              },
-                            }}
-                            size="small"
-                            label="Logo Option"
-                            value={LogoType}
-                            onChange={(e) => setLogoType(e.target.value)}
-                            IconComponent={() => null}
-                            endAdornment={
-                              <InputAdornment position="end">
-                                <FitbitIcon color="action" />
-                              </InputAdornment>
-                            }
-                          >
-                            <MenuItem
-                              value=""
-                              sx={{ justifyContent: "center" }}
-                            >
-                              Select
-                            </MenuItem>
-                            <MenuItem
-                              value="Logo_1"
-                              sx={{ justifyContent: "center" }}
-                            >
-                              Logo 1
-                            </MenuItem>
-                            <MenuItem
-                              value="Logo_2"
-                              sx={{ justifyContent: "center" }}
-                            >
-                              Logo 2
-                            </MenuItem>
-                            <MenuItem
-                              value="Logo_3"
-                              sx={{ justifyContent: "center" }}
-                            >
-                              Logo 3
-                            </MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                    )}
+
                     <Grid item>
                       <TextField
-                        sx={{ width: "140px" }}
+                        sx={{ width: "160px" }}
                         size="small"
                         label="Manufacturing Date"
                         type="date"
@@ -2250,8 +2293,9 @@ const LabelPrint = () => {
                         }}
                       />
                     </Grid>
+
                     <Grid item>
-                      <FormControl sx={{ width: "140px" }} size="small">
+                      <FormControl sx={{ width: "150px" }} size="small">
                         <InputLabel>Device Version</InputLabel>
                         <Select
                           value={DevVersion}
@@ -2259,17 +2303,140 @@ const LabelPrint = () => {
                           label="Device Version"
                         >
                           <MenuItem value="">
-                            <em>Select Version</em>
+                            <em>Select</em>
                           </MenuItem>
                           {DEV_VERSION_OPTIONS.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
-                              <DeviceHubIcon sx={{ mr: 1 }} />
                               {option.label}
                             </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
                     </Grid>
+
+                    {/* Logo Selection - Compact inline version */}
+                    {showLogoType && (
+                      <Grid item>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            p: 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.02)",
+                            border: "1px solid rgba(0, 0, 0, 0.12)",
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <ImageIcon color="primary" fontSize="small" />
+                            <Typography variant="caption" fontWeight="bold">
+                              Logo:
+                            </Typography>
+                          </Box>
+
+                          <Box
+                            sx={{
+                              px: 1.5,
+                              py: 0.5,
+                              backgroundColor:
+                                LogoType === "Logo_7"
+                                  ? "secondary.light"
+                                  : "success.light",
+                              borderRadius: 0.5,
+                              minWidth: "60px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="white"
+                            >
+                              {LogoType ? LogoType.replace("Logo_", "") : "-"}
+                            </Typography>
+                          </Box>
+
+                          {LogoType &&
+                            LogoType !== "Logo_7" &&
+                            !manualLogoOverride && (
+                              <Chip
+                                label="Auto"
+                                size="small"
+                                color="success"
+                                sx={{ height: "20px", fontSize: "0.65rem" }}
+                              />
+                            )}
+
+                          {LogoType === "Logo_7" && manualLogoOverride && (
+                            <Chip
+                              label="Manual"
+                              size="small"
+                              color="secondary"
+                              sx={{ height: "20px", fontSize: "0.65rem" }}
+                            />
+                          )}
+
+                          <Button
+                            variant={
+                              LogoType === "Logo_7" ? "contained" : "outlined"
+                            }
+                            color="secondary"
+                            size="small"
+                            onClick={() => {
+                              console.log("🖱️ Manual Logo 7 selection");
+                              setLogoType("Logo_7");
+                              setManualLogoOverride(true);
+                            }}
+                            sx={{
+                              px: 1,
+                              py: 0.3,
+                              fontSize: "0.7rem",
+                              textTransform: "none",
+                              minWidth: "70px",
+                            }}
+                          >
+                            Logo 7
+                          </Button>
+
+                          {/* Reset to Auto button */}
+                          {manualLogoOverride && (
+                            <Tooltip title="Switch back to automatic logo selection">
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                onClick={() => {
+                                  console.log(
+                                    "🔄 Resetting to automatic logo selection"
+                                  );
+                                  setManualLogoOverride(false);
+                                  // Trigger auto-selection
+                                  if (LabelType && explosionCert) {
+                                    const autoLogo = determineLogoType(
+                                      LabelType,
+                                      explosionCert
+                                    );
+                                    if (autoLogo) {
+                                      setLogoType(autoLogo);
+                                    }
+                                  }
+                                }}
+                                sx={{
+                                  px: 0.8,
+                                  py: 0.3,
+                                  fontSize: "0.65rem",
+                                  textTransform: "none",
+                                  minWidth: "50px",
+                                }}
+                              >
+                                Auto
+                              </Button>
+                            </Tooltip>
+                          )}
+                        </Box>
+                      </Grid>
+                    )}
                   </Grid>
                 </Paper>
               </Grid>
@@ -2359,8 +2526,6 @@ const LabelPrint = () => {
                       />
                     </Grid>
 
-                    {/* Replace both dropdowns with these readonly text fields */}
-
                     {/* Qmax - Readonly Text Field */}
                     <Grid item>
                       <TextField
@@ -2402,7 +2567,7 @@ const LabelPrint = () => {
                 </Paper>
               </Grid>
 
-              {/* Collections Section - Updated with Optimized Dropdowns */}
+              {/* Collections Section */}
               {showCollectionDropdown && (
                 <Grid item xs={12}>
                   <OptimizedCollectionDropdowns
