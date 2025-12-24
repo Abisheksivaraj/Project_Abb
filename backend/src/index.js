@@ -1,25 +1,29 @@
 const express = require("express");
 const cors = require("cors");
-const connectDb = require("./config/db");
-require("dotenv").config({ path: "../backend/.env" });
 
 const app = express();
-const PORT = process.env.PORT;  
 
+
+
+
+
+
+// Increase the JSON payload size limit to 50MB
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(
   cors({
-    
-    origin: "http://localhost:5173",
+    origin: "https://label-printing.onrender.com",
+  //  origin:"http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-
+// If you actually have static files on this server that need serving
+// If not, you can remove this block
 app.use(
   express.static("public", {
     setHeaders: (res, path) => {
@@ -36,14 +40,29 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  return res.status(200).send({ message: "Welcome" });
-});
 
+
+
+
+
+
+
+
+
+const login = require("./Route/LoginRoute");
+app.use(login);
+
+const data = require("./Route/GetCollection");
+app.use(data);
+
+const tableData = require("./Route/TableRoute");
+app.use(tableData);
+
+app.get("/", (req, res) => {
+  return res.status(200).send({
+    message: "ABB Project backend running successfully",
+    status: true,
+  });
+});
 
 module.exports = app;
-
-app.listen(PORT, async () => {
-  await connectDb();
-  console.log("Website is Running on:" + PORT);
-});
